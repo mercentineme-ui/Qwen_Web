@@ -17,13 +17,26 @@ interface StoreCtx {
 
 const Ctx = createContext<StoreCtx | null>(null);
 
+/* recursive merge — saved values win, but any key missing from an OLD
+   persisted snapshot falls back to the current default, so schema
+   evolution can never crash the render tree */
+function deepMerge(base: unknown, over: unknown): unknown {
+  if (Array.isArray(base)) return Array.isArray(over) ? over : base;
+  if (base !== null && typeof base === "object") {
+    const b = base as Record<string, unknown>;
+    const o = (over !== null && typeof over === "object" ? over : {}) as Record<string, unknown>;
+    const out: Record<string, unknown> = {};
+    for (const k of Object.keys(b)) out[k] = deepMerge(b[k], o[k]);
+    return out;
+  }
+  return over === undefined || over === null ? base : over;
+}
+
 function loadData(): PortfolioData {
   try {
     const raw = localStorage.getItem(DATA_KEY);
     if (!raw) return defaultData;
-    const parsed = JSON.parse(raw) as Partial<PortfolioData>;
-    // shallow-merge top level keys so schema evolution never breaks
-    return { ...defaultData, ...parsed } as PortfolioData;
+    return deepMerge(defaultData, JSON.parse(raw)) as PortfolioData;
   } catch {
     return defaultData;
   }
