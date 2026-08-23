@@ -217,20 +217,19 @@ export default function AILab() {
           {/* header + cube (top-right, aligned with title) */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <div className="flex items-end justify-between gap-6 border-b pb-5" style={{ borderColor: "var(--m-line)" }}>
-                <div className="flex items-end gap-4 min-w-0">
-                  <span className="f-mono text-[11px] sm:text-xs tracking-[0.3em] text-[var(--crimson)] pb-2">/03</span>
-                  <h2 className="f-display leading-[0.95] text-[clamp(2rem,5.2vw,4.2rem)] tracking-wide whitespace-nowrap">
-                    <span style={{ color: "var(--outer-ink)" }}>AI </span>
-                    <span className="text-[var(--crimson)]">LAB</span>
-                  </h2>
+              <div className="border-b pb-5" style={{ borderColor: "var(--m-line)" }}>
+                <div className="flex items-end justify-between gap-6">
+                  <span className="f-mono text-[11px] sm:text-xs tracking-[0.3em]" style={{ color: "var(--m-sub)" }}>
+                    <span className="text-[var(--crimson)]">04</span> — RECENT PROJECT
+                  </span>
+                  <span className="f-mono text-[10px] sm:text-[11px] tracking-[0.24em] hidden md:block" style={{ color: "var(--m-sub)" }}>
+                    {lab.subLabel}
+                  </span>
                 </div>
-                <span className="f-mono text-[10px] sm:text-[11px] tracking-[0.24em] pb-2 hidden md:block" style={{ color: "var(--m-sub)" }}>
-                  {lab.subLabel}
-                </span>
-              </div>
-              <div className="mt-4 md:hidden f-mono text-[10px] tracking-[0.24em]" style={{ color: "var(--m-sub)" }}>
-                {lab.subLabel}
+                <h2 className="f-display leading-[0.95] text-[clamp(2rem,5.2vw,4.2rem)] tracking-wide whitespace-nowrap mt-3">
+                  <span style={{ color: "var(--outer-ink)" }}>AI </span>
+                  <span className="text-[var(--crimson)]">LAB</span>
+                </h2>
               </div>
             </div>
             <div className="shrink-0 scale-[0.72] sm:scale-90 lg:scale-100 origin-top-right -mr-6 sm:-mr-3 lg:mr-0">
@@ -278,7 +277,7 @@ export default function AILab() {
               <span className="f-mono text-[10px] tracking-[0.28em]" style={{ color: "var(--m-sub)" }}>FEATURED VIDEO — 16:9</span>
               <span className="f-mono text-[10px] tracking-[0.2em] text-[var(--crimson)]">FULL CUT</span>
             </div>
-            <MediaSlot item={lab.video} ratio="16/9" className="mat-inner" />
+            <MediaSlot item={lab.video} ratio="16/9" className="mat-inner" showLabel={false} />
           </Reveal>
 
           {/* exactly 8 image tiles — 4×2 desktop */}
@@ -287,9 +286,15 @@ export default function AILab() {
               <span className="f-mono text-[10px] tracking-[0.28em]" style={{ color: "var(--m-sub)" }}>PRODUCTION STILLS — 08 FRAMES</span>
               <span className="f-mono text-[10px] tracking-[0.2em]" style={{ color: "var(--m-sub)" }}>IDENTICAL 16:9 · NO STAGGER</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-x-3 gap-y-5 sm:gap-x-4">
               {lab.images.map((im) => (
-                <MediaSlot key={im.id} item={im} ratio="16/9" className="mat-inner" />
+                <div key={im.id}>
+                  <MediaSlot item={im} ratio="16/9" className="mat-inner" showLabel={false} />
+                  <div className="mt-2 flex items-center justify-between f-mono text-[8px] sm:text-[9px] tracking-[0.2em]" style={{ color: "var(--m-sub)" }}>
+                    <span>{im.label}</span>
+                    <span>16:9</span>
+                  </div>
+                </div>
               ))}
             </div>
           </Reveal>

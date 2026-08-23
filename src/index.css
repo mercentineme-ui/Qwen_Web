@@ -262,6 +262,28 @@ body {
 @keyframes surgePulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
 .surge-pulse { animation: surgePulse 0.5s ease-in-out infinite; }
 
+/* ---------- living reactor (Creative Core) ---------- */
+@keyframes spinSlow { to { transform: rotate(360deg); } }
+@keyframes spinRev { to { transform: rotate(-360deg); } }
+@keyframes coreBreath { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes wedgeFlow { 0%, 100% { opacity: 0; } 7% { opacity: 0.16; } 14% { opacity: 0; } }
+@keyframes wedgeRock { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(0.85deg); } }
+@keyframes nodeBob { 0%, 100% { transform: translate(-50%, -50%); } 50% { transform: translate(-50%, calc(-50% - 3px)); } }
+@keyframes arrowPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.14); opacity: 0.85; } }
+@keyframes surgeArcSpin { to { transform: rotate(720deg); } }
+@keyframes viewerIn { from { opacity: 0; transform: scale(0.965); } to { opacity: 1; transform: scale(1); } }
+
+.react-spin { transform-origin: 300px 300px; animation: spinSlow 110s linear infinite; }
+.react-spin-mid { transform-origin: 300px 300px; animation: spinRev 70s linear infinite; }
+.react-orbit { transform-origin: 300px 300px; animation: spinSlow 36s linear infinite; }
+.react-breath { transform-origin: 300px 300px; animation: coreBreath 5.6s ease-in-out infinite; }
+.wedge-hot { opacity: 0; animation: wedgeFlow 6.4s linear infinite; }
+.wedge-rock { transform-origin: 300px 300px; animation: wedgeRock 5.2s ease-in-out infinite; }
+.node-bob { animation: nodeBob 5.4s ease-in-out infinite; }
+.arrow-pulse { transform-box: fill-box; transform-origin: center; animation: arrowPulse 2.8s ease-in-out infinite; }
+.surge-arc { transform-origin: 300px 300px; animation: surgeArcSpin 1.5s cubic-bezier(0.3, 0.6, 0.3, 1) 1 both; }
+.viewer-in { animation: viewerIn 0.45s cubic-bezier(0.25, 0.8, 0.3, 1) both; }
+
 /* ---------- misc ---------- */
 @keyframes floatTick { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
 .float-tick { animation: floatTick 2.2s ease-in-out infinite; }

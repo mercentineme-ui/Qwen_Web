@@ -53,44 +53,76 @@ export default function CreativeCore() {
   return (
     <section id="core" className="relative py-20 lg:py-28 scroll-mt-20">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8">
-        <SectionHead num="02" title="CREATIVE CORE" meta="09 DISCIPLINES · ONE PRACTICE" />
+        <SectionHead
+          label="02 — WHAT I DO"
+          title="CREATIVE CORE"
+          desc="Nine disciplines, one practice — direction, generation and story held together by structured workflows."
+          meta="09 NODES · ONE REACTOR"
+        />
 
-        <div className="mt-10 grid lg:grid-cols-[1.04fr_0.96fr] gap-12 lg:gap-16 items-center">
-          {/* ---------- REACTOR ---------- */}
+        <div className="mt-12 grid lg:grid-cols-[1.04fr_0.96fr] gap-12 lg:gap-16 items-center">
+          {/* ---------- ARC REACTOR — living system ---------- */}
           <Reveal>
-            <div className="relative mx-auto w-full max-w-[600px] aspect-square select-none">
+            <div className="relative mx-auto w-full max-w-[620px] aspect-square select-none">
               <svg viewBox="0 0 600 600" className="absolute inset-0 w-full h-full">
-                {/* outer structural ring */}
-                <circle cx="300" cy="300" r="286" fill="none" stroke="var(--line)" strokeWidth="1.5" strokeDasharray="2 7" />
-                <circle cx="300" cy="300" r="262" fill="none" stroke="var(--line)" strokeWidth="1" />
-                {Array.from({ length: 36 }).map((_, i) => {
-                  const [x1, y1] = polar(300, 300, 268, i * 10);
-                  const [x2, y2] = polar(300, 300, i % 3 === 0 ? 256 : 262, i * 10);
-                  return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--ink2)" strokeOpacity="0.5" strokeWidth={i % 3 === 0 ? 1.6 : 0.8} />;
-                })}
+                {/* outer structural ring — slow orbital motion */}
+                <g className={reduced ? undefined : "react-spin"}>
+                  <circle cx="300" cy="300" r="286" fill="none" stroke="var(--line)" strokeWidth="1.5" strokeDasharray="2 7" />
+                  <circle cx="300" cy="300" r="262" fill="none" stroke="var(--line)" strokeWidth="1" />
+                  {Array.from({ length: 36 }).map((_, i) => {
+                    const [x1, y1] = polar(300, 300, 268, i * 10);
+                    const [x2, y2] = polar(300, 300, i % 3 === 0 ? 256 : 262, i * 10);
+                    return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--ink2)" strokeOpacity="0.5" strokeWidth={i % 3 === 0 ? 1.6 : 0.8} />;
+                  })}
+                  {[0, 90, 180, 270].map((a) => {
+                    const [x, y] = polar(300, 300, 274, a);
+                    return <rect key={a} x={x - 5} y={y - 5} width="10" height="10" fill="var(--sup1)" stroke="var(--line)" strokeWidth="1.2" />;
+                  })}
+                </g>
 
-                {/* 8 trapezoid reactor blocks */}
+                {/* orbital track — controlled directional flow */}
+                <g className={reduced ? undefined : "react-orbit"}>
+                  <circle cx="300" cy="300" r="178" fill="none" stroke="var(--ink2)" strokeOpacity="0.35" strokeWidth="1" strokeDasharray="1 11" />
+                  <rect x="295" y="116" width="10" height="12" fill="var(--ink)" opacity="0.75" />
+                  <rect x="295" y="472" width="10" height="12" fill="var(--ink)" opacity="0.35" />
+                </g>
+
+                {/* 8 trapezoid reactor blocks — rocking + energy chase */}
                 {disciplines.slice(0, 8).map((_, i) => {
                   const litOn = surgeOn && lit > i;
                   return (
-                    <path key={i} d={wedgePath(i)}
-                      fill={litOn ? surgeColor : phase === 3 ? "var(--sup2)" : "var(--sup2)"}
-                      fillOpacity={litOn ? (phase === 3 ? 0.25 : 0.85) : 1}
-                      stroke={litOn ? surgeColor : "var(--line)"}
-                      strokeWidth="1.5"
-                      style={{ transition: "fill .18s ease, fill-opacity .5s ease, stroke .18s ease" }} />
+                    <g key={i} className={reduced ? undefined : "wedge-rock"} style={{ animationDelay: `${i * 0.65}s` }}>
+                      <path d={wedgePath(i)}
+                        fill={litOn ? surgeColor : "var(--sup2)"}
+                        fillOpacity={litOn ? (phase === 3 ? 0.25 : 0.85) : 1}
+                        stroke={litOn ? surgeColor : "var(--line)"}
+                        strokeWidth="1.5"
+                        style={{ transition: "fill .18s ease, fill-opacity .5s ease, stroke .18s ease" }} />
+                      {!surgeOn && (
+                        <path d={wedgePath(i)} fill="var(--ink)" className={reduced ? undefined : "wedge-hot"} style={{ animationDelay: `${i * 0.8}s` }} />
+                      )}
+                    </g>
                   );
                 })}
 
-                {/* concentric rings */}
+                {/* concentric rings — counter rotation + radial breathing */}
                 <circle cx="300" cy="300" r="88" fill="var(--sup1)" stroke="var(--line)" strokeWidth="1.5" />
-                <circle cx="300" cy="300" r="72" fill="none" stroke="var(--ink2)" strokeOpacity="0.6" strokeWidth="1.2" strokeDasharray="10 6" />
-                <circle cx="300" cy="300" r="52" fill="var(--sup2)" stroke="var(--line)" strokeWidth="1.5" />
-                <circle cx="300" cy="300" r="34" fill={surgeOn ? surgeColor : "var(--ink)"} fillOpacity={surgeOn ? 0.8 : 1} stroke="none"
-                  style={{ transition: "fill .4s ease" }} />
-                <circle cx="300" cy="300" r="20" fill="var(--page)" stroke="var(--crimson)" strokeWidth="2.5" />
+                <g className={reduced ? undefined : "react-spin-mid"}>
+                  <circle cx="300" cy="300" r="72" fill="none" stroke="var(--ink2)" strokeOpacity="0.6" strokeWidth="1.2" strokeDasharray="10 6" />
+                  {[0, 120, 240].map((a) => {
+                    const [x, y] = polar(300, 300, 72, a);
+                    return <rect key={a} x={x - 4} y={y - 4} width="8" height="8" fill="var(--ink2)" opacity="0.8" />;
+                  })}
+                </g>
+                <g className={reduced ? undefined : "react-breath"}
+                  style={phase === 2 ? { filter: "drop-shadow(0 0 22px rgba(88,200,238,0.85))" } : undefined}>
+                  <circle cx="300" cy="300" r="52" fill="var(--sup2)" stroke="var(--line)" strokeWidth="1.5" />
+                  <circle cx="300" cy="300" r="34" fill={surgeOn ? surgeColor : "var(--ink)"} fillOpacity={surgeOn ? 0.85 : 1} stroke="none"
+                    style={{ transition: "fill .4s ease" }} />
+                  <circle cx="300" cy="300" r="20" fill="var(--page)" stroke="var(--crimson)" strokeWidth="2.5" />
+                </g>
 
-                {/* surge sweep ring */}
+                {/* surge — radial ignition ring + circular sweep arc */}
                 {surgeOn && (
                   <circle cx="300" cy="300" r="60" fill="none" stroke={surgeColor} strokeWidth={phase === 2 ? 3 : 1.5}
                     opacity={phase === 3 ? 0 : 0.9}
@@ -100,15 +132,21 @@ export default function CreativeCore() {
                       transition: "transform 1.1s cubic-bezier(.25,.8,.3,1), opacity .6s ease",
                     }} />
                 )}
+                {phase === 2 && (
+                  <circle cx="300" cy="300" r="150" fill="none" stroke={surgeColor} strokeWidth="3"
+                    strokeDasharray="180 763" className={reduced ? undefined : "surge-arc"} opacity="0.9" />
+                )}
 
-                {/* center arrow — always outward, points at selected node */}
+                {/* center arrow — always outward, directional pulse */}
                 <g style={{ transform: `rotate(${sel * 40}deg)`, transformOrigin: "300px 300px", transition: reduced ? "none" : "transform .65s cubic-bezier(.3,.8,.3,1)" }}>
-                  <line x1="300" y1="238" x2="300" y2="196" stroke="var(--crimson)" strokeWidth="5" />
-                  <polygon points="300,178 288,202 312,202" fill="var(--crimson)" />
+                  <g className={reduced ? undefined : "arrow-pulse"}>
+                    <line x1="300" y1="238" x2="300" y2="196" stroke="var(--crimson)" strokeWidth="5" />
+                    <polygon points="300,178 288,202 312,202" fill="var(--crimson)" />
+                  </g>
                 </g>
               </svg>
 
-              {/* 9 outer discipline nodes */}
+              {/* 9 outer discipline nodes — subtle staggered motion */}
               {disciplines.map((disc, i) => {
                 const [x, y] = polar(50, 50, 37.6, i * 40);
                 const Ico = disciplineIcons[disc.icon] ?? disciplineIcons.direction;
@@ -118,8 +156,8 @@ export default function CreativeCore() {
                     onMouseEnter={() => setHoverIdx(i)} onMouseLeave={() => setHoverIdx(null)}
                     onFocus={() => setHoverIdx(i)} onBlur={() => setHoverIdx(null)}
                     onClick={() => setLockedIdx(i)}
-                    className="absolute flex flex-col items-center gap-1.5 group"
-                    style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%,-50%)" }}
+                    className={`absolute flex flex-col items-center gap-1.5 group ${reduced ? "" : "node-bob"}`}
+                    style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%,-50%)", animationDelay: `${i * 0.55}s` }}
                     aria-label={disc.name}>
                     <span className={`w-12 h-12 sm:w-14 sm:h-14 grid place-items-center rounded-lg border transition-all duration-400 mat-texture ${
                       isActive
@@ -145,24 +183,22 @@ export default function CreativeCore() {
               <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 f-mono text-[9px] tracking-[0.3em] flex items-center gap-2"
                 style={{ color: surgeOn ? surgeColor : "var(--ink2)" }}>
                 <span className={`w-1.5 h-1.5 ${surgeOn ? "surge-pulse" : ""}`} style={{ backgroundColor: surgeOn ? surgeColor : "var(--crimson)" }} />
-                {surgeOn ? (phase === 1 ? "SURGE // IGNITION" : phase === 2 ? "SURGE // RADIAL SWEEP" : "SURGE // DECAY") : "CORE // IDLE"}
+                {surgeOn ? (phase === 1 ? "SURGE // IGNITION" : phase === 2 ? "SURGE // CIRCULAR SWEEP — PEAK" : "SURGE // DECAY") : "CORE // IDLE — ORBITAL"}
               </div>
             </div>
           </Reveal>
 
-          {/* ---------- DETAIL ---------- */}
+          {/* ---------- SELECTED DISCIPLINE ---------- */}
           <div>
             <Reveal>
-              <h3 className="f-display text-[clamp(1.8rem,3.4vw,2.8rem)] leading-none">
-                CREATIVE <span className="text-[var(--crimson)]">CORE</span>
-              </h3>
-              <p className="mt-4 max-w-[52ch] text-[14px] sm:text-[15px] leading-relaxed text-[var(--ink2)]">
-                Nine disciplines, one practice — direction, generation and story held together by structured workflows.
-              </p>
+              <div className="f-mono text-[10px] tracking-[0.26em] text-[var(--ink2)] flex items-center gap-3">
+                <span className="w-6 h-px bg-[var(--crimson)]" />
+                SELECTED DISCIPLINE — LIVE DOSSIER
+              </div>
             </Reveal>
 
             <Reveal delay={0.12}>
-              <div key={d.id} className="dossier-swap mt-8 mat-outer mat-texture rounded-xl p-6 sm:p-8 relative overflow-hidden">
+              <div key={d.id} className="dossier-swap mt-6 mat-outer mat-texture rounded-xl p-6 sm:p-8 relative overflow-hidden">
                 <div className="flex items-center justify-between">
                   <span className="f-mono text-[11px] tracking-[0.26em] tabular-nums">
                     {d.num} <span className="text-[var(--crimson)]">/</span> 09
@@ -185,7 +221,7 @@ export default function CreativeCore() {
             <Reveal delay={0.2}>
               <div className="mt-5 f-mono text-[10px] tracking-[0.24em] text-[var(--ink2)] flex items-center gap-3">
                 <span className="w-6 h-px bg-[var(--crimson)]" />
-                HOVER TO SCAN · CLICK TO LOCK NODE
+                HOVER TO SCAN · CLICK TO LOCK NODE · SURGE EVERY 30S
               </div>
             </Reveal>
           </div>

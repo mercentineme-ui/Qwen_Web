@@ -28,34 +28,62 @@ export function Reveal({ children, className = "", delay = 0 }: { children: Reac
   );
 }
 
-/* ---------- section header ---------- */
+/* ============================================================
+   UNIVERSAL SECTION HEAD
+   SMALL SECTION LABEL + LARGE EDITORIAL HEADING + SHORT DESCRIPTION
+   Same family / hierarchy / crimson accent across every section.
+   ============================================================ */
 export function SectionHead({
-  num,
+  label,
   title,
   titleAccent,
+  titleNode,
+  desc,
   meta,
   id,
+  long,
 }: {
-  num: string;
-  title: string;
-  titleAccent?: string;
-  meta?: string;
+  label: string;            // "01 — MY EXPERTISE"
+  title?: string;
+  titleAccent?: string;     // rendered crimson after title
+  titleNode?: React.ReactNode; // full custom heading (e.g. ARC)
+  desc?: string;            // short supporting description
+  meta?: string;            // technical metadata, right side
   id?: string;
+  long?: boolean;           // smaller clamp for long editorial statements
 }) {
+  const [numPart, ...rest] = label.split("—");
+  const namePart = rest.join("—").trim();
   return (
     <Reveal>
-      <div id={id} className="flex items-end justify-between gap-6 border-b border-[var(--line)] pb-5 scroll-mt-24">
-        <div className="flex items-end gap-4 min-w-0">
-          <span className="f-mono text-[11px] sm:text-xs tracking-[0.3em] text-[var(--crimson)] pb-2 shrink-0">/{num}</span>
-          <h2 className="f-display leading-[0.95] text-[clamp(2rem,5.2vw,4.2rem)] tracking-wide whitespace-nowrap overflow-hidden text-ellipsis">
-            {title}
-            {titleAccent && <span className="text-[var(--crimson)]"> {titleAccent}</span>}
-          </h2>
-        </div>
-        {meta && (
-          <span className="f-mono text-[10px] sm:text-[11px] tracking-[0.22em] text-[var(--ink2)] pb-2 hidden md:block shrink-0">
-            {meta}
+      <div id={id} className="scroll-mt-24 border-b border-[var(--line)] pb-6">
+        <div className="flex items-end justify-between gap-6">
+          <span className="f-mono text-[11px] sm:text-xs tracking-[0.3em] text-[var(--ink2)]">
+            <span className="text-[var(--crimson)]">{numPart.trim()}</span>
+            {namePart ? ` — ${namePart}` : ""}
           </span>
+          {meta && (
+            <span className="f-mono text-[10px] sm:text-[11px] tracking-[0.22em] text-[var(--ink2)] pb-0.5 hidden md:block shrink-0">
+              {meta}
+            </span>
+          )}
+        </div>
+        <h2
+          className={`f-display leading-[0.95] tracking-wide mt-3 ${
+            long
+              ? "text-[clamp(1.5rem,3.7vw,3.15rem)]"
+              : "text-[clamp(2rem,5.2vw,4.2rem)] whitespace-nowrap overflow-hidden text-ellipsis"
+          }`}
+        >
+          {titleNode ?? (
+            <>
+              {title}
+              {titleAccent && <span className="text-[var(--crimson)]"> {titleAccent}</span>}
+            </>
+          )}
+        </h2>
+        {desc && (
+          <p className="mt-4 max-w-[74ch] text-[13px] sm:text-[14px] leading-relaxed text-[var(--ink2)]">{desc}</p>
         )}
       </div>
     </Reveal>
@@ -68,17 +96,30 @@ export function MediaSlot({
   ratio,
   className = "",
   showLabel = true,
+  onClick,
 }: {
   item: MediaItem;
   ratio: string; // css aspect-ratio
   className?: string;
   showLabel?: boolean;
+  onClick?: () => void;
 }) {
   return (
-    <figure className={`relative overflow-hidden rounded-lg border border-[var(--line)] mat-page-card group ${className}`} style={{ aspectRatio: ratio }}>
+    <figure
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } } : undefined}
+      className={`relative overflow-hidden rounded-lg border border-[var(--line)] mat-page-card group ${onClick ? "cursor-pointer" : ""} ${className}`}
+      style={{ aspectRatio: ratio }}
+    >
       {item.src ? (
         item.kind === "video" ? (
-          <video src={item.src} controls className="absolute inset-0 w-full h-full object-cover" />
+          onClick ? (
+            <video src={item.src} muted playsInline className="absolute inset-0 w-full h-full object-cover pointer-events-none" />
+          ) : (
+            <video src={item.src} controls className="absolute inset-0 w-full h-full object-cover" />
+          )
         ) : item.kind === "audio" ? (
           <div className="absolute inset-0 flex items-center justify-center p-4">
             <audio src={item.src} controls className="w-full" />
@@ -88,6 +129,17 @@ export function MediaSlot({
         )
       ) : (
         <EmptySlot item={item} />
+      )}
+      {onClick && (
+        <span className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          style={{ boxShadow: "inset 0 0 0 2px var(--crimson)" }} />
+      )}
+      {onClick && (
+        <span className="absolute top-2 right-2 w-7 h-7 grid place-items-center rounded-lg bg-[var(--ink)] text-[var(--page)] opacity-0 group-hover:opacity-90 transition-all duration-300 pointer-events-none">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+          </svg>
+        </span>
       )}
       {showLabel && (
         <figcaption className="absolute left-0 bottom-0 f-mono text-[9px] tracking-[0.22em] px-2 py-1 bg-[var(--ink)] text-[var(--page)] opacity-80">
@@ -141,7 +193,14 @@ export function useInView<T extends HTMLElement>(threshold = 0.3): [React.Mutabl
     const el = ref.current;
     if (!el) return;
     const io = new IntersectionObserver(
-      (es) => es.forEach((e) => e.isIntersecting && (setInView(true), io.disconnect())),
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            setInView(true);
+            io.disconnect();
+          }
+        });
+      },
       { threshold }
     );
     io.observe(el);

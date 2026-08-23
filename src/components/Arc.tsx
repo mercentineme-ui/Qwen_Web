@@ -1,23 +1,7 @@
 import React, { useState } from "react";
 import { Dossier } from "../lib/data";
 import { useHashRoute, useStore } from "../lib/store";
-import { MediaSlot, Reveal } from "./ui";
-
-function ArcHead() {
-  return (
-    <Reveal>
-      <div id="arc" className="flex items-end justify-between gap-6 border-b border-[var(--line)] pb-5 scroll-mt-24">
-        <div className="flex items-end gap-4">
-          <span className="f-mono text-[11px] sm:text-xs tracking-[0.3em] text-[var(--crimson)] pb-2">/05</span>
-          <h2 className="f-display leading-[0.95] text-[clamp(2rem,5.2vw,4.2rem)] tracking-wide">
-            A<span className="text-[var(--crimson)]">R</span>C
-          </h2>
-        </div>
-        <span className="f-mono text-[10px] sm:text-[11px] tracking-[0.26em] text-[var(--ink2)] pb-2">AI REIMAGINED CONTENT</span>
-      </div>
-    </Reveal>
-  );
-}
+import { MediaSlot, Reveal, SectionHead } from "./ui";
 
 function Selector({ items, active, onPick, kind }: { items: { id: string; name: string }[]; active: number; onPick: (i: number) => void; kind: string }) {
   const [, nav] = useHashRoute();
@@ -84,7 +68,17 @@ export default function Arc() {
   return (
     <section className="relative py-20 lg:py-28 scroll-mt-20">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8">
-        <ArcHead />
+        <SectionHead
+          label="05 — BTS"
+          id="arc"
+          titleNode={
+            <>
+              A<span className="text-[var(--crimson)]">R</span>C
+            </>
+          }
+          desc="AI REIMAGINED CONTENT — two production modules, one system: character sheets and world building, built from the same generative pipeline."
+          meta="CHARACTER + WORLD MODULES"
+        />
 
         {/* ---------- 01 — AI CHARACTER SHEET ---------- */}
         <Reveal className="mt-10">
@@ -97,7 +91,7 @@ export default function Arc() {
           <div className="grid lg:grid-cols-[240px_minmax(0,1fr)_minmax(0,1.15fr)] gap-5 lg:gap-8 items-start">
             <Selector items={characters} active={charIdx} onPick={setCharIdx} kind="CHARACTER" />
             <div className="max-w-[380px] w-full mx-auto lg:mx-0">
-              <MediaSlot key={ch.id} item={ch.image} ratio="9/16" className="dossier-swap" />
+              <MediaSlot key={ch.id} item={ch.image} ratio="9/16" className="dossier-swap" showLabel={false} />
             </div>
             <DossierCard d={ch.dossier} title="CHARACTER DOSSIER" accent={ch.name} fields={CHAR_FIELDS} />
           </div>
@@ -114,7 +108,7 @@ export default function Arc() {
           <div className="grid lg:grid-cols-[240px_minmax(0,1fr)] gap-5 lg:gap-8 items-start">
             <Selector items={worlds} active={worldIdx} onPick={setWorldIdx} kind="WORLD" />
             <div className="min-w-0">
-              <MediaSlot key={wo.id} item={wo.image} ratio="16/9" className="dossier-swap" />
+              <MediaSlot key={wo.id} item={wo.image} ratio="16/9" className="dossier-swap" showLabel={false} />
               <div className="mt-5">
                 <DossierCard d={wo.dossier} title="WORLD / ENVIRONMENT DOSSIER" accent={wo.name} fields={WORLD_FIELDS} />
               </div>

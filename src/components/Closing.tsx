@@ -1,16 +1,59 @@
 import React, { useState } from "react";
 import { useLocalTime, useReducedMotion, useStore } from "../lib/store";
-import { ArrowRight, ArrowUp, Rune } from "./icons";
+import { ArrowDown, ArrowRight, ArrowUp, Rune } from "./icons";
 import { MediaSlot, Reveal, SectionHead, useInView } from "./ui";
 
-/* ================= 06 — HOW I BUILD ================= */
+/* ---------- stylized technical mailbox — production object ---------- */
+function Mailbox() {
+  return (
+    <svg width="224" height="206" viewBox="0 0 240 220" fill="none" aria-label="Production mailbox — stylized technical illustration">
+      {/* ground */}
+      <line x1="14" y1="208" x2="226" y2="208" stroke="var(--line)" strokeWidth="2" strokeDasharray="5 7" />
+      {/* post */}
+      <rect x="112" y="122" width="16" height="82" fill="var(--sup2)" stroke="var(--ink)" strokeWidth="2" />
+      <rect x="104" y="116" width="32" height="10" fill="var(--sup1)" stroke="var(--ink)" strokeWidth="2" />
+      {/* hazard base */}
+      <rect x="94" y="196" width="52" height="12" fill="var(--sup1)" stroke="var(--ink)" strokeWidth="2" />
+      <path d="M100 208l10-12M114 208l10-12M128 208l10-12" stroke="var(--crimson)" strokeWidth="3" />
+      {/* body */}
+      <rect x="38" y="34" width="164" height="90" rx="10" fill="var(--sup2)" stroke="var(--ink)" strokeWidth="2.5" />
+      <line x1="38" y1="58" x2="202" y2="58" stroke="var(--ink)" strokeWidth="1.6" />
+      {/* rivets */}
+      <circle cx="48" cy="46" r="2.2" fill="var(--ink2)" />
+      <circle cx="192" cy="46" r="2.2" fill="var(--ink2)" />
+      <circle cx="48" cy="114" r="2.2" fill="var(--ink2)" />
+      <circle cx="192" cy="114" r="2.2" fill="var(--ink2)" />
+      {/* slot + envelope */}
+      <rect x="62" y="72" width="90" height="14" rx="3" fill="var(--page)" stroke="var(--ink)" strokeWidth="2" />
+      <rect x="76" y="56" width="56" height="30" fill="var(--sup1)" stroke="var(--ink2)" strokeWidth="1.8" />
+      <path d="M76 56l28 18 28-18" stroke="var(--ink2)" strokeWidth="1.8" />
+      {/* plate */}
+      <rect x="150" y="94" width="40" height="20" rx="3" fill="var(--page)" stroke="var(--ink)" strokeWidth="1.8" />
+      <text x="170" y="108" textAnchor="middle" fontFamily="IBM Plex Mono, monospace" fontSize="10" letterSpacing="2" fill="var(--ink2)">CBK</text>
+      {/* signal lamp */}
+      <circle cx="56" cy="104" r="4" fill="var(--crimson)" />
+      <circle cx="56" cy="104" r="8" stroke="var(--crimson)" strokeWidth="1.4" opacity="0.5" />
+      {/* flag */}
+      <rect x="198" y="40" width="6" height="44" fill="var(--ink)" />
+      <polygon points="204,40 236,49 204,60" fill="var(--crimson)" />
+    </svg>
+  );
+}
+
+/* ================= 06 — HOW I BUILD // THE PIPELINE ================= */
 
 export function HowIBuild() {
   const { data } = useStore();
   return (
     <section id="build" className="relative py-20 lg:py-28 scroll-mt-20 overflow-hidden">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8">
-        <SectionHead num="06" title="HOW I BUILD" meta="PROCESS · FIVE MOVES" />
+        <SectionHead
+          label="06 — HOW I BUILD"
+          title="THE"
+          titleAccent="PIPELINE"
+          desc="One mark, five moves — every project walks the same path, from blind briefing to final delivery."
+          meta="PROCESS · FIVE MOVES"
+        />
         <div className="mt-10 grid lg:grid-cols-[280px_1fr] gap-10 lg:gap-16">
           {/* the only rune */}
           <Reveal>
@@ -45,6 +88,25 @@ export function HowIBuild() {
             ))}
           </div>
         </div>
+
+        {/* mailbox — the pipeline's delivery point */}
+        <Reveal className="mt-14">
+          <div className="mat-page-card mat-texture rounded-xl border border-[var(--line)] px-6 sm:px-10 py-8 flex flex-col sm:flex-row items-center gap-8">
+            <div className="shrink-0 text-[var(--ink)]">
+              <Mailbox />
+            </div>
+            <div className="min-w-0 sm:border-l sm:border-[var(--line)] sm:pl-10">
+              <span className="f-mono text-[10px] tracking-[0.3em] text-[var(--crimson)]">MAILBOX // SIGNALS WELCOME</span>
+              <h4 className="f-tech font-bold text-[17px] sm:text-xl tracking-[0.16em] mt-3">DROP A BRIEF IN</h4>
+              <p className="mt-3 text-[13px] sm:text-[14px] leading-relaxed text-[var(--ink2)] max-w-[56ch]">
+                The pipeline ends at a mailbox. Send the strange brief, the half-formed idea, the frame nobody can describe — it comes back as a build.
+              </p>
+              <a href="#contact" className="inline-flex items-center gap-2.5 mt-5 f-tech font-bold text-[11px] tracking-[0.24em] text-[var(--crimson)] hover:gap-4 transition-all duration-300">
+                CONTINUE TO CONTACT <ArrowDown size={14} strokeWidth={2.2} />
+              </a>
+            </div>
+          </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -70,7 +132,12 @@ export function Contact() {
     <section id="contact" className="relative py-20 lg:py-28 scroll-mt-20 overflow-hidden">
       <div className="absolute inset-0 blueprint pointer-events-none" aria-hidden />
       <div className="relative max-w-[1440px] mx-auto px-4 sm:px-8">
-        <SectionHead num="07" title="CONTACT" meta="OPEN FOR PIPELINES, FILMS & SYSTEMS" />
+        <SectionHead
+          label="07 — CONTACT"
+          title="CONTACT"
+          desc="Open for pipelines, films and systems — bring the brief nobody knows how to build yet."
+          meta="RESPONSE WITHIN 24H"
+        />
 
         <div className="mt-12 grid lg:grid-cols-[1.18fr_0.82fr] gap-12 lg:gap-16 items-start">
           <div className="min-w-0">
