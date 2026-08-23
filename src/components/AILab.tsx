@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useReducedMotion, useStore } from "../lib/store";
-import { MediaSlot, Reveal } from "./ui";
+import { FullscreenViewer, MediaSlot, Reveal } from "./ui";
 
 /* ================= 2×2 CUBE ENGINE ================= */
 
@@ -209,6 +209,15 @@ function Cube() {
 export default function AILab() {
   const { data } = useStore();
   const lab = data.aiLab;
+  const [armed, setArmed] = useState(false);
+  const [videoOpen, setVideoOpen] = useState(false);
+
+  /* KNOW MORE (Show Reel, first landscape) arms this video */
+  useEffect(() => {
+    const onArm = () => setArmed(true);
+    window.addEventListener("cbk:lab-video", onArm);
+    return () => window.removeEventListener("cbk:lab-video", onArm);
+  }, []);
 
   return (
     <section id="ailab" className="relative py-20 lg:py-28 scroll-mt-20">
@@ -277,7 +286,14 @@ export default function AILab() {
               <span className="f-mono text-[10px] tracking-[0.28em]" style={{ color: "var(--m-sub)" }}>FEATURED VIDEO — 16:9</span>
               <span className="f-mono text-[10px] tracking-[0.2em] text-[var(--crimson)]">FULL CUT</span>
             </div>
-            <MediaSlot item={lab.video} ratio="16/9" className="mat-inner" showLabel={false} />
+            <div className={`relative rounded-lg overflow-hidden transition-shadow duration-500 ${armed ? "shadow-[0_0_0_2px_var(--crimson),0_18px_50px_-20px_rgba(227,34,64,0.8)]" : ""}`}>
+              <MediaSlot item={lab.video} ratio="16/9" className="mat-inner" showLabel={false} onClick={() => setVideoOpen(true)} />
+              {armed && (
+                <span className="absolute top-3 left-3 z-10 f-tech font-bold text-[9px] tracking-[0.26em] px-2.5 py-1.5 rounded-lg bg-[var(--crimson)] text-[#f4f2ed] live-blink">
+                  PRESS PLAY — FROM SHOW REEL
+                </span>
+              )}
+            </div>
           </Reveal>
 
           {/* exactly 8 image tiles — 4×2 desktop */}
@@ -287,19 +303,25 @@ export default function AILab() {
               <span className="f-mono text-[10px] tracking-[0.2em]" style={{ color: "var(--m-sub)" }}>IDENTICAL 16:9 · NO STAGGER</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-x-3 gap-y-5 sm:gap-x-4">
-              {lab.images.map((im, i) => (
-                <div key={im.id}>
-                  <MediaSlot item={im} ratio="16/9" className="mat-inner" showLabel={false} />
-                  <div className="mt-2 flex items-center justify-between f-mono text-[8px] sm:text-[9px] tracking-[0.2em]" style={{ color: "var(--m-sub)" }}>
-                    <span>{String(i + 1).padStart(2, "0")} / 08</span>
-                    <span>16:9</span>
-                  </div>
-                </div>
+              {lab.images.map((im) => (
+                <MediaSlot key={im.id} item={im} ratio="16/9" className="mat-inner" />
               ))}
             </div>
           </Reveal>
         </div>
       </div>
+
+      {/* fullscreen video player — seek + mute/unmute + close X */}
+      {videoOpen && (
+        <FullscreenViewer
+          items={[lab.video]}
+          index={0}
+          ratio="16/9"
+          autoPlay={armed}
+          onClose={() => { setVideoOpen(false); setArmed(false); }}
+          setIndex={() => undefined}
+        />
+      )}
     </section>
   );
 }

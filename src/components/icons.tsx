@@ -53,7 +53,7 @@ export const disciplineIcons: Record<string, (p: P) => React.ReactElement> = {
   prompt: IconPrompt,
 };
 
-/* ---- the single rune (How I Build) ---- */
+/* ---- the single rune (The Pipeline) ---- */
 export const Rune = (p: P) => (
   <svg {...base(p)} strokeWidth={p.strokeWidth ?? 2}>
     <path d="M12 2v20" />
@@ -86,6 +86,19 @@ export const LinkedInIcon = (p: P) => (
     <path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4V8zm7.5 0h3.8v2.05h.06c.53-1 1.84-2.05 3.79-2.05 4.05 0 4.8 2.67 4.8 6.14V23h-4v-7.9c0-1.88-.03-4.3-2.62-4.3-2.62 0-3.02 2.05-3.02 4.17V23H8V8z" transform="translate(2 0)" />
   </svg>
 );
+export const WhatsAppIcon = (p: P) => (
+  <svg width={p.size ?? 16} height={p.size ?? 16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className={p.className}>
+    <path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.6-1.2A9 9 0 1 0 12 3z" strokeLinejoin="round" />
+    <path d="M8.8 8.6c.5-.5 1.2-.4 1.5.2l.6 1.2c.2.4.1.9-.2 1.2l-.4.4c.5 1 1.3 1.8 2.3 2.3l.4-.4c.3-.3.8-.4 1.2-.2l1.2.6c.6.3.7 1 .2 1.5-.6.6-1.5.9-2.3.6-2-.6-3.6-2.2-4.2-4.2-.3-.8 0-1.7.6-2.3z" fill="currentColor" stroke="none" />
+  </svg>
+);
+export const InstagramIcon = (p: P) => (
+  <svg width={p.size ?? 16} height={p.size ?? 16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className={p.className}>
+    <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
+    <circle cx="12" cy="12" r="4" />
+    <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none" />
+  </svg>
+);
 
 export const ArrowRight = (p: P) => (
   <svg {...base(p)}><path d="M4 12h15M13 6l6 6-6 6" /></svg>
@@ -97,48 +110,87 @@ export const ArrowUp = (p: P) => (
   <svg {...base(p)}><path d="M12 20V5M6 11l6-6 6 6" /></svg>
 );
 
-/* ---- sea system (line art, interface graphics) ---- */
-export const Longship = (p: P) => (
-  <svg width={p.size ?? 120} height={(p.size ?? 120) * 0.52} viewBox="0 0 120 62" fill="none" className={p.className} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    {/* hull */}
-    <path d="M8 38c6 10 20 16 52 16s46-6 52-16l-6 1c-4 6-18 10-46 10s-42-4-46-10z" fill="currentColor" stroke="none" />
-    {/* prow + stern curls */}
-    <path d="M8 38C4 30 4 20 10 12c2 6 4 9 8 11M112 38c4-8 4-18-2-26-2 6-4 9-8 11" />
-    {/* shield rail */}
-    <path d="M22 36h76" />
-    <circle cx="32" cy="36" r="3.4" /><circle cx="46" cy="36" r="3.4" /><circle cx="60" cy="36" r="3.4" /><circle cx="74" cy="36" r="3.4" /><circle cx="88" cy="36" r="3.4" />
-    {/* mast + sail */}
-    <path d="M60 34V6M60 6l4 2" />
-    <path d="M38 10h44l-6 20H44z" />
-    <path d="M42 16h36M45 23h30" strokeWidth="1.2" />
+/* ---- ARC nav arrowhead (transparent, mechanical emphasis on hover) ---- */
+export const NavArrowHead = (p: P & { dir?: "l" | "r" }) => (
+  <svg width={p.size ?? 40} height={(p.size ?? 40) * 1.4} viewBox="0 0 40 56" fill="none" className={p.className}
+    style={p.dir === "r" ? { transform: "scaleX(-1)" } : undefined}>
+    <path d="M30 4L8 28l22 24" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />
+    <path d="M34 12L18 28l16 16" stroke="currentColor" strokeWidth="1.4" opacity="0.5" />
   </svg>
 );
+
+/* ---- red paper plane (Pipeline NEXT) ---- */
+export const PaperPlane = (p: P) => (
+  <svg width={p.size ?? 18} height={p.size ?? 18} viewBox="0 0 24 24" className={p.className}>
+    <path d="M2.5 12.5L21.5 3l-6 18-4.6-7.2z" fill="currentColor" />
+    <path d="M10.9 13.8L21.5 3" stroke="rgba(0,0,0,0.35)" strokeWidth="1" />
+  </svg>
+);
+
+/* ---- sea system (line art, interface graphics) ---- */
+
+/* ODYSSEY — long galley with hoistable flag */
+export const Odyssey = (p: P & { arrived?: boolean }) => {
+  const s = p.size ?? 128;
+  return (
+    <svg width={s} height={s * 0.55} viewBox="0 0 128 70" fill="none" className={p.className} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      {/* hull */}
+      <path d="M10 44c8 11 24 17 54 17s46-6 54-17l-7 1c-5 7-20 11-47 11s-42-4-47-11z" fill="currentColor" stroke="none" />
+      {/* prow + stern ( Odyssey ram + curved stern ) */}
+      <path d="M10 44C5 36 4 26 9 16c3 6 6 9 10 11M118 44c5-8 5-18-1-27-2 6-5 9-9 11" />
+      <path d="M9 16l-4-3M9 16l5-2" strokeWidth="1.6" />
+      {/* shield rail */}
+      <path d="M26 42h76" />
+      <circle cx="36" cy="42" r="3.6" /><circle cx="51" cy="42" r="3.6" /><circle cx="66" cy="42" r="3.6" /><circle cx="81" cy="42" r="3.6" /><circle cx="96" cy="42" r="3.6" />
+      {/* oars */}
+      <path d="M34 47l-8 10M50 49l-7 10M66 50l-6 10M82 49l-5 10M98 47l-4 10" strokeWidth="1.4" opacity="0.85" />
+      {/* mast + square sail */}
+      <path d="M64 40V8M64 8l5 2.5" />
+      <path d="M42 12h44l-7 22H49z" />
+      <path d="M46 19h36M49 26h30" strokeWidth="1.2" />
+      {/* flag — hoists on arrival */}
+      <g className="flag-hoist" style={{ transform: p.arrived ? "translateY(0)" : "translateY(12px)", opacity: p.arrived ? 1 : 0 }}>
+        <path d="M64 2v6" strokeWidth="1.6" />
+        <polygon points="64,2 84,6.5 64,11" fill="#E32240" stroke="none" />
+      </g>
+    </svg>
+  );
+};
 
 export const Island = (p: P) => (
   <svg width={p.size ?? 110} height={(p.size ?? 110) * 0.55} viewBox="0 0 110 60" fill="none" className={p.className} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M6 52c10-8 20-12 30-12 4-8 10-14 18-16l4 8 6-4c8 4 14 12 18 24" />
     <path d="M4 52h102" />
-    {/* palm */}
     <path d="M74 22c0-8 2-14 8-18M82 4c-4 4-8 5-12 4M82 4c4 3 8 4 12 2M82 4c-1 5-4 8-8 9M82 4c2 4 6 6 10 6" strokeWidth="1.6" />
     <path d="M18 44l6-6M92 44l-5-5" strokeWidth="1.4" />
   </svg>
 );
 
-export const Kraken = (p: P & { rise: boolean }) => (
-  <svg width={p.size ?? 90} height={(p.size ?? 90) * 0.8} viewBox="0 0 90 72" fill="none" className={p.className} stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <g style={{ transform: p.rise ? "translateY(0)" : "translateY(68%)", opacity: p.rise ? 1 : 0, transition: "transform 1.1s cubic-bezier(.3,.8,.3,1), opacity .8s ease" }}>
-      <path d="M14 66c0-14 6-22 14-26M14 66c4-10 10-14 16-15" />
-      <path d="M30 66c-2-16 4-28 15-34 6-3 9-8 8-14-4 2-6 5-7 9" />
-      <path d="M45 66c0-12 3-20 9-25 5-4 7-9 6-15" />
-      <path d="M60 66c-1-10 2-18 8-23M73 66c-2-8-1-14 3-19" />
-      {/* suckers */}
-      <circle cx="33" cy="46" r="1.4" fill="currentColor" stroke="none" />
-      <circle cx="37" cy="38" r="1.4" fill="currentColor" stroke="none" />
-      <circle cx="47" cy="44" r="1.4" fill="currentColor" stroke="none" />
+/* KRAKEN — rises when idle; arms reach + wrap the ship when capturing */
+export const Kraken = (p: P & { rise: boolean; capturing?: boolean }) => (
+  <svg width={p.size ?? 96} height={(p.size ?? 96) * 0.78} viewBox="0 0 150 75" fill="none" className={p.className} stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <g style={{ transform: p.rise ? "translateY(0)" : "translateY(70%)", opacity: p.rise ? 1 : 0, transition: "transform 1.1s cubic-bezier(.3,.8,.3,1), opacity .8s ease" }}>
+      {/* body tentacles */}
+      <path d="M14 70c0-14 6-22 14-26M14 70c4-10 10-14 16-15" />
+      <path d="M30 70c-2-16 4-28 15-34 6-3 9-8 8-14-4 2-6 5-7 9" />
+      <path d="M45 70c0-12 3-20 9-25 5-4 7-9 6-15" />
+      <path d="M60 70c-1-10 2-18 8-23M73 70c-2-8-1-14 3-19" />
+      <circle cx="33" cy="50" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="37" cy="42" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="47" cy="48" r="1.4" fill="currentColor" stroke="none" />
       {/* eye */}
-      <circle cx="49" cy="24" r="3.4" />
-      <circle cx="49" cy="24" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="49" cy="27" r="3.6" />
+      <circle cx="49" cy="27" r="1.2" fill="currentColor" stroke="none" />
+      {/* reaching / wrapping arms — extend toward + over the ship */}
+      <g className={`kraken-arms ${p.capturing ? "on" : ""}`}>
+        <path d="M66 62c22-2 40-8 56-20" />
+        <path d="M70 50c20-2 38-10 52-22 6-5 12-6 18-3" />
+        <path d="M76 40c16-4 30-12 42-24" strokeWidth="1.5" />
+        <circle cx="96" cy="56" r="1.3" fill="currentColor" stroke="none" />
+        <circle cx="112" cy="48" r="1.3" fill="currentColor" stroke="none" />
+        <circle cx="104" cy="34" r="1.3" fill="currentColor" stroke="none" />
+      </g>
     </g>
-    <path d="M2 66h86" strokeWidth="1.4" />
+    <path d="M2 70h146" strokeWidth="1.4" />
   </svg>
 );

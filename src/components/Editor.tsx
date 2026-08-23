@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import {
-  ArcCharacter, ArcWorld, Company, Discipline, MediaItem, nextId, PortfolioData,
+  ArcEntry, Company, Discipline, MediaItem, nextId, PortfolioData,
 } from "../lib/data";
 import { readAsDataURL, useHashRoute, useStore } from "../lib/store";
 import { disciplineIcons } from "./icons";
@@ -134,10 +134,17 @@ function HeroEditor() {
   return (
     <Group title="HERO — EDIT WORKSPACE">
       <div className="grid sm:grid-cols-2 gap-4">
-        <Field label="MORNING LABEL" value={h.morningLabel} onChange={(v) => set({ morningLabel: v })} />
+        <Field label="ABOUT LABEL" value={h.aboutLabel} onChange={(v) => set({ aboutLabel: v })} />
         <Field label="ROTATION (SECONDS)" value={String(h.rotationSeconds)} onChange={(v) => set({ rotationSeconds: Math.max(3, Number(v) || 15) })} />
       </div>
-      <Field label="GREETING" value={h.greeting} onChange={(v) => set({ greeting: v })} />
+      <p className="f-mono text-[9px] tracking-[0.22em] text-[var(--ink2)]">
+        DAYPART LABEL IS AUTOMATIC — MORNING (12AM–12PM) · AFTERNOON (12PM–4PM) · EVENING (4PM–12AM)
+      </p>
+      <div className="grid sm:grid-cols-3 gap-4">
+        <Field label="GREETING — MORNING" textarea value={h.greetings.MORNING} onChange={(v) => set({ greetings: { ...h.greetings, MORNING: v } })} />
+        <Field label="GREETING — AFTERNOON" textarea value={h.greetings.AFTERNOON} onChange={(v) => set({ greetings: { ...h.greetings, AFTERNOON: v } })} />
+        <Field label="GREETING — EVENING" textarea value={h.greetings.EVENING} onChange={(v) => set({ greetings: { ...h.greetings, EVENING: v } })} />
+      </div>
       <div className="grid sm:grid-cols-2 gap-4">
         <Field label="NAME — LINE 01" value={h.nameA} onChange={(v) => set({ nameA: v })} />
         <Field label="NAME — LINE 02 (CRIMSON)" value={h.nameB} onChange={(v) => set({ nameB: v })} />
@@ -251,96 +258,88 @@ function AILabEditor() {
 function ArcEditor() {
   const { data, update } = useStore();
   const { characters, worlds } = data.arc;
-  const setChars = (characters: ArcCharacter[]) => update((d) => ({ ...d, arc: { ...d.arc, characters } }));
-  const setWorlds = (worlds: ArcWorld[]) => update((d) => ({ ...d, arc: { ...d.arc, worlds } }));
+  const setChars = (characters: ArcEntry[]) => update((d) => ({ ...d, arc: { ...d.arc, characters } }));
+  const setWorlds = (worlds: ArcEntry[]) => update((d) => ({ ...d, arc: { ...d.arc, worlds } }));
 
-  const charEditor = (c: ArcCharacter, i: number) => {
-    const patch = (p: Partial<ArcCharacter>) => setChars(characters.map((x, j) => (j === i ? { ...x, ...p } : x)));
-    const dp = (k: keyof ArcCharacter["dossier"], v: string) => patch({ dossier: { ...c.dossier, [k]: v } });
+  const entryEditor = (kind: "CHARACTER" | "WORLD", e: ArcEntry, i: number) => {
+    const list = kind === "CHARACTER" ? characters : worlds;
+    const setList = kind === "CHARACTER" ? setChars : setWorlds;
+    const patch = (p: Partial<ArcEntry>) => setList(list.map((x, j) => (j === i ? { ...x, ...p } : x)));
     return (
-      <div key={c.id} className="border border-[var(--line)] rounded-lg p-4 flex flex-col gap-3.5">
+      <div key={e.id} className="border border-[var(--line)] rounded-lg p-4 flex flex-col gap-3.5">
         <div className="flex items-center gap-2">
-          <input className="ed-field !py-1.5 flex-1" value={c.name} onChange={(e) => patch({ name: e.target.value })} />
-          <button onClick={() => setChars(characters.filter((_, j) => j !== i))}
+          <input className="ed-field !py-1.5 flex-1" value={e.name} onChange={(ev) => patch({ name: ev.target.value })} />
+          <button onClick={() => setList(list.filter((_, j) => j !== i))}
             className="f-tech font-bold text-[9px] tracking-[0.16em] px-2.5 py-1.5 rounded-lg text-[var(--crimson)] border border-[var(--line)] hover:border-[var(--crimson)]">DELETE</button>
         </div>
-        <div className="grid sm:grid-cols-2 gap-3.5">
-          <Field label="ROLE" value={c.dossier.role} onChange={(v) => dp("role", v)} />
-          <Field label="PROJECT" value={c.dossier.project} onChange={(v) => dp("project", v)} />
-        </div>
-        <Field label="DESCRIPTION" textarea value={c.dossier.description} onChange={(v) => dp("description", v)} />
-        <div className="grid sm:grid-cols-2 gap-3.5">
-          <Field label="TOOLS" value={c.dossier.tools} onChange={(v) => dp("tools", v)} />
-          <Field label="IDEA" value={c.dossier.idea} onChange={(v) => dp("idea", v)} />
-        </div>
-        <Field label="PROCESS" textarea value={c.dossier.process} onChange={(v) => dp("process", v)} />
-        <MediaManager label="PORTRAIT — 9:16" items={[c.image]} ratio="9/16" onChange={(arr) => arr[0] && patch({ image: arr[0] })} />
+        <Field label="NAME" value={e.name} onChange={(v) => patch({ name: v })} />
+        <Field label="TOOLS USED" value={e.tools} onChange={(v) => patch({ tools: v })} />
+        <Field label={`${kind} DESCRIPTION`} textarea value={e.description} onChange={(v) => patch({ description: v })} />
+        <MediaManager label={kind === "CHARACTER" ? "PORTRAIT — 9:16" : "LANDSCAPE — 16:9"}
+          items={[e.image]} ratio={kind === "CHARACTER" ? "9/16" : "16/9"}
+          onChange={(arr) => arr[0] && patch({ image: arr[0] })} />
       </div>
     );
   };
 
-  const worldEditor = (w: ArcWorld, i: number) => {
-    const patch = (p: Partial<ArcWorld>) => setWorlds(worlds.map((x, j) => (j === i ? { ...x, ...p } : x)));
-    const dp = (k: keyof ArcWorld["dossier"], v: string) => patch({ dossier: { ...w.dossier, [k]: v } });
-    return (
-      <div key={w.id} className="border border-[var(--line)] rounded-lg p-4 flex flex-col gap-3.5">
-        <div className="flex items-center gap-2">
-          <input className="ed-field !py-1.5 flex-1" value={w.name} onChange={(e) => patch({ name: e.target.value })} />
-          <button onClick={() => setWorlds(worlds.filter((_, j) => j !== i))}
-            className="f-tech font-bold text-[9px] tracking-[0.16em] px-2.5 py-1.5 rounded-lg text-[var(--crimson)] border border-[var(--line)] hover:border-[var(--crimson)]">DELETE</button>
-        </div>
-        <div className="grid sm:grid-cols-2 gap-3.5">
-          <Field label="WORLD / ENVIRONMENT" value={w.dossier.role} onChange={(v) => dp("role", v)} />
-          <Field label="PROJECT" value={w.dossier.project} onChange={(v) => dp("project", v)} />
-        </div>
-        <Field label="DESCRIPTION" textarea value={w.dossier.description} onChange={(v) => dp("description", v)} />
-        <div className="grid sm:grid-cols-2 gap-3.5">
-          <Field label="TOOLS" value={w.dossier.tools} onChange={(v) => dp("tools", v)} />
-          <Field label="IDEA" value={w.dossier.idea} onChange={(v) => dp("idea", v)} />
-        </div>
-        <Field label="PROCESS" textarea value={w.dossier.process} onChange={(v) => dp("process", v)} />
-        <MediaManager label="LANDSCAPE — 16:9" items={[w.image]} ratio="16/9" onChange={(arr) => arr[0] && patch({ image: arr[0] })} />
-      </div>
-    );
+  const addEntry = (kind: "CHARACTER" | "WORLD") => {
+    const fresh = (n: number): ArcEntry => ({
+      id: nextId(),
+      name: `${kind} SLOT ${String(n).padStart(2, "0")}`,
+      image: { id: nextId(), kind: "image", label: kind === "CHARACTER" ? "PORTRAIT" : "LANDSCAPE", src: null, emptyLines: ["ADD IMAGE", kind === "CHARACTER" ? "9 : 16" : "16 : 9"] },
+      tools: "",
+      description: "",
+    });
+    if (kind === "CHARACTER") setChars([...characters, fresh(characters.length + 1)]);
+    else setWorlds([...worlds, fresh(worlds.length + 1)]);
   };
 
   return (
     <Group title="ARC — CHARACTERS & WORLDS">
       <div className="flex items-center justify-between">
         <span className="f-mono text-[10px] tracking-[0.24em]">AI CHARACTER SHEET</span>
-        <button onClick={() => setChars([...characters, { id: nextId(), name: `CHARACTER SLOT ${String(characters.length + 1).padStart(2, "0")}`, image: { id: nextId(), kind: "image", label: "PORTRAIT", src: null, emptyLines: ["ADD IMAGE", "9 : 16"] }, dossier: { role: "", project: "", description: "", tools: "", idea: "", process: "" } }])}
+        <button onClick={() => addEntry("CHARACTER")}
           className="f-tech font-bold text-[9px] tracking-[0.16em] px-2.5 py-1.5 rounded-lg border border-dashed border-[var(--line)] hover:border-[var(--crimson)] hover:text-[var(--crimson)]">+ ADD CHARACTER SLOT</button>
       </div>
-      {characters.map(charEditor)}
+      {characters.map((c, i) => entryEditor("CHARACTER", c, i))}
       <div className="flex items-center justify-between mt-2">
         <span className="f-mono text-[10px] tracking-[0.24em]">AI WORLD BUILDING</span>
-        <button onClick={() => setWorlds([...worlds, { id: nextId(), name: `WORLD SLOT ${String(worlds.length + 1).padStart(2, "0")}`, image: { id: nextId(), kind: "image", label: "LANDSCAPE", src: null, emptyLines: ["ADD IMAGE", "16 : 9"] }, dossier: { role: "", project: "", description: "", tools: "", idea: "", process: "" } }])}
+        <button onClick={() => addEntry("WORLD")}
           className="f-tech font-bold text-[9px] tracking-[0.16em] px-2.5 py-1.5 rounded-lg border border-dashed border-[var(--line)] hover:border-[var(--crimson)] hover:text-[var(--crimson)]">+ ADD WORLD SLOT</button>
       </div>
-      {worlds.map(worldEditor)}
+      {worlds.map((w, i) => entryEditor("WORLD", w, i))}
     </Group>
   );
 }
 
 function BuildEditor() {
   const { data, update } = useStore();
-  const steps = data.build.steps;
-  const set = (next: typeof steps) => update((d) => ({ ...d, build: { steps: next } }));
+  const b = data.build;
+  const set = (patch: Partial<typeof b>) => update((d) => ({ ...d, build: { ...d.build, ...patch } }));
   return (
-    <Group title="HOW I BUILD — PROCESS STEPS">
-      {steps.map((s, i) => (
-        <div key={s.num} className="border border-[var(--line)] rounded-lg p-4 flex flex-col gap-3.5">
-          <div className="grid grid-cols-[90px_1fr_auto] gap-3">
-            <Field label="NUM" value={s.num} onChange={(v) => set(steps.map((x, j) => (j === i ? { ...x, num: v } : x)))} />
-            <Field label="TITLE" value={s.title} onChange={(v) => set(steps.map((x, j) => (j === i ? { ...x, title: v } : x)))} />
-            <button onClick={() => set(steps.filter((_, j) => j !== i))}
-              className="self-end f-tech font-bold text-[9px] px-2.5 py-2.5 rounded-lg text-[var(--crimson)] border border-[var(--line)] hover:border-[var(--crimson)]">✕</button>
+    <Group title="THE PIPELINE — EDIT WORKSPACE">
+      <Field label="SUPPORTING LINE" textarea value={b.support} onChange={(v) => set({ support: v })} />
+      <Field label="VISIBLE-NODE NOTE" textarea value={b.visibleNote} onChange={(v) => set({ visibleNote: v })} />
+      <div className="border border-[var(--line)] rounded-lg p-4 flex flex-col gap-3.5">
+        <span className="f-mono text-[10px] tracking-[0.24em] text-[var(--ink)]">PIPELINE NODES — EXACTLY FOUR</span>
+        {b.nodes.map((s, i) => (
+          <div key={i} className="grid grid-cols-[90px_1fr] gap-3">
+            <Field label="NUM" value={s.num} onChange={(v) => set({ nodes: b.nodes.map((x, j) => (j === i ? { ...x, num: v } : x)) })} />
+            <Field label="TITLE" value={s.title} onChange={(v) => set({ nodes: b.nodes.map((x, j) => (j === i ? { ...x, title: v } : x)) })} />
           </div>
-          <Field label="TEXT" textarea value={s.text} onChange={(v) => set(steps.map((x, j) => (j === i ? { ...x, text: v } : x)))} />
+        ))}
+        <Field label="NEXT BUTTON LABEL" value={b.nextLabel} onChange={(v) => set({ nextLabel: v })} />
+      </div>
+      <div className="border border-[var(--line)] rounded-lg p-4 flex flex-col gap-3.5">
+        <span className="f-mono text-[10px] tracking-[0.24em] text-[var(--ink)]">REVEALED PANEL</span>
+        <div className="grid sm:grid-cols-2 gap-3.5">
+          <Field label="HEADING" value={b.reveal.heading} onChange={(v) => set({ reveal: { ...b.reveal, heading: v } })} />
+          <Field label="HEADING ACCENT (CRIMSON)" value={b.reveal.headingAccent} onChange={(v) => set({ reveal: { ...b.reveal, headingAccent: v } })} />
         </div>
-      ))}
-      <button onClick={() => set([...steps, { num: String(steps.length + 1).padStart(2, "0"), title: "NEW STEP", text: "" }])}
-        className="f-tech font-bold text-[10px] tracking-[0.18em] px-3 py-2.5 rounded-lg border border-dashed border-[var(--line)] hover:border-[var(--crimson)] hover:text-[var(--crimson)] self-start">+ ADD STEP</button>
+        <Field label="NARRATOR TEXT" textarea value={b.reveal.narrator} onChange={(v) => set({ reveal: { ...b.reveal, narrator: v } })} />
+        <MediaManager label="REVEAL FRAME — LARGE EMPTY EDITABLE" items={[b.reveal.image]} ratio="4/3"
+          onChange={(arr) => arr[0] && set({ reveal: { ...b.reveal, image: arr[0] } })} />
+      </div>
     </Group>
   );
 }
@@ -360,6 +359,11 @@ function ContactEditor() {
         <Field label="EMAIL LABEL" value={c.emailLabel} onChange={(v) => set({ emailLabel: v })} />
         <Field label="EMAIL ADDRESS" value={c.email} onChange={(v) => set({ email: v })} />
       </div>
+      {c.socials.map((s, i) => (
+        <Field key={s.label} label={`${s.label} URL`} hint={s.url ? "LINKED" : "EMPTY — BUTTON DISABLED"}
+          value={s.url}
+          onChange={(v) => set({ socials: c.socials.map((x, j) => (j === i ? { ...x, url: v } : x)) })} />
+      ))}
       <div className="border border-[var(--line)] rounded-lg p-4">
         <span className="f-mono text-[9px] tracking-[0.26em] text-[var(--ink2)]">RESUME FILE</span>
         <div className="mt-2 flex items-center gap-2.5">
@@ -385,8 +389,8 @@ const SECTIONS = [
   { id: "hero", num: "00", label: "HERO", el: <Hero /> },
   { id: "expertise", num: "01", label: "MY EXPERTISE", el: <Expertise /> },
   { id: "core", num: "02", label: "CREATIVE CORE", el: <CreativeCore /> },
-  { id: "showreel", num: "03", label: "SHOW REEL", el: <ShowReel /> },
-  { id: "ailab", num: "03", label: "AI LAB", el: <AILab /> },
+  { id: "showreel", num: "03", label: "MY WORK", el: <ShowReel /> },
+  { id: "ailab", num: "04", label: "AI LAB", el: <AILab /> },
   { id: "arc", num: "05", label: "ARC", el: <Arc /> },
   { id: "build", num: "06", label: "HOW I BUILD", el: <HowIBuild /> },
   { id: "contact", num: "07", label: "CONTACT", el: <Contact /> },

@@ -304,6 +304,158 @@ input, textarea, select { font-family: inherit; }
 .track-drag { cursor: grab; touch-action: pan-y; }
 .track-drag:active { cursor: grabbing; }
 
+/* ============================================================
+   MATTE CRIMSON — printed / pigment-rich, theme-aware
+   ============================================================ */
+html.light { --hero-crimson: #B01E36; }
+html.dark  { --hero-crimson: #EE3A54; }
+
+.print-matte {
+  color: var(--hero-crimson);
+  filter: url(#cbk-print-rough);
+}
+
+/* ============================================================
+   HERO — mechanical aperture / radial calibration system
+   ============================================================ */
+@keyframes ratchet { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.ratchet-ticks {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ratchet 15s steps(60) infinite;
+}
+@keyframes calibSway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+.calib-sway {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: calibSway 7s steps(12) infinite;
+}
+@keyframes arcFill { from { stroke-dashoffset: var(--arclen); } to { stroke-dashoffset: 0; } }
+.arc-fill { animation: arcFill var(--arcdur, 15s) linear both; }
+@keyframes depthBreath { from { transform: scale(1); } to { transform: scale(1.014); } }
+.depth-breath { animation: depthBreath 8s ease-in-out infinite alternate; }
+.aperture-blade { transition: transform 0.55s cubic-bezier(0.3, 0.9, 0.25, 1); transform-box: fill-box; transform-origin: center; }
+
+/* ============================================================
+   SPIDER-VERSE comic-print transition (v2)
+   stepped timing + slices + misregistration + smear + tear + snap
+   ============================================================ */
+@keyframes gv2Shake {
+  0% { transform: translate(0, 0); }
+  12% { transform: translate(-7px, 3px); }
+  13% { transform: translate(6px, -4px); }
+  26% { transform: translate(-4px, -3px) skewX(-2deg); }
+  27% { transform: translate(5px, 2px); }
+  42% { transform: translate(-3px, 4px) skewX(3deg); }
+  43% { transform: translate(2px, -2px); }
+  60% { transform: translate(-2px, 1px); }
+  61% { transform: translate(1px, 0); }
+  100% { transform: translate(0, 0); }
+}
+.gv2-shake { animation: gv2Shake 0.72s steps(2, jump-none) both; }
+
+@keyframes gv2SliceA {
+  0%, 10% { clip-path: inset(0 0 0 0); transform: translateX(0); }
+  11%, 24% { clip-path: inset(8% 0 74% 0); transform: translateX(-16px); }
+  25%, 40% { clip-path: inset(8% 0 74% 0); transform: translateX(10px); }
+  41%, 100% { clip-path: inset(0 0 0 0); transform: translateX(0); }
+}
+@keyframes gv2SliceB {
+  0%, 18% { clip-path: inset(0 0 0 0); transform: translateX(0); }
+  19%, 34% { clip-path: inset(42% 0 38% 0); transform: translateX(18px); }
+  35%, 52% { clip-path: inset(42% 0 38% 0); transform: translateX(-12px); }
+  53%, 100% { clip-path: inset(0 0 0 0); transform: translateX(0); }
+}
+@keyframes gv2SliceC {
+  0%, 30% { clip-path: inset(0 0 0 0); transform: translateX(0); }
+  31%, 46% { clip-path: inset(76% 0 4% 0); transform: translateX(-14px); }
+  47%, 62% { clip-path: inset(76% 0 4% 0); transform: translateX(9px); }
+  63%, 100% { clip-path: inset(0 0 0 0); transform: translateX(0); }
+}
+.gv2-sa { animation: gv2SliceA 0.72s steps(1, end) both; }
+.gv2-sb { animation: gv2SliceB 0.72s steps(1, end) both; }
+.gv2-sc { animation: gv2SliceC 0.72s steps(1, end) both; }
+
+@keyframes gv2GhostL {
+  0%, 8% { opacity: 0; transform: translate(0, 0); }
+  9%, 30% { opacity: 0.55; transform: translate(-9px, 3px); }
+  31%, 48% { opacity: 0.35; transform: translate(-5px, -2px); }
+  49%, 100% { opacity: 0; transform: translate(0, 0); }
+}
+@keyframes gv2GhostR {
+  0%, 16% { opacity: 0; transform: translate(0, 0); }
+  17%, 40% { opacity: 0.5; transform: translate(8px, -3px); }
+  41%, 56% { opacity: 0.3; transform: translate(4px, 2px); }
+  57%, 100% { opacity: 0; transform: translate(0, 0); }
+}
+.gv2-ghost-l { animation: gv2GhostL 0.72s steps(1, end) both; }
+.gv2-ghost-r { animation: gv2GhostR 0.72s steps(1, end) both; }
+
+@keyframes gv2Smear {
+  0%, 20% { opacity: 0; transform: scaleX(0.4) skewX(0); }
+  21%, 44% { opacity: 0.5; transform: scaleX(1.22) skewX(-10deg); }
+  45%, 58% { opacity: 0.24; transform: scaleX(1.08) skewX(6deg); }
+  59%, 100% { opacity: 0; transform: scaleX(1) skewX(0); }
+}
+.gv2-smear { animation: gv2Smear 0.72s steps(1, end) both; }
+
+@keyframes gv2Tear {
+  0%, 14% { opacity: 0; transform: translateY(-6px) scaleY(0.4); }
+  15%, 30% { opacity: 1; transform: translateY(0) scaleY(1); }
+  31%, 44% { opacity: 0; transform: translateY(5px) scaleY(0.5); }
+  45%, 100% { opacity: 0; }
+}
+.gv2-tear { animation: gv2Tear 0.72s steps(1, end) both; }
+
+/* ============================================================
+   CAREER NODE MAP — moving data packets / signal segments
+   ============================================================ */
+@keyframes packetMove { to { stroke-dashoffset: -352; } }
+.packet { stroke-dasharray: 12 340; animation: packetMove 2.8s linear infinite; }
+.packet-2 { stroke-dasharray: 8 344; animation: packetMove 3.6s linear infinite reverse; }
+
+/* ============================================================
+   SHOW REEL — odyssey flag, dialogue, kraken capture
+   ============================================================ */
+.flag-hoist { transition: transform 0.9s cubic-bezier(0.2, 0.9, 0.25, 1.2), opacity 0.5s ease; }
+@keyframes ahoyPop { 0% { opacity: 0; transform: translateY(8px) scale(0.85); } 60% { opacity: 1; transform: translateY(-3px) scale(1.04); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+.ahoy-pop { animation: ahoyPop 0.5s cubic-bezier(0.3, 0.9, 0.3, 1.2) 0.55s both; }
+.kraken-arms { transform: scaleX(0); transform-origin: left center; transition: transform 1.3s cubic-bezier(0.4, 0.6, 0.3, 1) 1.6s; transform-box: fill-box; }
+.kraken-arms.on { transform: scaleX(1); }
+
+/* ============================================================
+   THE PIPELINE — paper plane, glitch shake, mailbox door
+   ============================================================ */
+@keyframes planeFly {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  15% { transform: translate(12vw, -14px) rotate(6deg); }
+  70% { transform: translate(58vw, -30px) rotate(-4deg); }
+  100% { transform: translate(88vw, -46px) rotate(8deg); opacity: 0; }
+}
+.plane-fly { animation: planeFly 0.85s cubic-bezier(0.4, 0.5, 0.5, 1) both; }
+@keyframes paperShoot { 0% { transform: translate(0, 0) rotate(0); opacity: 1; } 100% { transform: translate(46vw, -8px) rotate(3deg); opacity: 0; } }
+.paper-shoot { animation: paperShoot 0.8s cubic-bezier(0.5, 0.4, 0.6, 1) both; }
+@keyframes glitchShake {
+  0%, 100% { transform: translate(0, 0); clip-path: inset(0); }
+  15% { transform: translate(-5px, 2px); clip-path: inset(8% 0 62% 0); }
+  30% { transform: translate(4px, -2px); clip-path: inset(48% 0 20% 0); }
+  45% { transform: translate(-3px, 1px); clip-path: inset(20% 0 44% 0); }
+  60% { transform: translate(3px, 1px); clip-path: inset(70% 0 4% 0); }
+  75% { transform: translate(-2px, 0); clip-path: inset(4% 0 78% 0); }
+  90% { transform: translate(1px, 0); clip-path: inset(0); }
+}
+.glitch-shake { animation: glitchShake 0.42s steps(1, end) both; }
+.mail-door { transition: transform 0.45s cubic-bezier(0.3, 0.8, 0.3, 1); transform-box: fill-box; transform-origin: 88% 12%; }
+
+/* arrowhead tracking pulse */
+@keyframes headPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+.head-pulse { transform-box: fill-box; transform-origin: center; animation: headPulse 2.4s ease-in-out infinite; }
+
+/* custom video bar */
+.vbar-range { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: #3a3b41; cursor: pointer; }
+.vbar-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border-radius: 3px; background: var(--crimson); border: 1px solid #f4f2ed; cursor: pointer; }
+.vbar-range::-moz-range-thumb { width: 12px; height: 12px; border-radius: 3px; background: var(--crimson); border: 1px solid #f4f2ed; cursor: pointer; }
+
 /* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
