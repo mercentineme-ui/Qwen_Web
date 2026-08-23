@@ -118,11 +118,18 @@ export default function ShowReel() {
   const [moving, setMoving] = useState(false);
   const drag = useRef({ active: false, startX: 0, startOffset: 0, moved: false });
   const idleTimer = useRef<number | null>(null);
+  const strideRef = useRef(0);
 
   const measure = useCallback(() => {
     const v = viewRef.current, i = innerRef.current;
     if (!v || !i) return;
     setMaxOffset(Math.max(1, i.scrollWidth - v.clientWidth));
+    const kids = i.children;
+    if (kids.length >= 2) {
+      strideRef.current = (kids[1] as HTMLElement).offsetLeft - (kids[0] as HTMLElement).offsetLeft;
+    } else if (kids.length === 1) {
+      strideRef.current = (kids[0] as HTMLElement).offsetWidth + 20;
+    }
   }, []);
 
   useEffect(() => {
@@ -150,10 +157,21 @@ export default function ShowReel() {
     const next = Math.min(maxOffset, Math.max(0, drag.current.startOffset - dx));
     if (next !== offset) { setOffset(next); poke(); }
   };
-  const onUp = () => { drag.current.active = false; };
+  const onUp = () => {
+    /* snap to the nearest slot boundary — one drag = one leg of the voyage */
+    if (drag.current.active && drag.current.moved && strideRef.current > 0) {
+      const k = Math.round(offset / strideRef.current);
+      const snapped = Math.min(maxOffset, Math.max(0, k * strideRef.current));
+      if (snapped !== offset) { setOffset(snapped); poke(); }
+    }
+    drag.current.active = false;
+  };
 
   const progress = Math.min(1, offset / maxOffset);
   const arrived = progress > 0.985;
+  const leg = strideRef.current > 0
+    ? Math.min(landscapes.length, Math.floor(offset / strideRef.current) + 1)
+    : 1;
 
   return (
     <section id="showreel" className="relative py-20 lg:py-28 scroll-mt-20 overflow-hidden">
@@ -229,7 +247,9 @@ export default function ShowReel() {
               {/* voyage progress ticks */}
               <div className="absolute top-2 inset-x-6 flex justify-between f-mono text-[8px] tracking-[0.2em] text-[var(--ink2)]">
                 <span>DEPARTURE</span>
-                <span className="text-[var(--crimson)]">{arrived ? "ARRIVED AT THE ISLAND" : `${Math.round(progress * 100)}% VOYAGE`}</span>
+                <span className="text-[var(--crimson)]">
+                  {arrived ? "ARRIVED AT THE ISLAND" : `LEG ${String(leg).padStart(2, "0")} / ${String(landscapes.length).padStart(2, "0")} · ${Math.round(progress * 100)}% VOYAGE`}
+                </span>
                 <span>THE ISLAND</span>
               </div>
             </div>

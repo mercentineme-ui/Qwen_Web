@@ -238,10 +238,13 @@ export const defaultData: PortfolioData = {
   ],
 
   showReel: {
-    portraits: [slot("PORTRAIT 01"), slot("PORTRAIT 02"), slot("PORTRAIT 03"), slot("PORTRAIT 04")],
+    portraits: [
+      slot("PORTRAIT 01"), slot("PORTRAIT 02"), slot("PORTRAIT 03"),
+      slot("PORTRAIT 04"), slot("PORTRAIT 05"),
+    ],
     landscapes: [
-      slot("LANDSCAPE 01"), slot("LANDSCAPE 02"), slot("LANDSCAPE 03"), slot("LANDSCAPE 04"),
-      slot("LANDSCAPE 05"), slot("LANDSCAPE 06"), slot("LANDSCAPE 07"), slot("LANDSCAPE 08"),
+      slot("LANDSCAPE 01"), slot("LANDSCAPE 02"), slot("LANDSCAPE 03"),
+      slot("LANDSCAPE 04"), slot("LANDSCAPE 05"), slot("LANDSCAPE 06"),
     ],
   },
 
@@ -255,8 +258,8 @@ export const defaultData: PortfolioData = {
     tools: ["HIGGSFIELD", "COMFYUI", "CLAUDE", "DZINE", "CAPCUT"],
     video: slot("FEATURED VIDEO", "video", ["ADD VIDEO"]),
     images: [
-      slot("01 IDEA"), slot("02 WORLD"), slot("03 CHARACTER"), slot("04 SYSTEM"),
-      slot("05 VISUAL DEVELOPMENT"), slot("06 EXPLORATION"), slot("07 SEQUENCE"), slot("08 FINAL"),
+      slot("STILL 01"), slot("STILL 02"), slot("STILL 03"), slot("STILL 04"),
+      slot("STILL 05"), slot("STILL 06"), slot("STILL 07"), slot("STILL 08"),
     ],
   },
 

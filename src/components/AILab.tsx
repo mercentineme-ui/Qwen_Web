@@ -287,11 +287,11 @@ export default function AILab() {
               <span className="f-mono text-[10px] tracking-[0.2em]" style={{ color: "var(--m-sub)" }}>IDENTICAL 16:9 · NO STAGGER</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-x-3 gap-y-5 sm:gap-x-4">
-              {lab.images.map((im) => (
+              {lab.images.map((im, i) => (
                 <div key={im.id}>
                   <MediaSlot item={im} ratio="16/9" className="mat-inner" showLabel={false} />
                   <div className="mt-2 flex items-center justify-between f-mono text-[8px] sm:text-[9px] tracking-[0.2em]" style={{ color: "var(--m-sub)" }}>
-                    <span>{im.label}</span>
+                    <span>{String(i + 1).padStart(2, "0")} / 08</span>
                     <span>16:9</span>
                   </div>
                 </div>
