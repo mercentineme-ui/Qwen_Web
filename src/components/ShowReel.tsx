@@ -115,6 +115,8 @@ export default function ShowReel() {
   const captureTimer = useRef<number | null>(null);
   const strideRef = useRef(0);
   const tinFired = useRef(false);
+  const railRef = useRef<HTMLDivElement>(null);
+  const [railActive, setRailActive] = useState(false);
 
   const measure = useCallback(() => {
     const v = viewRef.current, i = innerRef.current;
@@ -167,14 +169,26 @@ export default function ShowReel() {
     const next = Math.min(maxOffset, Math.max(0, drag.current.startOffset - dx));
     if (next !== offset) { setOffset(next); poke(); }
   };
-  const onUp = () => {
-    if (drag.current.active && drag.current.moved && strideRef.current > 0) {
-      const k = Math.round(offset / strideRef.current);
-      const snapped = Math.min(maxOffset, Math.max(0, k * strideRef.current));
-      if (snapped !== offset) { setOffset(snapped); poke(); }
-    }
-    drag.current.active = false;
+  /* free drag — no stoppers, no snapping */
+  const onUp = () => { drag.current.active = false; };
+
+  /* voyage track control — physical rail + handle, scrubs the landscape track */
+  const scrubRail = (clientX: number) => {
+    const el = railRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const pad = 12;
+    const ratio = Math.min(1, Math.max(0, (clientX - r.left - pad) / Math.max(1, r.width - pad * 2)));
+    setOffset(ratio * maxOffset);
+    poke();
   };
+  const onRailDown = (e: React.PointerEvent) => {
+    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+    setRailActive(true);
+    scrubRail(e.clientX);
+  };
+  const onRailMove = (e: React.PointerEvent) => { if (railActive) scrubRail(e.clientX); };
+  const onRailUp = () => setRailActive(false);
 
   const progress = Math.min(1, offset / maxOffset);
   const arrived = progress > 0.985;
@@ -254,14 +268,14 @@ export default function ShowReel() {
               {/* kraken — enters from the LEFT, reaches + wraps the Odyssey when idle */}
               <div className="absolute bottom-3 text-[var(--ink)] opacity-85"
                 style={{
-                  left: capturing ? `calc(2% + ${progress} * 66% - 84px)` : "-160px",
+                  left: capturing ? `calc(2% + ${progress * 94}% - ${progress * 224 + 84}px)` : "-160px",
                   transition: `left ${capturing ? "2.6s" : "0.45s"} cubic-bezier(.4,.6,.3,1)`,
                 }}>
                 <Kraken size={92} rise={capturing} capturing={capturing} />
               </div>
 
-              {/* ODYSSEY — sails with the track, flag hoists at the island */}
-              <div className="absolute bottom-5 transition-[left] duration-200 ease-linear" style={{ left: `calc(2% + ${progress} * 68%)` }}>
+              {/* ODYSSEY — sails with the track, docks BESIDE the island at full voyage */}
+              <div className="absolute bottom-5 transition-[left] duration-200 ease-linear" style={{ left: `calc(2% + ${progress * 94}% - ${progress * 224}px)` }}>
                 <div className={`relative ship-bob ${arrived ? "text-[var(--crimson)]" : "text-[var(--ink)]"} transition-colors duration-500`}>
                   <Odyssey size={124} arrived={arrived} />
                   {arrived && (
@@ -287,12 +301,55 @@ export default function ShowReel() {
             <TrackRail progress={progress} legs={landscapes.length}
               onScrub={(ratio) => { setOffset(ratio * maxOffset); poke(); }} />
 
+            {/* ---------- CYBERPUNK VOYAGE TRACK CONTROL ---------- */}
+            <div className="mx-4 sm:mx-6 mt-4 mb-5">
+              <div className="flex items-center gap-3 f-mono text-[8px] tracking-[0.24em] text-[var(--ink2)] mb-2">
+                <span className="text-[var(--crimson)]">VOYAGE CONTROL</span>
+                <span className="hidden sm:inline">DRAG THE HANDLE — FREE TRAVEL</span>
+                <span className="ml-auto tabular-nums">
+                  {Math.round(progress * 100)}% · LEG {String(leg).padStart(2, "0")}/{String(landscapes.length).padStart(2, "0")}
+                </span>
+              </div>
+              <div ref={railRef}
+                onPointerDown={onRailDown} onPointerMove={onRailMove} onPointerUp={onRailUp} onPointerCancel={onRailUp}
+                className="relative h-10 select-none touch-none cursor-pointer"
+                role="slider" aria-label="Voyage track position"
+                aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
+                {/* rail housing + crimson travel fill */}
+                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[6px] rounded-[3px] border border-[var(--line)] mat-page-card overflow-hidden">
+                  <div className="h-full bg-[var(--crimson)]"
+                    style={{ width: `${progress * 100}%`, transition: railActive || drag.current.active ? "none" : "width .25s ease" }} />
+                </div>
+                {/* slot boundary ticks */}
+                {landscapes.slice(0, -1).map((l, i) => (
+                  <span key={l.id} className="absolute top-1/2 w-[2px] h-3.5 -translate-y-1/2 bg-[var(--ink2)] opacity-50"
+                    style={{ left: `${((i + 1) / landscapes.length) * 100}%` }} />
+                ))}
+                {/* end housings */}
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-6 rounded-[3px] bg-[var(--ink)]" />
+                <span className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-6 rounded-[3px] bg-[var(--ink)]" />
+                {/* physical scrub handle */}
+                <div className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-9 grid place-items-center rounded-[4px] border ${railActive ? "bg-[var(--crimson)] border-[var(--crimson)]" : "bg-[var(--ink)] border-[var(--line)]"}`}
+                  style={{
+                    left: `${progress * 100}%`,
+                    clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)",
+                    transition: railActive || drag.current.active ? "none" : "left .25s ease, background-color .3s ease, border-color .3s ease",
+                  }}>
+                  <span className="flex gap-[3px]">
+                    <span className="w-[2px] h-3.5 bg-[var(--page)] opacity-80" />
+                    <span className="w-[2px] h-3.5 bg-[var(--page)] opacity-50" />
+                    <span className="w-[2px] h-3.5 bg-[var(--page)] opacity-80" />
+                  </span>
+                </div>
+              </div>
+            </div>
+
             {/* draggable landscape track */}
             <div ref={viewRef}
               className="track-drag overflow-hidden px-4 sm:px-6 pb-6 pt-1 select-none"
               onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onPointerLeave={onUp}>
               <div ref={innerRef} className="flex gap-4 sm:gap-5 w-max"
-                style={{ transform: `translateX(${-offset}px)`, transition: drag.current.active ? "none" : "transform .3s cubic-bezier(.25,.8,.3,1)" }}>
+                style={{ transform: `translateX(${-offset}px)`, transition: drag.current.active || railActive ? "none" : "transform .2s cubic-bezier(.25,.8,.3,1)" }}>
                 {landscapes.map((l, i) => (
                   <div key={l.id} className="relative w-[240px] sm:w-[340px] lg:w-[420px] shrink-0">
                     <MediaSlot item={l} ratio="16/9" onClick={i === 0 ? undefined : () => setView({ group: "l", i })} />

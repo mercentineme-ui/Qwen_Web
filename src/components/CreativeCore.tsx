@@ -42,15 +42,16 @@ export default function CreativeCore() {
   const stageRef = useRef<HTMLDivElement>(null);
   const discRef = useRef<HTMLDivElement>(null);
   const headRef = useRef<SVGGElement>(null);
-  const angleRef = useRef({ cur: -90, target: -90, inside: false, raf: 0 });
+  const angleRef = useRef({ cur: 0, target: 0, raf: 0 });
 
   useEffect(() => {
     if (reduced) return;
     const loop = () => {
       const a = angleRef.current;
-      const diff = a.target - a.cur;
-      if (Math.abs(diff) > 0.15 || a.inside) {
-        a.cur += diff * 0.12;
+      /* shortest angular path — never spins the long way round */
+      let diff = ((a.target - a.cur + 180) % 360 + 360) % 360 - 180;
+      if (Math.abs(diff) > 0.1) {
+        a.cur += diff * 0.14;
         if (headRef.current) headRef.current.setAttribute("transform", `rotate(${a.cur} 300 300)`);
       }
       a.raf = requestAnimationFrame(loop);
@@ -66,11 +67,9 @@ export default function CreativeCore() {
     const cy = r.top + r.height / 2;
     const deg = (Math.atan2(e.clientY - cy, e.clientX - cx) * 180) / Math.PI + 90;
     angleRef.current.target = deg;
-    angleRef.current.inside = true;
   };
   const onLeave = () => {
-    angleRef.current.inside = false;
-    angleRef.current.target = -90; /* settle back to the middle (top) */
+    angleRef.current.target = 0; /* settle back to the middle — outward at top */
   };
 
   /* ---- surge engine — every 30s, 3s, holographic thin-line ---- */
@@ -202,8 +201,8 @@ export default function CreativeCore() {
                   </>
                 )}
 
-                {/* ONE large arrowhead — tracks the mouse around the center, settles top */}
-                <g ref={headRef} transform="rotate(-90 300 300)">
+                {/* ONE large arrowhead — tracks the mouse around the center, settles outward at top */}
+                <g ref={headRef} transform="rotate(0 300 300)">
                   <g className={reduced ? undefined : "head-pulse"}>
                     <line x1="300" y1="244" x2="300" y2="176" stroke="var(--crimson)" strokeWidth="6" />
                     <polygon points="300,148 280,186 320,186" fill="var(--crimson)" />
