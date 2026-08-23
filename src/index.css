@@ -456,6 +456,129 @@ html.dark  { --hero-crimson: #EE3A54; }
 .vbar-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border-radius: 3px; background: var(--crimson); border: 1px solid #f4f2ed; cursor: pointer; }
 .vbar-range::-moz-range-thumb { width: 12px; height: 12px; border-radius: 3px; background: var(--crimson); border: 1px solid #f4f2ed; cursor: pointer; }
 
+/* ============================================================
+   V2 SYSTEMS — Betron identity, logo flow, name resolve,
+   dossier hardware, hub machinery, track rail
+   ============================================================ */
+.f-betron { font-family: "Betron", "Chakra Petch", sans-serif; }
+
+:root { --name-blue: #2F4E70; }
+.dark { --name-blue: #E7E6E1; }
+
+.print-rough { filter: url(#cbk-print-rough); }
+
+/* ---- DESIGNFOLIO fluid logo animation ----
+   thin → bold → mixed weights → color letter wave → micro glitch
+   displacement → soft blur → letter hop → re-align → rest. 9s loop. */
+.logo-letter {
+  display: inline-block;
+  animation: logoFlow 9s cubic-bezier(0.4, 0.2, 0.3, 1) infinite;
+  will-change: transform, filter;
+}
+@keyframes logoFlow {
+  0%, 55%, 100% { font-weight: 500; color: var(--ink2); transform: none; filter: blur(0); }
+  3%  { font-weight: 500; color: var(--ink2); transform: none; }
+  6%  { font-weight: 700; color: var(--ink); transform: translateY(0); }
+  8%  { font-weight: 700; color: var(--crimson); transform: translate(1.4px, -0.6px); filter: blur(0.6px); }
+  10% { font-weight: 500; color: var(--crimson); transform: translate(-1.2px, 0.4px) skewX(-4deg); filter: blur(0.9px); }
+  12% { font-weight: 700; color: var(--ink); transform: translateY(-2.4px); filter: blur(0); }
+  15% { font-weight: 500; color: var(--ink2); transform: translateY(0.8px); }
+  18% { font-weight: 500; color: var(--ink2); transform: none; }
+}
+
+/* ---- HERO one-time identity resolve (temporal + comic print) ---- */
+.nr-main { animation: nrMain 2.4s steps(1, end) both; }
+@keyframes nrMain {
+  0%   { font-weight: 900; letter-spacing: 0.14em; transform: skewX(-5deg) translateX(-6px); filter: blur(2.5px) contrast(1.3); opacity: 0.4; }
+  12%  { font-weight: 400; letter-spacing: -0.02em; transform: skewX(3deg) translateX(5px); filter: blur(0.6px); opacity: 1; }
+  24%  { font-weight: 700; letter-spacing: 0.06em; transform: skewX(-2deg) translateX(-3px); filter: blur(1.6px); }
+  36%  { font-weight: 500; letter-spacing: 0.01em; transform: skewX(1deg) translateX(2px); filter: blur(0.4px); }
+  50%  { font-weight: 700; letter-spacing: 0.03em; transform: none; filter: blur(1px); }
+  64%  { font-weight: 400; letter-spacing: 0.02em; transform: translateX(-1px); filter: blur(0); }
+  78%  { font-weight: 700; letter-spacing: 0.018em; transform: none; }
+  88%  { font-weight: 400; transform: none; filter: blur(0); }
+  100% { font-weight: 400; letter-spacing: 0.015em; transform: none; filter: blur(0); opacity: 1; }
+}
+.nr-letter { display: inline-block; animation: nrLetter 2.4s steps(2, jump-none) both; }
+@keyframes nrLetter {
+  0%  { transform: translate(3px, -4px); opacity: 0.2; }
+  14% { transform: translate(-3px, 2px); opacity: 1; }
+  28% { transform: translate(2px, 3px); }
+  42% { transform: translate(-2px, -2px); }
+  56% { transform: translate(1px, 1px); }
+  72% { transform: translate(-1px, 0); }
+  86% { transform: none; opacity: 1; }
+  100% { transform: none; opacity: 1; }
+}
+.nr-ghost { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: multiply; animation: nrGhost 2.4s steps(1, end) both; }
+.nr-ghost.screen { mix-blend-mode: screen; }
+@keyframes nrGhost {
+  0%   { opacity: 0; transform: translate(0, 0); }
+  8%   { opacity: 0.85; transform: translate(-7px, 2px); }
+  16%  { opacity: 0.2; transform: translate(4px, -2px); }
+  26%  { opacity: 0.7; transform: translate(6px, 1px); }
+  34%  { opacity: 0; transform: translate(-3px, 0); }
+  46%  { opacity: 0.5; transform: translate(-4px, -1px); }
+  56%  { opacity: 0; transform: translate(2px, 1px); }
+  68%  { opacity: 0.25; transform: translate(2px, 0); }
+  78%, 100% { opacity: 0; transform: none; }
+}
+.nr-slice { position: absolute; inset: 0; pointer-events: none; animation: nrSlice 2.4s steps(1, end) both; }
+@keyframes nrSlice {
+  0%   { opacity: 0; transform: translateX(0); }
+  10%  { opacity: 1; transform: translateX(-10px); }
+  18%  { opacity: 0; transform: translateX(6px); }
+  30%  { opacity: 1; transform: translateX(8px); }
+  38%  { opacity: 0; transform: translateX(-4px); }
+  52%  { opacity: 1; transform: translateX(4px); }
+  60%  { opacity: 0; }
+  72%  { opacity: 0.6; transform: translateX(-2px); }
+  80%, 100% { opacity: 0; transform: none; }
+}
+
+/* ---- cyberpunk dossier construction ---- */
+.dossier-clip {
+  clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
+}
+.dossier-clip-sm {
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+}
+.corner-bracket { position: relative; }
+.corner-bracket::before,
+.corner-bracket::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--crimson);
+  border-style: solid;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}
+.corner-bracket::before { top: 5px; left: 5px; border-width: 2px 0 0 2px; }
+.corner-bracket::after { bottom: 5px; right: 5px; border-width: 0 2px 2px 0; }
+
+/* ---- MY JOURNEY hub machinery ---- */
+.hub-ring { transform-origin: center; animation: spinSlow 42s linear infinite; }
+.hub-ring-rev { transform-origin: center; animation: spinRev 30s linear infinite; }
+.arm-packet { animation: armPacket 1.15s linear infinite; }
+@keyframes armPacket {
+  0% { transform: translateX(0); opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { transform: translateX(44px); opacity: 0; }
+}
+.module-plate { transition: transform 0.35s cubic-bezier(0.3, 0.8, 0.3, 1), border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease; }
+
+/* ---- show reel track rail ---- */
+.rail-handle {
+  cursor: grab;
+  touch-action: none;
+  transition: left 0.25s cubic-bezier(0.25, 0.8, 0.3, 1);
+}
+.rail-handle:active { cursor: grabbing; }
+.rail-handle.no-anim { transition: none; }
+
 /* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

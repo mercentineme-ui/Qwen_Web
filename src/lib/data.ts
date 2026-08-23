@@ -141,7 +141,7 @@ export const defaultData: PortfolioData = {
     description:
       "I walk into unfamiliar projects with minimal starting information — figure out the problem, build the visual language, and carry the work from first idea to final delivery.",
     ctaPrimary: "ENTER THE WORK →",
-    ctaSecondary: "MY EXPERTISE ↓",
+    ctaSecondary: "EXPERTISE ↓",
     images: [
       slot("IMAGE 01", "image", ["ADD PORTRAIT", "IN STUDIO"]),
       slot("IMAGE 02", "image", ["ADD PORTRAIT", "IN STUDIO"]),

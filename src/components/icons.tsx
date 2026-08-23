@@ -66,9 +66,10 @@ export const Rune = (p: P) => (
 /* ---- theme icons ---- */
 export const MoonIcon = (p: P) => (
   <svg width={p.size ?? 16} height={p.size ?? 16} viewBox="0 0 24 24" className={p.className}>
-    <circle cx="12" cy="12" r="7.5" fill="#F2F1EC" />
-    <circle cx="9.5" cy="10" r="1.5" fill="#C9C8C2" />
-    <circle cx="14.5" cy="14.5" r="1" fill="#C9C8C2" />
+    {/* white half-moon */}
+    <path d="M14.8 2.6a9.6 9.6 0 1 0 6.6 12.7A7.6 7.6 0 0 1 14.8 2.6z" fill="#F2F1EC" />
+    <circle cx="9.6" cy="10.4" r="1.4" fill="#C9C8C2" />
+    <circle cx="12.6" cy="16.4" r="1" fill="#C9C8C2" />
   </svg>
 );
 export const SunIcon = (p: P) => (

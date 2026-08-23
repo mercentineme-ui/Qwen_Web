@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { defaultData, PortfolioData } from "./data";
 
-const DATA_KEY = "cbk-portfolio-v1";
+const DATA_KEY = "cbk-portfolio-v2";
 const THEME_KEY = "cbk-theme";
 
 type Theme = "light" | "dark";

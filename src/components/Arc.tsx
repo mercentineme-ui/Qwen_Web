@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { ArcEntry } from "../lib/data";
 import { useHashRoute, useReducedMotion, useStore } from "../lib/store";
 import { NavArrowHead } from "./icons";
-import { EmptySlot, Reveal, SectionHead } from "./ui";
+import { EmptySlot, FullscreenViewer, Reveal, SectionHead } from "./ui";
 
 /* physical looping offset: center = 0, right = +1, left = -1, wraps circularly */
 function relPos(i: number, idx: number, n: number) {
@@ -11,7 +11,7 @@ function relPos(i: number, idx: number, n: number) {
   return r;
 }
 
-function Carousel({ items, idx, setIdx, ratio, wide }: { items: ArcEntry[]; idx: number; setIdx: (i: number) => void; ratio: string; wide: boolean }) {
+function Carousel({ items, idx, setIdx, ratio, wide, onCenter }: { items: ArcEntry[]; idx: number; setIdx: (i: number) => void; ratio: string; wide: boolean; onCenter: (e: ArcEntry) => void }) {
   const reduced = useReducedMotion();
   const n = items.length;
   return (
@@ -21,11 +21,11 @@ function Carousel({ items, idx, setIdx, ratio, wide }: { items: ArcEntry[]; idx:
         const active = rel === 0;
         if (Math.abs(rel) > 1) return null;
         return (
-          <button key={it.id} onClick={() => !active && setIdx(i)}
-            aria-label={active ? it.name : `Select ${it.name}`}
+          <button key={it.id} onClick={() => (active ? onCenter(it) : setIdx(i))}
+            aria-label={active ? `Open ${it.name} fullscreen` : `Select ${it.name}`}
             className={`absolute top-1/2 left-1/2 rounded-xl overflow-hidden border transition-all ${
               active
-                ? "border-[var(--crimson)] z-20"
+                ? "border-[var(--crimson)] z-20 cursor-zoom-in"
                 : "border-[var(--line)] z-10 cursor-pointer hover:border-[var(--ink2)]"
             }`}
             style={{
@@ -54,11 +54,14 @@ function Carousel({ items, idx, setIdx, ratio, wide }: { items: ArcEntry[]; idx:
   );
 }
 
-function ArcaneArrow({ onClick, label }: { onClick: () => void; label: string }) {
+function ArcaneArrow({ onClick, label, dir }: { onClick: () => void; label: string; dir: "left" | "right" }) {
+  const right = dir === "right";
   return (
     <button onClick={onClick} aria-label={label}
-      className="group self-center justify-self-center text-[var(--ink2)] hover:text-[var(--crimson)] transition-all duration-300 opacity-35 hover:opacity-90 hover:-translate-x-1 focus:outline-none focus-visible:opacity-90">
-      <span className="block relative">
+      className={`group self-center justify-self-center text-[var(--ink2)] hover:text-[var(--crimson)] transition-all duration-300 opacity-35 hover:opacity-90 focus:outline-none focus-visible:opacity-90 ${
+        right ? "hover:translate-x-1" : "hover:-translate-x-1"
+      }`}>
+      <span className="block relative" style={right ? { transform: "scaleX(-1)" } : undefined}>
         <NavArrowHead size={40} />
         <span className="absolute left-1/2 top-1/2 -translate-y-1/2 h-[70%] w-[2px] bg-[var(--crimson)] opacity-0 group-hover:opacity-70 transition-opacity duration-300" style={{ marginLeft: "-14px" }} />
       </span>
@@ -100,6 +103,7 @@ export default function Arc() {
   const [mode, setMode] = useState<"CHARACTERS" | "WORLDS">("CHARACTERS");
   const [charIdx, setCharIdx] = useState(0);
   const [worldIdx, setWorldIdx] = useState(0);
+  const [full, setFull] = useState<ArcEntry | null>(null);
 
   const isChar = mode === "CHARACTERS";
   const items = isChar ? characters : worlds;
@@ -167,16 +171,16 @@ export default function Arc() {
                 </button>
               </div>
 
-              {/* prev arrowhead */}
-              <ArcaneArrow label="Previous" onClick={() => setIdx((idx - 1 + n) % n)} />
+              {/* prev arrowhead — points LEFT */}
+              <ArcaneArrow dir="left" label="Previous" onClick={() => setIdx((idx - 1 + n) % n)} />
 
-              {/* CENTER — large media carousel */}
+              {/* CENTER — large media carousel (click center → fullscreen) */}
               <div className="min-w-0 flex items-center">
-                <Carousel items={items} idx={idx} setIdx={setIdx} ratio={isChar ? "9/16" : "16/9"} wide={!isChar} />
+                <Carousel items={items} idx={idx} setIdx={setIdx} ratio={isChar ? "9/16" : "16/9"} wide={!isChar} onCenter={setFull} />
               </div>
 
-              {/* next arrowhead */}
-              <ArcaneArrow label="Next" onClick={() => setIdx((idx + 1) % n)} />
+              {/* next arrowhead — points RIGHT */}
+              <ArcaneArrow dir="right" label="Next" onClick={() => setIdx((idx + 1) % n)} />
 
               {/* RIGHT — dossier */}
               <Dossier entry={entry} kind={isChar ? "CHARACTER" : "WORLD"} />
@@ -185,7 +189,7 @@ export default function Arc() {
             {/* carousel index strip */}
             <div className="mt-5 pt-4 border-t border-[var(--line)] flex items-center gap-3 f-mono text-[9px] tracking-[0.26em] text-[var(--ink2)]">
               <span className="text-[var(--crimson)]">{String(idx + 1).padStart(2, "0")}</span>
-              <span>/ {String(n).padStart(2, "0")} — {isChar ? "CHARACTER" : "WORLD"} SELECT</span>
+              <span>/ {String(n).padStart(2, "0")} — {isChar ? "CHARACTER" : "WORLD"} SELECT · CLICK CENTER FOR FULLSCREEN</span>
               <span className="hidden sm:flex items-center gap-1.5 ml-auto">
                 {items.map((it, i) => (
                   <button key={it.id} onClick={() => setIdx(i)} aria-label={it.name}
@@ -197,6 +201,17 @@ export default function Arc() {
           </div>
         </Reveal>
       </div>
+
+      {/* fullscreen ARC media — close returns to the exact previous state */}
+      {full && (
+        <FullscreenViewer
+          items={[full.image]}
+          index={0}
+          ratio={mode === "CHARACTERS" ? "9/16" : "16/9"}
+          onClose={() => setFull(null)}
+          setIndex={() => undefined}
+        />
+      )}
     </section>
   );
 }

@@ -29,6 +29,21 @@ function Frame({ idx }: { idx: number }) {
   );
 }
 
+/* letter-by-letter spans (used only during the resolve window) */
+function Letters({ text }: { text: string }) {
+  return (
+    <>
+      {text.split("").map((ch, i) =>
+        ch === " " ? (
+          <span key={i}> </span>
+        ) : (
+          <span key={i} className="nr-letter" style={{ animationDelay: `${i * 0.05}s` }}>{ch}</span>
+        )
+      )}
+    </>
+  );
+}
+
 export default function Hero() {
   const { data } = useStore();
   const h = data.hero;
@@ -37,6 +52,14 @@ export default function Hero() {
   const [glitch, setGlitch] = useState(false);
   const glitchTimer = useRef<number | null>(null);
   const n = Math.max(1, h.images.length);
+
+  /* one-time identity resolve — then perfectly stable */
+  const [resolved, setResolved] = useState(reduced);
+  useEffect(() => {
+    if (reduced) { setResolved(true); return; }
+    const t = window.setTimeout(() => setResolved(true), 2500);
+    return () => clearTimeout(t);
+  }, [reduced]);
 
   const daypart = useMemo(getDaypart, []);
   const greeting = h.greetings[daypart] ?? h.greetings.MORNING;
@@ -56,12 +79,14 @@ export default function Hero() {
       if (glitchTimer.current) clearTimeout(glitchTimer.current);
     };
   }, [n, h.rotationSeconds, reduced]);
-
   const prevIdx = (idx - 1 + n) % n;
 
+  const nameA = resolved ? h.nameA : <Letters text={h.nameA} />;
+  const nameB = resolved ? h.nameB : <Letters text={h.nameB} />;
+
   return (
-    <section id="about" className="relative overflow-hidden pt-[104px] lg:pt-[136px] pb-16 lg:pb-24 scroll-mt-20">
-      {/* print-rough filter for matte pigment crimson */}
+    <section id="about" className="relative overflow-hidden pt-[92px] lg:pt-[116px] pb-16 lg:pb-24 scroll-mt-20">
+      {/* print-rough displacement filter (matte pigment edges) */}
       <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden>
         <filter id="cbk-print-rough">
           <feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="2" result="noise" seed="7" />
@@ -72,45 +97,56 @@ export default function Hero() {
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8 grid lg:grid-cols-[1.06fr_0.94fr] gap-12 lg:gap-10 items-start">
         {/* ================= LEFT — TYPOGRAPHY ================= */}
         <div className="min-w-0">
-          {/* daypart meta + readable greeting */}
+          {/* daypart chip + large readable greeting */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
-            <span className="f-tech font-bold text-[11px] tracking-[0.34em] px-2.5 py-1.5 rounded-lg bg-[var(--crimson)] text-[#f4f2ed] w-fit">
+            <span className="f-tech font-bold text-[11px] tracking-[0.34em] px-3 py-2 rounded-lg bg-[var(--crimson)] text-[#f4f2ed] w-fit">
               {daypart}
             </span>
-            <p className="text-[17px] sm:text-[19px] lg:text-[21px] leading-snug font-medium text-[var(--ink)]">
+            <p className="text-[21px] sm:text-[25px] lg:text-[28px] leading-snug font-semibold text-[var(--ink)]">
               {greeting}
             </p>
           </div>
 
-          {/* name — C. BALA smaller, KRISHNAN wide + dominant, matte pigment crimson */}
-          <h1 className="mt-8 lg:mt-9 leading-[0.9]">
-            <span className="block f-display text-[clamp(1.9rem,3.6vw,3.1rem)] tracking-[0.04em] text-[var(--ink)]">
-              {h.nameA}
+          {/* name — balanced two lines, temporal identity resolve */}
+          <h1 className="mt-7 lg:mt-8 leading-[0.94] relative">
+            {/* print misregistration ghosts (resolve window only) */}
+            {!resolved && (
+              <>
+                <span aria-hidden className="nr-ghost f-display text-[clamp(2.1rem,4.4vw,3.6rem)] tracking-[0.04em]" style={{ color: "var(--name-blue)" }}>{h.nameA}</span>
+                <span aria-hidden className="nr-ghost screen f-display text-[clamp(2.9rem,6vw,5.2rem)] tracking-[0.015em] mt-1" style={{ color: "var(--hero-crimson)", top: "auto" }}>{h.nameB}</span>
+                <span aria-hidden className="nr-slice f-display text-[clamp(2.9rem,6vw,5.2rem)] tracking-[0.015em]" style={{ color: "var(--hero-crimson)", clipPath: "inset(58% 0 18% 0)", top: "3.4rem" }}>{h.nameB}</span>
+              </>
+            )}
+            <span className={`block f-display print-rough text-[clamp(2.1rem,4.4vw,3.6rem)] tracking-[0.04em] ${resolved ? "" : "nr-main"}`}
+              style={{ color: "var(--name-blue)" }}>
+              {nameA}
             </span>
-            <span className="block f-display print-matte text-[clamp(3.4rem,8.6vw,7.4rem)] tracking-[0.015em] mt-1">
-              {h.nameB}
+            <span className={`block f-display print-matte text-[clamp(2.9rem,6vw,5.2rem)] tracking-[0.015em] mt-1 ${resolved ? "" : "nr-main"}`}
+              style={{ animationDelay: "0.12s" }}>
+              {nameB}
             </span>
           </h1>
 
-          {/* ABOUT ME */}
-          <div className="mt-8 max-w-[56ch]">
-            <span className="f-mono text-[10px] tracking-[0.34em] text-[var(--crimson)] flex items-center gap-2.5">
-              <span className="w-5 h-[2px] bg-[var(--crimson)]" />
+          {/* ABOUT ME — highlighted chip label + full-ink body */}
+          <div className="mt-8 max-w-[58ch]">
+            <span className="f-tech font-bold text-[10.5px] tracking-[0.3em] px-3 py-1.5 rounded-lg bg-[var(--crimson)] text-[#f4f2ed] w-fit">
               {h.aboutLabel}
             </span>
-            <p className="mt-3 text-[15px] sm:text-[16px] leading-relaxed font-medium text-[var(--ink)]">
+            <p className="mt-4 text-[15.5px] sm:text-[16.5px] leading-relaxed font-medium text-[var(--ink)]">
               {h.description}
             </p>
           </div>
 
-          {/* creative tag strip — four technical tiles */}
-          <div className="mt-8 grid grid-cols-2 xl:grid-cols-4 gap-3">
+          {/* expertise strip — four premium matte tiles */}
+          <div className="mt-9 grid grid-cols-2 xl:grid-cols-4 gap-3">
             {h.chips.map((c, i) => (
-              <div key={c} className="mat-outer mat-texture rounded-lg px-4 py-3.5 flex flex-col gap-1.5">
+              <div key={c}
+                className="mat-outer mat-texture dossier-clip-sm group relative px-5 py-5 flex flex-col gap-2.5 transition-transform duration-400 hover:-translate-y-1">
+                <span className="absolute top-0 left-0 w-7 h-[3px] bg-[var(--crimson)] transition-all duration-400 group-hover:w-full" />
                 <span className="f-mono text-[9px] tracking-[0.28em]" style={{ color: "var(--crimson)" }}>
-                  {String(i + 1).padStart(2, "0")}
+                  {String(i + 1).padStart(2, "0")} /
                 </span>
-                <span className="f-tech font-bold text-[11px] sm:text-[12px] tracking-[0.12em] leading-tight" style={{ color: "var(--outer-ink)" }}>
+                <span className="f-tech font-bold text-[12px] sm:text-[12.5px] tracking-[0.12em] leading-snug" style={{ color: "var(--outer-ink)" }}>
                   {c}
                 </span>
               </div>
@@ -128,16 +164,14 @@ export default function Hero() {
         </div>
 
         {/* ================= RIGHT — MECHANICAL APERTURE CIRCLE ================= */}
-        <div className="relative w-full max-w-[420px] sm:max-w-[500px] lg:max-w-[560px] mx-auto lg:mr-0 lg:ml-auto aspect-square lg:mt-[64px]">
+        <div className="relative w-full max-w-[420px] sm:max-w-[500px] lg:max-w-[540px] mx-auto lg:mr-0 lg:ml-auto aspect-square lg:mt-[64px]">
           {/* media disc */}
           <div className="absolute inset-[7%] rounded-full overflow-hidden">
             <div className="absolute inset-0 depth-breath">
-              {/* base = previous frame (holds during transition) */}
               <div className="absolute inset-0">
                 <Frame idx={glitch ? prevIdx : idx} />
               </div>
 
-              {/* spider-verse print transition layers */}
               {glitch && !reduced && (
                 <>
                   <div className="absolute inset-0 gv2-shake">
@@ -145,13 +179,10 @@ export default function Hero() {
                     <div className="absolute inset-0 gv2-sb"><Frame idx={idx} /></div>
                     <div className="absolute inset-0 gv2-sc"><Frame idx={idx} /></div>
                   </div>
-                  {/* print misregistration — crimson + paper pass */}
                   <div className="absolute inset-0 gv2-ghost-l mix-blend-multiply" style={{ backgroundColor: "var(--hero-crimson)" }} />
                   <div className="absolute inset-0 gv2-ghost-r mix-blend-screen" style={{ backgroundColor: "#E7E6E1" }} />
-                  {/* directional smear + speed lines */}
                   <div className="absolute inset-0 gv2-smear"
                     style={{ background: "repeating-linear-gradient(90deg, transparent 0 10px, rgba(27,28,32,0.32) 10px 13px, transparent 13px 26px)" }} />
-                  {/* frame tearing */}
                   <div className="absolute inset-x-0 gv2-tear" style={{ top: "24%", height: "5px", background: "#E7E6E1" }} />
                   <div className="absolute inset-x-0 gv2-tear" style={{ top: "63%", height: "3px", background: "var(--hero-crimson)", animationDelay: "0.08s" }} />
                 </>
@@ -161,7 +192,6 @@ export default function Hero() {
 
           {/* aperture / calibration hardware */}
           <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden>
-            {/* ratcheting tick ring — stepped mechanical motion, not a loop blur */}
             <g className={reduced ? undefined : "ratchet-ticks"}>
               {Array.from({ length: 60 }).map((_, i) => {
                 const a = (i * 6 * Math.PI) / 180;
@@ -176,13 +206,11 @@ export default function Hero() {
               })}
             </g>
 
-            {/* calibration arcs — partial rings with a slow mechanical sway */}
             <g className={reduced ? undefined : "calib-sway"}>
               <path d="M 50 8.5 A 41.5 41.5 0 0 1 88.9 35.7" fill="none" stroke="var(--ink2)" strokeWidth="0.5" strokeDasharray="3.5 2.4" opacity="0.7" />
               <path d="M 14.4 68.2 A 41.5 41.5 0 0 1 10.2 41" fill="none" stroke="var(--ink2)" strokeWidth="0.5" strokeDasharray="1.5 2.6" opacity="0.6" />
             </g>
 
-            {/* 4 slot quadrants — active slot fills over the rotation */}
             {Array.from({ length: 4 }).map((_, q) => {
               const a0 = -90 + q * 90, a1 = a0 + 86;
               const r = 43.2;
@@ -198,14 +226,12 @@ export default function Hero() {
                       pathLength={100} strokeDasharray="100" className={reduced ? undefined : "arc-fill"}
                       style={{ ["--arclen" as string]: "100", ["--arcdur" as string]: `${Math.max(3, h.rotationSeconds)}s` }} />
                   )}
-                  {/* quadrant docking notch */}
                   <rect x={50 + 45.4 * Math.cos(((a0 + 43) * Math.PI) / 180) - 1} y={50 + 45.4 * Math.sin(((a0 + 43) * Math.PI) / 180) - 1}
                     width="2" height="2" fill={isActive ? "var(--crimson)" : "var(--ink2)"} opacity="0.85" />
                 </g>
               );
             })}
 
-            {/* aperture blades — snap 45° on every image change */}
             <g style={{ transform: `rotate(${idx * 45}deg)`, transformOrigin: "50px 50px", transition: reduced ? "none" : "transform .6s cubic-bezier(.3,.9,.25,1)" }}>
               {Array.from({ length: 8 }).map((_, i) => {
                 const a = (i * 45 * Math.PI) / 180;
@@ -219,13 +245,11 @@ export default function Hero() {
               })}
             </g>
 
-            {/* directional index marker — points at the active slot */}
             <g style={{ transform: `rotate(${(idx % 4) * 90}deg)`, transformOrigin: "50px 50px", transition: reduced ? "none" : "transform .6s cubic-bezier(.3,.9,.25,1)" }}>
               <path d="M 50 2.4 L 47.6 6.6 L 52.4 6.6 Z" fill="var(--crimson)" />
             </g>
           </svg>
 
-          {/* studio label under the disc */}
           <div className="absolute -bottom-7 inset-x-0 flex items-center justify-center gap-3 f-mono text-[9px] tracking-[0.3em] text-[var(--ink2)]">
             <span className="w-8 h-px bg-[var(--line)]" />
             STUDIO DISC — {String(n).padStart(2, "0")} FRAMES

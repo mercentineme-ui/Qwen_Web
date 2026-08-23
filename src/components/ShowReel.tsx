@@ -37,6 +37,67 @@ function playTin() {
   }
 }
 
+/* ================= CYBERPUNK TRACK RAIL — physical dragger ================= */
+
+function TrackRail({ progress, legs, onScrub }: { progress: number; legs: number; onScrub: (ratio: number) => void }) {
+  const railRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+  const [live, setLive] = useState(false);
+
+  const scrub = (clientX: number) => {
+    const r = railRef.current?.getBoundingClientRect();
+    if (!r) return;
+    onScrub(Math.min(1, Math.max(0, (clientX - r.left) / r.width)));
+  };
+
+  return (
+    <div className="px-4 sm:px-6 pb-6 pt-2 flex items-center gap-4 sm:gap-5">
+      <span className="f-mono text-[9px] tracking-[0.26em] text-[var(--ink2)] whitespace-nowrap hidden sm:block">TRACK CONTROL</span>
+      <div
+        ref={railRef}
+        className="relative flex-1 h-10 cursor-pointer touch-none"
+        onPointerDown={(e) => {
+          dragging.current = true;
+          setLive(true);
+          (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+          scrub(e.clientX);
+        }}
+        onPointerMove={(e) => dragging.current && scrub(e.clientX)}
+        onPointerUp={() => { dragging.current = false; setLive(false); }}
+        onPointerCancel={() => { dragging.current = false; setLive(false); }}
+      >
+        {/* holder line */}
+        <span className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[3px] rounded" style={{ background: "var(--line)" }} />
+        {/* progress fill */}
+        <span className={`absolute left-0 top-1/2 -translate-y-1/2 h-[3px] rounded bg-[var(--crimson)] ${live ? "" : "transition-[width] duration-300"}`}
+          style={{ width: `${progress * 100}%` }} />
+        {/* leg ticks */}
+        {Array.from({ length: legs + 1 }).map((_, i) => (
+          <span key={i} className="absolute top-1/2 -translate-y-1/2 w-[3px] h-3 rounded-sm"
+            style={{ left: `calc(${(i / legs) * 100}% - 1px)`, background: i / legs <= progress + 0.001 ? "var(--crimson)" : "var(--ink2)", opacity: i / legs <= progress + 0.001 ? 1 : 0.5 }} />
+        ))}
+        {/* physical knurled handle */}
+        <span
+          className={`rail-handle absolute top-1/2 -translate-y-1/2 w-14 h-[26px] rounded-lg border-[1.5px] mat-texture flex items-center justify-center gap-[3px] ${live ? "no-anim" : ""}`}
+          style={{
+            left: `calc(${progress} * (100% - 56px))`,
+            borderColor: live || progress > 0.985 ? "var(--crimson)" : "var(--ink2)",
+            backgroundColor: "var(--sup1)",
+            boxShadow: "0 6px 16px -8px rgba(0,0,0,0.55)",
+          }}
+        >
+          {[-1, 0, 1].map((k) => (
+            <span key={k} className="w-[2px] h-3 rounded-sm" style={{ background: live || progress > 0.985 ? "var(--crimson)" : "var(--ink2)" }} />
+          ))}
+        </span>
+      </div>
+      <span className="f-mono text-[10px] tracking-[0.2em] text-[var(--crimson)] tabular-nums whitespace-nowrap">
+        {Math.round(progress * 100)}%
+      </span>
+    </div>
+  );
+}
+
 export default function ShowReel() {
   const { data } = useStore();
   const reduced = useReducedMotion();
@@ -221,6 +282,10 @@ export default function ShowReel() {
                 <span>THE ISLAND</span>
               </div>
             </div>
+
+            {/* physical track control */}
+            <TrackRail progress={progress} legs={landscapes.length}
+              onScrub={(ratio) => { setOffset(ratio * maxOffset); poke(); }} />
 
             {/* draggable landscape track */}
             <div ref={viewRef}
