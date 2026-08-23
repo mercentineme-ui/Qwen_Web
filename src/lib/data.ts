@@ -15,8 +15,8 @@ export interface MediaItem {
 }
 
 export interface HeroData {
-  morningLabel: string;
-  greeting: string;
+  greetings: { MORNING: string; AFTERNOON: string; EVENING: string };
+  aboutLabel: string;
   nameA: string;
   nameB: string;
   chips: string[];
@@ -72,42 +72,25 @@ export interface AILabData {
   images: MediaItem[];
 }
 
-export interface Dossier {
-  role: string;
-  project: string;
-  description: string;
+export interface ArcEntry {
+  id: string;
+  name: string;
+  image: MediaItem;
   tools: string;
-  idea: string;
-  process: string;
-}
-
-export interface ArcCharacter {
-  id: string;
-  name: string;
-  image: MediaItem;
-  dossier: Dossier;
-}
-
-export interface ArcWorld {
-  id: string;
-  name: string;
-  image: MediaItem;
-  dossier: Dossier;
+  description: string;
 }
 
 export interface ArcData {
-  characters: ArcCharacter[];
-  worlds: ArcWorld[];
-}
-
-export interface BuildStep {
-  num: string;
-  title: string;
-  text: string;
+  characters: ArcEntry[];
+  worlds: ArcEntry[];
 }
 
 export interface BuildData {
-  steps: BuildStep[];
+  support: string;
+  visibleNote: string;
+  nodes: { num: string; title: string }[];
+  nextLabel: string;
+  reveal: { image: MediaItem; heading: string; headingAccent: string; narrator: string };
 }
 
 export interface ContactData {
@@ -118,6 +101,7 @@ export interface ContactData {
   email: string;
   resumeLabel: string;
   resumeUrl: string;
+  socials: { label: string; url: string }[];
   portrait: MediaItem;
 }
 
@@ -143,19 +127,21 @@ const slot = (label: string, kind: MediaKind = "image", emptyLines?: string[]): 
   emptyLines: emptyLines ?? ["ADD IMAGE"],
 });
 
-const emptyDossier = (): Dossier => ({ role: "", project: "", description: "", tools: "", idea: "", process: "" });
-
 export const defaultData: PortfolioData = {
   hero: {
-    morningLabel: "MORNING",
-    greeting: "A beautiful morning to you, welcome in.",
+    greetings: {
+      MORNING: "A beautiful morning to you, welcome in.",
+      AFTERNOON: "A beautiful afternoon to you, welcome in.",
+      EVENING: "A beautiful evening to you, welcome in.",
+    },
+    aboutLabel: "ABOUT ME:",
     nameA: "C. BALA",
     nameB: "KRISHNAN",
     chips: ["CREATIVE DIRECTION", "GENERATIVE AI", "VISUAL DEVELOPMENT", "CINEMATIC STORYTELLING"],
     description:
       "I walk into unfamiliar projects with minimal starting information — figure out the problem, build the visual language, and carry the work from first idea to final delivery.",
     ctaPrimary: "ENTER THE WORK →",
-    ctaSecondary: "INDEX ↓",
+    ctaSecondary: "MY EXPERTISE ↓",
     images: [
       slot("IMAGE 01", "image", ["ADD PORTRAIT", "IN STUDIO"]),
       slot("IMAGE 02", "image", ["ADD PORTRAIT", "IN STUDIO"]),
@@ -226,21 +212,56 @@ export const defaultData: PortfolioData = {
   },
 
   core: [
-    { id: "d1", num: "01", name: "CREATIVE DIRECTION", icon: "direction", blurb: "Setting the visual north star — taste, tone and intent that keep every frame accountable.", tags: ["VISION", "TONE", "DECISION"] },
-    { id: "d2", num: "02", name: "GENERATIVE AI", icon: "generative", blurb: "Image and video models pushed past defaults into controlled, repeatable visual output.", tags: ["MODELS", "CONTROL", "OUTPUT"] },
-    { id: "d3", num: "03", name: "VISUAL DEVELOPMENT", icon: "visualdev", blurb: "Keyframes, palettes and style frames that define the look before a single shot is made.", tags: ["KEYFRAMES", "PALETTE", "STYLE"] },
-    { id: "d4", num: "04", name: "CINEMATIC STORYTELLING", icon: "cinematic", blurb: "Camera language, pacing, sequence design and visual storytelling built for cinematic continuity.", tags: ["CONCEPT", "STYLE FRAMES", "COLOR & LIGHT"] },
-    { id: "d5", num: "05", name: "AI IMAGE + VIDEO", icon: "aivideo", blurb: "Still and moving generation directed like live footage — framed, lit and graded.", tags: ["STILLS", "MOTION", "GRADE"] },
-    { id: "d6", num: "06", name: "CHARACTER DEVELOPMENT", icon: "character", blurb: "Identity locking, persona sheets and performance consistency across full sequences.", tags: ["IDENTITY", "SHEETS", "CONSISTENCY"] },
-    { id: "d7", num: "07", name: "ENVIRONMENT DESIGN", icon: "environment", blurb: "Worlds built from reference, mood and logic — places that can hold a camera.", tags: ["WORLDS", "MOOD", "LOGIC"] },
-    { id: "d8", num: "08", name: "AI CREATIVE WORKFLOWS", icon: "workflows", blurb: "Pipelines that turn raw generation into a reliable, repeatable production line.", tags: ["PIPELINE", "ITERATION", "SCALE"] },
-    { id: "d9", num: "09", name: "PROMPT ARCHITECTURE", icon: "prompt", blurb: "Structured language systems that make models behave like a trained crew.", tags: ["SYSTEMS", "SYNTAX", "CONTROL"] },
+    {
+      id: "d1", num: "01", name: "CREATIVE DIRECTION", icon: "direction",
+      blurb: "Deciding what the work is before deciding how it looks — taste, tone and intent translated into a north star the whole team can steer by. Every frame has to answer to the direction, not the other way around.",
+      tags: ["VISION", "TONE", "DECISION"],
+    },
+    {
+      id: "d2", num: "02", name: "GENERATIVE AI", icon: "generative",
+      blurb: "Pushing image and video models past their defaults with structured control — seeds, checkpoints and custom pipelines tuned until output behaves like a trained crew instead of a slot machine.",
+      tags: ["MODELS", "CONTROL", "PIPELINES"],
+    },
+    {
+      id: "d3", num: "03", name: "VISUAL DEVELOPMENT", icon: "visualdev",
+      blurb: "Keyframes, palettes and style frames that lock the look before production starts — the reference system every shot, character and environment must agree with.",
+      tags: ["KEYFRAMES", "PALETTE", "STYLE FRAMES"],
+    },
+    {
+      id: "d4", num: "04", name: "CINEMATIC STORYTELLING", icon: "cinematic",
+      blurb: "Camera language, pacing, sequence design and visual storytelling built for cinematic continuity — beats that cut together, not just images that look good alone.",
+      tags: ["CAMERA", "PACING", "CONTINUITY"],
+    },
+    {
+      id: "d5", num: "05", name: "AI IMAGE + VIDEO", icon: "aivideo",
+      blurb: "Directing stills and motion generation like live footage — framing, lighting, lens behaviour and grade applied after generation so the output survives contact with an edit.",
+      tags: ["STILLS", "MOTION", "GRADE"],
+    },
+    {
+      id: "d6", num: "06", name: "CHARACTER DEVELOPMENT", icon: "character",
+      blurb: "Identity locking, persona sheets and performance consistency across full sequences — the same face, costume and attitude in every frame, from concept to final comp.",
+      tags: ["IDENTITY", "SHEETS", "CONSISTENCY"],
+    },
+    {
+      id: "d7", num: "07", name: "ENVIRONMENT DESIGN", icon: "environment",
+      blurb: "Worlds built from reference, mood and physical logic — scale, weather and wear decided up front so environments can hold a camera move, not just a wallpaper frame.",
+      tags: ["WORLDS", "MOOD", "LOGIC"],
+    },
+    {
+      id: "d8", num: "08", name: "AI CREATIVE WORKFLOWS", icon: "workflows",
+      blurb: "Pipelines that turn raw generation into repeatable production — versioning, checkpoints and review gates so quality survives deadlines, handoffs and scale.",
+      tags: ["PIPELINE", "ITERATION", "SCALE"],
+    },
+    {
+      id: "d9", num: "09", name: "PROMPT ARCHITECTURE", icon: "prompt",
+      blurb: "Structured language systems — layered syntax, constraint blocks and style grammars — that make models behave predictably across hundreds of generations.",
+      tags: ["SYSTEMS", "SYNTAX", "CONTROL"],
+    },
   ],
 
   showReel: {
     portraits: [
-      slot("PORTRAIT 01"), slot("PORTRAIT 02"), slot("PORTRAIT 03"),
-      slot("PORTRAIT 04"), slot("PORTRAIT 05"),
+      slot("PORTRAIT 01"), slot("PORTRAIT 02"), slot("PORTRAIT 03"), slot("PORTRAIT 04"), slot("PORTRAIT 05"),
     ],
     landscapes: [
       slot("LANDSCAPE 01"), slot("LANDSCAPE 02"), slot("LANDSCAPE 03"),
@@ -258,34 +279,43 @@ export const defaultData: PortfolioData = {
     tools: ["HIGGSFIELD", "COMFYUI", "CLAUDE", "DZINE", "CAPCUT"],
     video: slot("FEATURED VIDEO", "video", ["ADD VIDEO"]),
     images: [
-      slot("STILL 01"), slot("STILL 02"), slot("STILL 03"), slot("STILL 04"),
-      slot("STILL 05"), slot("STILL 06"), slot("STILL 07"), slot("STILL 08"),
+      slot("01 IDEA"), slot("02 WORLD"), slot("03 CHARACTER"), slot("04 SYSTEM"),
+      slot("05 VISUAL DEVELOPMENT"), slot("06 EXPLORATION"), slot("07 SEQUENCE"), slot("08 FINAL"),
     ],
   },
 
   arc: {
     characters: [
-      { id: "c1", name: "CHARACTER SLOT 01", image: slot("PORTRAIT 01", "image", ["ADD IMAGE", "9 : 16"]), dossier: emptyDossier() },
-      { id: "c2", name: "CHARACTER SLOT 02", image: slot("PORTRAIT 02", "image", ["ADD IMAGE", "9 : 16"]), dossier: emptyDossier() },
-      { id: "c3", name: "CHARACTER SLOT 03", image: slot("PORTRAIT 03", "image", ["ADD IMAGE", "9 : 16"]), dossier: emptyDossier() },
-      { id: "c4", name: "CHARACTER SLOT 04", image: slot("PORTRAIT 04", "image", ["ADD IMAGE", "9 : 16"]), dossier: emptyDossier() },
+      { id: "c1", name: "CHARACTER SLOT 01", image: slot("PORTRAIT 01", "image", ["ADD IMAGE", "9 : 16"]), tools: "", description: "" },
+      { id: "c2", name: "CHARACTER SLOT 02", image: slot("PORTRAIT 02", "image", ["ADD IMAGE", "9 : 16"]), tools: "", description: "" },
+      { id: "c3", name: "CHARACTER SLOT 03", image: slot("PORTRAIT 03", "image", ["ADD IMAGE", "9 : 16"]), tools: "", description: "" },
+      { id: "c4", name: "CHARACTER SLOT 04", image: slot("PORTRAIT 04", "image", ["ADD IMAGE", "9 : 16"]), tools: "", description: "" },
     ],
     worlds: [
-      { id: "w1", name: "WORLD SLOT 01", image: slot("LANDSCAPE 01", "image", ["ADD IMAGE", "16 : 9"]), dossier: emptyDossier() },
-      { id: "w2", name: "WORLD SLOT 02", image: slot("LANDSCAPE 02", "image", ["ADD IMAGE", "16 : 9"]), dossier: emptyDossier() },
-      { id: "w3", name: "WORLD SLOT 03", image: slot("LANDSCAPE 03", "image", ["ADD IMAGE", "16 : 9"]), dossier: emptyDossier() },
-      { id: "w4", name: "WORLD SLOT 04", image: slot("LANDSCAPE 04", "image", ["ADD IMAGE", "16 : 9"]), dossier: emptyDossier() },
+      { id: "w1", name: "WORLD SLOT 01", image: slot("LANDSCAPE 01", "image", ["ADD IMAGE", "16 : 9"]), tools: "", description: "" },
+      { id: "w2", name: "WORLD SLOT 02", image: slot("LANDSCAPE 02", "image", ["ADD IMAGE", "16 : 9"]), tools: "", description: "" },
+      { id: "w3", name: "WORLD SLOT 03", image: slot("LANDSCAPE 03", "image", ["ADD IMAGE", "16 : 9"]), tools: "", description: "" },
+      { id: "w4", name: "WORLD SLOT 04", image: slot("LANDSCAPE 04", "image", ["ADD IMAGE", "16 : 9"]), tools: "", description: "" },
     ],
   },
 
   build: {
-    steps: [
-      { num: "01", title: "DECODE", text: "Walk in with almost nothing. Extract the real problem, the audience and the constraints before a single visual is made." },
-      { num: "02", title: "LANGUAGE", text: "Build the visual language — reference, palette, typography and motion rules that every asset must obey." },
-      { num: "03", title: "SYSTEMS", text: "Turn the language into a pipeline: prompts, tools and checkpoints so quality survives scale and deadlines." },
-      { num: "04", title: "CINEMA", text: "Direct the output like footage — camera, pacing, light and continuity until sequences hold together." },
-      { num: "05", title: "DELIVERY", text: "Carry it to final delivery: versioning, handoff, and the last five percent that separates shipped from almost." },
+    support: "One mark, five moves — every project walks the same path, from blind briefing to final delivery.",
+    visibleNote: "The visible part of the process — exactly four nodes. What happens between and beyond them stays where it belongs.",
+    nodes: [
+      { num: "01", title: "IDEA" },
+      { num: "02", title: "REFERENCE" },
+      { num: "03", title: "VISUAL DEVELOPMENT" },
+      { num: "04", title: "GENERATION" },
     ],
+    nextLabel: "NEXT",
+    reveal: {
+      image: slot("REVEAL FRAME", "image", ["ADD IMAGE", "BEYOND THE VISIBLE"]),
+      heading: "AND A LOT MORE",
+      headingAccent: "LAYERS TO GO.",
+      narrator:
+        "These 4 nodes are just basic process. Everything that makes the work hold and progress are discussed while working as there's no \"Template\" for direction, so the part you don't get to see is the part you get to feel.",
+    },
   },
 
   contact: {
@@ -296,6 +326,11 @@ export const defaultData: PortfolioData = {
     email: "bala@cbk.studio",
     resumeLabel: "DOWNLOAD MY RESUME",
     resumeUrl: "",
+    socials: [
+      { label: "LINKEDIN", url: "https://www.linkedin.com/in/c-bala-krishnan" },
+      { label: "WHATSAPP", url: "" },
+      { label: "INSTAGRAM", url: "" },
+    ],
     portrait: slot("PORTRAIT", "image", ["ADD PORTRAIT", "9 : 16"]),
   },
 };
