@@ -37,9 +37,16 @@ export function SectionHead({
     <Reveal>
       <div id={id} className="scroll-mt-28 border-b border-[var(--line)] pb-6">
         <div className="flex items-end justify-between gap-6">
-          <span className="f-mono text-[11px] sm:text-xs tracking-[0.3em] text-[var(--ink2)]">
-            <span className="text-[var(--crimson)]">{numPart.trim()}</span>
-            {namePart ? ` — ${namePart}` : ""}
+          {/* compact technical label — small index + dash + section name */}
+          <span className="inline-flex items-center gap-2.5 f-mono text-[10px] sm:text-[11px] tracking-[0.26em] text-[var(--ink2)] border border-[var(--line)] rounded-[6px] px-3 py-1.5"
+            style={{ background: "color-mix(in srgb, var(--sup1) 55%, transparent)" }}>
+            <span className="text-[var(--crimson)] font-semibold">{numPart.trim()}</span>
+            {namePart ? (
+              <>
+                <span aria-hidden>—</span>
+                <span style={{ color: "var(--ink)" }}>{namePart}</span>
+              </>
+            ) : null}
           </span>
           {meta && (
             <span className="f-mono text-[10px] sm:text-[11px] tracking-[0.22em] text-[var(--ink2)] pb-0.5 hidden md:block shrink-0">{meta}</span>

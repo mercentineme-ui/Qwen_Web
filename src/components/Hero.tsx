@@ -10,6 +10,14 @@ const getDaypart = (): Daypart => {
 };
 const daypartWord: Record<Daypart, string> = { MORNING: "Morning", AFTERNOON: "Afternoon", EVENING: "Evening" };
 
+/* older persisted chip titles normalize to the current role set */
+const LEGACY_CHIP: Record<string, string> = {
+  "CREATIVE DIRECTION": "CREATIVE DIRECTOR",
+  "GENERATIVE AI": "GEN AI ARTIST",
+  "VISUAL DEVELOPMENT": "VISUAL DESIGNER",
+  "CINEMATIC STORYTELLING": "AI PIPELINE ARCHITECT",
+};
+
 /* legacy-safe greeting: always renders
    parts[0] + <crimson daypart word> + parts[1]  — never a duplicated word */
 function buildGreeting(raw: string, daypart: Daypart): [string, string] {
@@ -203,28 +211,42 @@ export default function Hero() {
             </p>
           </div>
 
-          {/* creative tag strip — premium micro-UI tiles, readable sizes */}
+          {/* creative tag strip — cyberpunk clipped dossier tiles, STRIKER role type */}
           <div className="mt-9 grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-3.5">
-            {h.chips.map((c, i) => (
-              <div key={c}
-                className="group mat-outer mat-texture rounded-[10px] px-4 pt-4 pb-4 relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_34px_-18px_rgba(0,0,0,0.55)] active:translate-y-0 active:scale-[0.985]">
-                <span className="absolute top-0 right-0 w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-300"
-                  style={{ background: "linear-gradient(225deg, var(--crimson) 0 50%, transparent 50%)" }} />
-                <div className="flex items-center justify-between">
-                  <span className="f-mono font-semibold text-[11px] tracking-[0.24em]" style={{ color: "var(--crimson-strong)" }}>
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="w-1.5 h-1.5 rounded-full transition-all duration-300 group-hover:scale-125"
-                    style={{ background: "var(--crimson-strong)", opacity: 0.55 }} />
+            {h.chips.map((c, i) => {
+              const title = LEGACY_CHIP[c] ?? c;
+              return (
+                <div key={c}
+                  className="group mat-outer mat-texture relative transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_34px_-18px_rgba(0,0,0,0.55)] active:translate-y-0 active:scale-[0.985]"
+                  style={{ clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)" }}>
+                  {/* inset technical frame */}
+                  <span aria-hidden className="absolute inset-[5px] pointer-events-none"
+                    style={{ border: "1px solid color-mix(in srgb, var(--outer-ink) 22%, transparent)", clipPath: "inherit" }} />
+                  {/* corner notch — hover response */}
+                  <span className="absolute top-0 right-0 w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: "linear-gradient(225deg, var(--crimson) 0 50%, transparent 50%)" }} />
+                  <div className="relative px-4 pt-4 pb-4">
+                    <div className="flex items-center justify-between">
+                      <span className="f-mono font-semibold text-[10px] tracking-[0.2em] px-1.5 py-0.5 rounded-[4px] bg-[var(--crimson)] text-[#f4f2ed]">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="w-1.5 h-1.5 rotate-45 transition-transform duration-300 group-hover:rotate-[135deg] group-hover:scale-125"
+                        style={{ background: "color-mix(in srgb, var(--outer-ink) 45%, transparent)" }} />
+                    </div>
+                    <span className="mt-3.5 block f-striker text-[12.5px] sm:text-[13.5px] tracking-[0.05em] leading-tight" style={{ color: "var(--outer-ink)" }}>
+                      {title}
+                    </span>
+                    {/* structural tick + underline edge response */}
+                    <div className="mt-3.5 flex items-center gap-1.5">
+                      <span className="h-[2px] flex-1 rounded overflow-hidden" style={{ background: "color-mix(in srgb, var(--outer-ink) 16%, transparent)" }}>
+                        <span className="block h-full w-full bg-[var(--crimson)] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-400" />
+                      </span>
+                      <span className="w-1.5 h-[2px] bg-[var(--crimson)]" />
+                    </div>
+                  </div>
                 </div>
-                <span className="mt-3 block f-tech font-bold text-[14px] sm:text-[15px] tracking-[0.08em] leading-tight" style={{ color: "var(--outer-ink)" }}>
-                  {c}
-                </span>
-                <span className="mt-3.5 block h-[2px] w-full rounded overflow-hidden" style={{ background: "color-mix(in srgb, var(--outer-ink) 16%, transparent)" }}>
-                  <span className="block h-full w-full bg-[var(--crimson)] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-400" />
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* CTAs + rotation counter (counter lives outside the circle) */}

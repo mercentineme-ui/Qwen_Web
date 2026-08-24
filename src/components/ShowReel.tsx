@@ -222,8 +222,8 @@ export default function ShowReel() {
               </div>
             </div>
 
-            {/* sea / ship visual */}
-            <div className="relative h-[112px] sm:h-[128px] mx-2 sm:mx-4 mt-2 overflow-hidden text-[var(--ink)]">
+            {/* sea / ship visual — extra headroom so the LAND AHOY! dialogue is never clipped */}
+            <div className="relative h-[138px] sm:h-[152px] mx-2 sm:mx-4 mt-2 overflow-hidden text-[var(--ink)]">
               <svg className="absolute inset-x-0 bottom-4 w-full h-10 text-[var(--ink2)]" viewBox="0 0 1200 40" preserveAspectRatio="none" fill="none">
                 {[10, 20, 30].map((y, i) => (
                   <path key={y} d={`M0 ${y} q 30 -7 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0`}
@@ -251,7 +251,7 @@ export default function ShowReel() {
                 <div className={`relative ship-bob transition-colors duration-500 ${arrived ? "text-[var(--crimson)]" : "text-[var(--ink)]"}`}>
                   <GreekShip size={140} arrived={arrived} />
                   {arrived && (
-                    <span className="ahoy-pop absolute -top-8 left-1/2 -translate-x-[30%] whitespace-nowrap f-tech font-bold text-[10px] tracking-[0.2em] px-3 py-1.5 rounded-lg bg-[var(--ink)] text-[var(--page)]"
+                    <span className="ahoy-pop absolute -top-7 left-1/2 -translate-x-[30%] z-20 whitespace-nowrap f-tech font-bold text-[10px] tracking-[0.2em] px-3 py-1.5 rounded-lg bg-[var(--ink)] text-[var(--page)]"
                       style={{ clipPath: "polygon(0 0, 100% 0, 100% 78%, 34% 78%, 26% 100%, 20% 78%, 0 78%)" }}>
                       LAND AHOY!
                     </span>

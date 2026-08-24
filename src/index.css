@@ -95,6 +95,19 @@ body {
 .dark .mat-inner { background-color: #1b1c20; color: #e7e6e1; }
 .mat-page-card { background-color: var(--sup1); color: var(--ink); }
 
+/* MY JOURNEY dossier material — rough matte black on light,
+   the SAME deep matte black on dark (never flips to white) */
+.mat-journey {
+  background-color: #1b1c20;
+  color: #e7e6e1;
+  --outer-bg: #1b1c20;
+  --outer-ink: #e7e6e1;
+  --m-line: rgba(231, 230, 225, 0.16);
+  --m-sub: rgba(231, 230, 225, 0.62);
+}
+.dark .mat-journey { background-color: #16171b; --outer-bg: #16171b; }
+.dark .mat-journey .mat-inner { background-color: #232429; color: #e7e6e1; }
+
 /* ---------- shapes ---------- */
 .chamfer { clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px); }
 .dossier-clip { clip-path: polygon(22px 0, 100% 0, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%, 0 22px); }

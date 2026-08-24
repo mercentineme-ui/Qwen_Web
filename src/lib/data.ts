@@ -137,7 +137,7 @@ export const defaultData: PortfolioData = {
     aboutLabel: "ABOUT ME:",
     nameA: "C.BALA",
     nameB: "KRISHNAN",
-    chips: ["CREATIVE DIRECTION", "GENERATIVE AI", "VISUAL DEVELOPMENT", "CINEMATIC STORYTELLING"],
+    chips: ["CREATIVE DIRECTOR", "GEN AI ARTIST", "VISUAL DESIGNER", "AI PIPELINE ARCHITECT"],
     description:
       "I walk into unfamiliar projects with minimal starting information — figure out the problem, build the visual language, and carry the work from first idea to final delivery.",
     ctaPrimary: "CREATIVES →",
