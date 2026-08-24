@@ -97,38 +97,33 @@ export const PaperPlane = (p: P) => (
   </svg>
 );
 
-/* ---- ODYSSEY : solid 2D graphic ancient galley, muted green color blocking ---- */
+/* ---- ODYSSEY : solid 2D graphic ancient galley — strict black/white blocking ---- */
 export const GreekShip = (p: P & { arrived?: boolean }) => {
   const s = p.size ?? 128;
-  const HULL = "#4e6e58";
-  const HULL_D = "#38523f";
-  const TRIM = "#2b3f31";
-  const SAIL = "#e7e6e1";
-  const SAIL_D = "#c9c8c0";
   return (
     <svg width={s} height={s * 0.62} viewBox="0 0 128 80" fill="none" className={p.className}>
       {/* hull — solid blocked shape */}
-      <path d="M8 46c4 12 20 20 56 20s52-8 56-20l-10 2c-6 8-20 12-46 12s-40-4-46-12z" fill={HULL_D} />
-      <path d="M10 40c8 12 24 18 54 18s46-6 54-18l-4-6H14z" fill={HULL} />
+      <path d="M8 46c4 12 20 20 56 20s52-8 56-20l-10 2c-6 8-20 12-46 12s-40-4-46-12z" fill="currentColor" opacity="0.55" />
+      <path d="M10 40c8 12 24 18 54 18s46-6 54-18l-4-6H14z" fill="currentColor" />
       {/* trim band + oar ports */}
-      <rect x="16" y="38" width="96" height="5" fill={TRIM} />
-      {[28, 42, 56, 70, 84, 98].map((x) => <rect key={x} x={x} y="39.4" width="5" height="2.4" fill={SAIL} opacity="0.85" />)}
+      <rect x="16" y="38" width="96" height="5" fill="currentColor" opacity="0.8" />
+      {[28, 42, 56, 70, 84, 98].map((x) => <rect key={x} x={x} y="39.4" width="5" height="2.4" fill="var(--page)" opacity="0.9" />)}
       {/* prow + stern (solid, curved) */}
-      <path d="M10 40C5 32 5 22 12 12c1.6 6 4 10 8 12l-3 9z" fill={HULL_D} />
-      <path d="M12 12c3-2 6-2 8 0-3 1-5 3-6 6z" fill={TRIM} />
-      <path d="M118 40c5-8 5-18-2-28-1.6 6-4 10-8 12l3 9z" fill={HULL_D} />
+      <path d="M10 40C5 32 5 22 12 12c1.6 6 4 10 8 12l-3 9z" fill="currentColor" opacity="0.7" />
+      <path d="M12 12c3-2 6-2 8 0-3 1-5 3-6 6z" fill="currentColor" />
+      <path d="M118 40c5-8 5-18-2-28-1.6 6-4 10-8 12l3 9z" fill="currentColor" opacity="0.7" />
       {/* oars */}
-      <g stroke={TRIM} strokeWidth="2" strokeLinecap="round">
+      <g stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.8">
         {[30, 44, 58, 72, 86].map((x) => <path key={x} d={`M${x} 46l-7 12`} />)}
       </g>
       {/* mast + solid sail */}
-      <rect x="61.5" y="6" width="5" height="34" fill={TRIM} />
-      <path d="M36 10h56l-7 24H43z" fill={SAIL} />
-      <path d="M36 10h56l-2 7H38z" fill={SAIL_D} />
-      <rect x="58" y="17" width="12" height="17" fill={HULL} opacity="0.9" />
+      <rect x="61.5" y="6" width="5" height="34" fill="currentColor" />
+      <path d="M36 10h56l-7 24H43z" fill="var(--page)" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M36 10h56l-2 7H38z" fill="currentColor" opacity="0.22" />
+      <rect x="58" y="17" width="12" height="17" fill="currentColor" opacity="0.9" />
       {/* flag — hoists on arrival */}
       <g className="flag-hoist" style={{ transform: p.arrived ? "translateY(0)" : "translateY(9px)", opacity: p.arrived ? 1 : 0, transition: "transform .9s cubic-bezier(.2,.9,.25,1.2), opacity .5s ease" }}>
-        <rect x="62.6" y="-4" width="2.4" height="12" fill={TRIM} />
+        <rect x="62.6" y="-4" width="2.4" height="12" fill="currentColor" />
         <path d="M65 -4h15l-4 4.5 4 4.5H65z" fill="#e32240" />
       </g>
     </svg>

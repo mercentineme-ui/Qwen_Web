@@ -140,15 +140,15 @@ export default function CreativeCore() {
                     return (
                       <g key={i} className={reduced ? undefined : "wedge-rock"} style={{ animationDelay: `${i * 0.65}s` }}>
                         <path d={wedgePath(i)}
-                          fill={litOn ? "color-mix(in srgb, var(--surge) 9%, transparent)" : "var(--sup2)"}
-                          stroke={litOn ? surge : "var(--line)"}
-                          strokeWidth={litOn ? 1.6 : 1.5}
+                          fill={litOn ? "color-mix(in srgb, var(--surge) 16%, var(--wedge-fill))" : "var(--wedge-fill)"}
+                          stroke={litOn ? surge : "var(--wedge-line)"}
+                          strokeWidth={litOn ? 1.6 : 0.8}
                           style={{ transition: "fill .25s ease, stroke .25s ease", filter: litOn ? "drop-shadow(0 0 6px rgba(88,200,238,0.5))" : undefined }} />
                         <g opacity={litOn ? 1 : undefined} className={litOn ? undefined : reduced ? undefined : "wedge-hot"}
                           style={litOn ? undefined : { animationDelay: `${i * 0.8}s` }}>
                           {wedgeLines(i).map((l) => (
                             <line key={l.k} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2}
-                              stroke={surge} strokeWidth={l.k === 1 ? 1.4 : 0.9} strokeLinecap="round" />
+                              stroke={surge} strokeWidth={l.k === 1 ? 1.9 : 1.15} strokeLinecap="round" />
                           ))}
                         </g>
                       </g>
@@ -157,24 +157,23 @@ export default function CreativeCore() {
                 </g>
 
                 {/* concentric rings — counter rotation + radial breathing */}
-                <circle cx="300" cy="300" r="88" fill="var(--sup1)" stroke="var(--line)" strokeWidth="1.5" />
+                <circle cx="300" cy="300" r="88" fill="var(--wedge-fill)" stroke="var(--wedge-line)" strokeWidth="1.5" />
                 <g className={reduced ? undefined : "react-spin-mid"}>
-                  <circle cx="300" cy="300" r="72" fill="none" stroke="var(--ink2)" strokeOpacity="0.6" strokeWidth="1.2" strokeDasharray="10 6" />
+                  <circle cx="300" cy="300" r="72" fill="none" stroke={surge} strokeOpacity="0.45" strokeWidth="1.2" strokeDasharray="10 6" />
                   {[0, 120, 240].map((a) => {
                     const [x, y] = polar(300, 300, 72, a);
-                    return <rect key={a} x={x - 4} y={y - 4} width="8" height="8" fill="var(--ink2)" opacity="0.8" />;
+                    return <rect key={a} x={x - 4} y={y - 4} width="8" height="8" fill={surge} opacity="0.7" />;
                   })}
                 </g>
                 <g className={reduced ? undefined : "react-breath"}
                   style={phase === 2 ? { filter: "drop-shadow(0 0 22px rgba(88,200,238,0.8))" } : undefined}>
-                  <circle cx="300" cy="300" r="52" fill="var(--sup2)" stroke="var(--line)" strokeWidth="1.5" />
-                  <circle cx="300" cy="300" r="34" fill="var(--ink)" stroke={surgeOn ? surge : "none"} strokeWidth={surgeOn ? 1.4 : 0}
-                    style={{ transition: "stroke .4s ease" }} />
-                  <circle cx="300" cy="300" r="20" fill="var(--page)" stroke="var(--crimson)" strokeWidth="2.5" />
+                  <circle cx="300" cy="300" r="52" fill="#191a1e" stroke="var(--wedge-line)" strokeWidth="1.5" />
+                  <circle cx="300" cy="300" r="34" fill="#141519" stroke={surge} strokeWidth="1.6" />
+                  <circle cx="300" cy="300" r="20" fill="#101116" stroke={surge} strokeWidth="2.2" />
                   {/* techno sphere — layered counter-rotating micro geometry + signal blink */}
-                  <circle cx="300" cy="300" r="13.5" fill="none" stroke="var(--ink2)" strokeWidth="1.1" strokeDasharray="5 4"
+                  <circle cx="300" cy="300" r="13.5" fill="none" stroke={surge} strokeOpacity="0.6" strokeWidth="1.1" strokeDasharray="5 4"
                     className={reduced ? undefined : "react-spin-mid"} style={{ animationDuration: "18s" }} />
-                  <rect x="293" y="293" width="14" height="14" fill="none" stroke="var(--crimson)" strokeWidth="1" opacity="0.85"
+                  <rect x="293" y="293" width="14" height="14" fill="none" stroke={surge} strokeOpacity="0.85" strokeWidth="1"
                     className={reduced ? undefined : "react-spin"} style={{ animationDuration: "14s" }} />
                   <circle cx="300" cy="300" r="3" fill="var(--crimson)" className={reduced ? undefined : "live-blink"} />
                 </g>
@@ -209,9 +208,9 @@ export default function CreativeCore() {
 
                 {/* ONE small crimson bloom triangle — tracks mouse direction, settles outward at top */}
                 <g ref={headRef} transform="rotate(0 300 300)">
-                  <g className={reduced ? undefined : "head-pulse"} style={{ filter: "drop-shadow(0 0 7px rgba(227,34,64,0.6))" }}>
-                    <polygon points="300,212 289,232 311,232" fill="var(--crimson)" />
-                    <polygon points="300,218 294,230 306,230" fill="#f4f2ed" opacity="0.3" />
+                  <g className={reduced ? undefined : "head-pulse"} style={{ filter: "drop-shadow(0 0 8px rgba(227,34,64,0.65))" }}>
+                    <path d="M300 194 Q303 212 319 223 Q300 217 281 223 Q297 212 300 194 Z" fill="var(--crimson)" />
+                    <path d="M300 203 Q301.6 212 309 218 Q300 215 291 218 Q298.4 212 300 203 Z" fill="#f4f2ed" opacity="0.26" />
                   </g>
                 </g>
               </svg>
@@ -220,7 +219,7 @@ export default function CreativeCore() {
               {disciplines.map((dis, i) => {
                 const Icon = disciplineIcons[dis.icon] ?? disciplineIcons.direction;
                 const isActive = i === sel;
-                const [x, y] = polar(50, 50, 46.5, (i / disciplines.length) * 360);
+                const [x, y] = polar(50, 50, 39.5, (i / disciplines.length) * 360);
                 return (
                   <button key={dis.id}
                     onMouseEnter={() => setHoverIdx(i)}
@@ -233,13 +232,13 @@ export default function CreativeCore() {
                       isActive
                         ? "bg-[var(--crimson)] border-[var(--crimson)] text-[#f4f2ed] shadow-[0_12px_30px_-10px_rgba(227,34,64,0.7)] scale-110"
                         : "bg-[var(--sup1)] border-[var(--line)] text-[var(--ink)] group-hover:border-[var(--ink2)] group-hover:scale-105"
-                    }`} style={{ width: 64, height: 64 }}>
-                      <Icon size={27} strokeWidth={1.8} />
-                      <span className={`absolute -top-1.5 -left-1.5 f-mono text-[8px] tracking-widest px-1 rounded-sm ${isActive ? "bg-[#f4f2ed] text-[var(--crimson)]" : "bg-[var(--ink)] text-[var(--page)]"}`}>
+                    }`} style={{ width: 96, height: 96 }}>
+                      <Icon size={40} strokeWidth={1.7} />
+                      <span className={`absolute -top-2 -left-2 f-mono text-[9.5px] tracking-widest px-1.5 py-0.5 rounded-sm ${isActive ? "bg-[#f4f2ed] text-[var(--crimson)]" : "bg-[var(--ink)] text-[var(--page)]"}`}>
                         {dis.num}
                       </span>
                     </span>
-                    <span className={`f-tech font-bold text-[10.5px] tracking-[0.12em] text-center leading-tight max-w-[92px] transition-colors duration-300 ${isActive ? "text-[var(--crimson)]" : "text-[var(--ink2)] group-hover:text-[var(--ink)]"}`}>
+                    <span className={`f-tech font-bold text-[13px] tracking-[0.1em] text-center leading-tight max-w-[118px] transition-colors duration-300 ${isActive ? "text-[var(--crimson)]" : "text-[var(--ink2)] group-hover:text-[var(--ink)]"}`}>
                       {dis.name}
                     </span>
                   </button>

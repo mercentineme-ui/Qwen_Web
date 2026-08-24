@@ -229,78 +229,9 @@ function NodeMap({
         </svg>
       </div>
 
-      {/* (legacy hub removed — replaced by node tree above) */}
-      {false && (
-        <div className="hidden" aria-hidden>
-          <svg viewBox={`0 0 88 ${H}`} fill="none">
-            <g className={reduced ? undefined : "hub-ring"} style={{ transformOrigin: "44px 208px" }}>
-              <circle cx="44" cy="208" r="26" stroke="var(--m-line)" strokeWidth="5" strokeDasharray="10 7" />
-            </g>
-            <g className={reduced ? undefined : "hub-ring-rev"} style={{ transformOrigin: "44px 208px" }}>
-              <circle cx="44" cy="208" r="16" stroke="var(--crimson)" strokeOpacity="0.75" strokeWidth="2" strokeDasharray="4 6" />
-            </g>
-            <circle cx="44" cy="208" r="5" fill="var(--crimson)" />
-            {/* techno sphere — orbiting satellite, rotating micro frame, signal blink */}
-            <g className={reduced ? undefined : "hub-ring"} style={{ transformOrigin: "44px 208px", animationDuration: "7s" }}>
-              <circle cx="44" cy="185" r="2.6" fill="var(--crimson)" opacity="0.9" />
-            </g>
-            <rect x="37" y="201" width="14" height="14" fill="none" stroke="var(--m-sub)" strokeWidth="1.1"
-              className={reduced ? undefined : "hub-ring-rev"} style={{ transformOrigin: "44px 208px", animationDuration: "12s" }} />
-            <circle cx="44" cy="208" r="1.6" fill="#f4f2ed" className={reduced ? undefined : "live-blink"} />
-            {/* vertical data channel + packet */}
-            <path d={`M44 18 V ${H - 18}`} stroke="var(--m-line)" strokeWidth="2" />
-            {!reduced && <path d={`M44 18 V ${H - 18}`} stroke="var(--crimson)" strokeWidth="2.4" className="packet" pathLength={352} />}
-            {/* junction sockets aligned to rows */}
-            {companies.map((c, i) => {
-              const y = i * ROW_H + ROW_H / 2;
-              const on = i === active;
-              return (
-                <g key={c.id}>
-                  <path d={`M30 ${y} H14`} stroke={on ? "var(--crimson)" : "var(--m-line)"} strokeWidth="3" />
-                  <rect x="24" y={y - 8} width="12" height="16" fill={on ? "var(--crimson)" : "color-mix(in srgb, var(--outer-ink) 18%, transparent)"}
-                    stroke={on ? "var(--crimson)" : "var(--m-line)"} strokeWidth="1.5" />
-                  <rect x="39" y={y - 4} width="10" height="8" transform={`rotate(45 44 ${y})`} fill={on ? "#f4f2ed" : "var(--m-line)"} />
-                </g>
-              );
-            })}
-            {[10, H - 10].map((y) => (
-              <g key={y}>
-                <circle cx="16" cy={y} r="2.4" fill="var(--m-line)" />
-                <circle cx="72" cy={y} r="2.4" fill="var(--m-line)" />
-              </g>
-            ))}
-          </svg>
-        </div>
-      </div>
 
-      {/* ---------- RIGHT : layered routing manifold ---------- */}
-      <div className="hidden md:block w-[104px] shrink-0 relative" style={{ height: H }}>
-        <svg viewBox={`0 0 104 ${H}`} className="absolute inset-0 w-full h-full" fill="none">
-          <line x1="26" y1="12" x2="26" y2={H - 12} stroke="var(--m-line)" strokeWidth="8" />
-          <line x1="70" y1="26" x2="70" y2={H - 26} stroke="var(--m-line)" strokeWidth="1.6" strokeDasharray="3 6" />
-          {!reduced && (
-            <>
-              <path d={`M26 12 V ${H - 12}`} stroke="var(--crimson)" strokeWidth="2.6" className="packet" pathLength={352} />
-              <path d={`M70 26 V ${H - 26}`} stroke="var(--crimson)" strokeWidth="1.6" className="packet-2" pathLength={352} opacity="0.8" />
-            </>
-          )}
-          {companies.map((c, i) => {
-            const y = i * ROW_H + ROW_H / 2;
-            const on = i === active;
-            return (
-              <g key={c.id}>
-                <path d={`M0 ${y} H14 L22 ${y - 8} H26`} stroke={on ? "var(--crimson)" : "var(--m-line)"} strokeWidth="2" />
-                <path d={`M26 ${y - 8} H52 L60 ${y} H70`} stroke={on ? "var(--crimson)" : "var(--m-line)"} strokeWidth="1.6" />
-                <rect x="18" y={y - 16} width="16" height="16" fill={on ? "var(--crimson)" : "color-mix(in srgb, var(--outer-ink) 14%, transparent)"}
-                  stroke={on ? "var(--crimson)" : "var(--m-line)"} strokeWidth="1.5" />
-                <rect x="66" y={y - 5} width="9" height="10" fill={on ? "var(--crimson)" : "var(--m-line)"} />
-                <path d={`M84 ${y - 10} h12 M84 ${y - 4} h8 M84 ${y + 2} h12 M84 ${y + 8} h6`}
-                  stroke={on ? "var(--crimson)" : "var(--m-line)"} strokeWidth="1.4" />
-              </g>
-            );
-          })}
-        </svg>
-      </div>
+
+
     </div>
   );
 }
@@ -389,7 +320,7 @@ export default function Expertise() {
               onMouseEnter={() => setHover(true)} onMouseLeave={() => { setHover(false); setHoverIdx(null); }}>
 
               {/* ================= CAREER INFO (LEFT) — extended so DNEG fits fully ================= */}
-              <div className="mat-inner mat-texture dossier-clip corner-bracket relative p-5 sm:p-7 flex flex-col min-h-0 overflow-hidden lg:h-[820px] order-1">
+              <div className="mat-inner mat-texture dossier-clip corner-bracket relative p-5 sm:p-7 flex flex-col min-h-0 overflow-hidden lg:min-h-[640px] order-1">
                 <span className="absolute inset-[7px] border pointer-events-none dossier-clip-sm" style={{ borderColor: "var(--m-line)" }} aria-hidden />
                 <span key={`edge-${co.id}`} className="absolute top-0 left-0 h-[3px] bg-[var(--crimson)] scan-pass" style={{ width: "46%" }} aria-hidden />
 
