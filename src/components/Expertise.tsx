@@ -159,11 +159,80 @@ function NodeMap({
         })}
       </div>
 
-      {/* ---------- CENTER : structural hub + techno sphere ---------- */}
-      <div className="hidden sm:block w-[88px] shrink-0 relative" style={{ height: H }}>
-        <div className="absolute inset-y-2 inset-x-1 mat-texture dossier-clip"
-          style={{ border: "2px solid var(--m-line)", backgroundColor: "color-mix(in srgb, var(--outer-ink) 12%, transparent)" }}>
-          <svg viewBox={`0 0 88 ${H}`} className="absolute inset-0 w-full h-full" fill="none" preserveAspectRatio="xMidYMid meet">
+      {/* ---------- RIGHT : interactive node tree / production pipeline ----------
+          COMPANY → ENTRY NODE → BRANCH → SECONDARY NODES → SPINE JUNCTION → TERMINAL ROUTE */}
+      <div className="hidden md:block w-[250px] lg:w-[280px] shrink-0 relative" style={{ height: H }}>
+        <svg viewBox={`0 0 260 ${H}`} className="absolute inset-0 w-full h-full" fill="none">
+          {/* central spine — structural rail + inner channel + ambient data */}
+          <rect x="160" y="12" width="9" height={H - 24} fill="color-mix(in srgb, var(--outer-ink) 14%, transparent)" />
+          <path d={`M164.5 12 V ${H - 12}`} stroke="var(--m-line)" strokeWidth="1" />
+          {!reduced && <path d={`M164.5 12 V ${H - 12}`} stroke="var(--crimson)" strokeWidth="2" className="packet-2" pathLength={352} opacity="0.55" />}
+          {[12, H - 12].map((yy) => (
+            <g key={yy}>
+              <rect x="156" y={yy - 5} width="17" height="10" fill="color-mix(in srgb, var(--outer-ink) 18%, transparent)" stroke="var(--m-line)" strokeWidth="1.2" />
+              <circle cx="164.5" cy={yy} r="1.8" fill="var(--m-line)" />
+            </g>
+          ))}
+
+          {companies.map((c, i) => {
+            const y = i * ROW_H + ROW_H / 2;
+            const on = i === active;
+            const col = on ? "var(--crimson)" : "var(--m-line)";
+            const yu = y - 24, yd = y + 24;
+            return (
+              <g key={c.id}>
+                {/* entry node — mechanical connector block */}
+                <rect x="0" y={y - 13} width="22" height="26"
+                  fill={on ? "color-mix(in srgb, var(--crimson) 26%, transparent)" : "color-mix(in srgb, var(--outer-ink) 12%, transparent)"}
+                  stroke={col} strokeWidth="1.5" />
+                <rect x="6" y={y - 5} width="10" height="10" fill={on ? "var(--crimson)" : "var(--m-line)"} />
+                {/* pipeline → junction node */}
+                <path d={`M22 ${y} H60`} stroke={col} strokeWidth="2.6" />
+                <circle cx="60" cy={y} r="7" fill="color-mix(in srgb, var(--outer-ink) 10%, transparent)" stroke={col} strokeWidth="1.6" />
+                <circle cx="60" cy={y} r="2.6" fill={on ? "var(--crimson)" : "var(--m-line)"} />
+                {/* branch routes → secondary nodes */}
+                <path d={`M60 ${y} L84 ${yu} H112`} stroke={col} strokeWidth="2.2" />
+                <path d={`M60 ${y} L84 ${yd} H112`} stroke={col} strokeWidth="2.2" />
+                <rect x="115.5" y={yu - 5.5} width="11" height="11" transform={`rotate(45 121 ${yu})`}
+                  fill={on ? "var(--crimson)" : "color-mix(in srgb, var(--outer-ink) 18%, transparent)"} stroke={col} strokeWidth="1.4" />
+                <rect x="115.5" y={yd - 5.5} width="11" height="11" transform={`rotate(45 121 ${yd})`}
+                  fill={on ? "var(--crimson)" : "color-mix(in srgb, var(--outer-ink) 18%, transparent)"} stroke={col} strokeWidth="1.4" />
+                {/* secondary nodes → spine junction */}
+                <path d={`M129 ${yu} H148 L160 ${y}`} stroke={col} strokeWidth="2" />
+                <path d={`M129 ${yd} H148 L160 ${y}`} stroke={col} strokeWidth="2" />
+                {/* spine junction housing */}
+                <rect x="153" y={y - 10} width="23" height="20"
+                  fill={on ? "color-mix(in srgb, var(--crimson) 88%, #1b1c20)" : "color-mix(in srgb, var(--outer-ink) 18%, transparent)"}
+                  stroke={col} strokeWidth="1.6" />
+                <circle cx="164.5" cy={y} r="2.4" fill={on ? "#f4f2ed" : "var(--m-line)"} />
+                {/* terminal route + block + chevrons + end cap */}
+                <path d={`M176 ${y} H196`} stroke={col} strokeWidth="2.4" />
+                <rect x="196" y={y - 12} width="24" height="24"
+                  fill={on ? "color-mix(in srgb, var(--crimson) 20%, transparent)" : "color-mix(in srgb, var(--outer-ink) 10%, transparent)"}
+                  stroke={col} strokeWidth="1.5" />
+                <circle cx="203" cy={y} r="2.4" fill={on ? "var(--crimson)" : "var(--m-line)"} />
+                <path d={`M209 ${y - 6} h8 M209 ${y} h6 M209 ${y + 6} h8`} stroke={col} strokeWidth="1.3" />
+                <path d={`M226 ${y} H236`} stroke={col} strokeWidth="2" />
+                <path d={`M236 ${y - 6} L244 ${y} L236 ${y + 6}`} stroke={col} strokeWidth="1.6" />
+                <path d={`M244 ${y - 6} L252 ${y} L244 ${y + 6}`} stroke={col} strokeWidth="1.6" opacity="0.7" />
+                <rect x="254" y={y - 7} width="4" height="14" fill={col} />
+                {/* active signals travelling the branch */}
+                {on && !reduced && (
+                  <>
+                    <path d={`M22 ${y} H60 L84 ${yu} H112`} stroke="var(--crimson)" strokeWidth="2.6" className="packet" pathLength={352} />
+                    <path d={`M129 ${yd} H148 L160 ${y} H196`} stroke="var(--crimson)" strokeWidth="2.2" className="packet-2" pathLength={352} opacity="0.9" />
+                  </>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+
+      {/* (legacy hub removed — replaced by node tree above) */}
+      {false && (
+        <div className="hidden" aria-hidden>
+          <svg viewBox={`0 0 88 ${H}`} fill="none">
             <g className={reduced ? undefined : "hub-ring"} style={{ transformOrigin: "44px 208px" }}>
               <circle cx="44" cy="208" r="26" stroke="var(--m-line)" strokeWidth="5" strokeDasharray="10 7" />
             </g>

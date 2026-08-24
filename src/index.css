@@ -27,6 +27,9 @@
   --hero-crimson: #b01e36; /* rough matte pigment crimson on light */
   --hdr-edge: rgba(27, 28, 32, 0.3); /* faint graphite header outline */
   --surge: #58c8ee; /* electric blue — Creative Core energy ONLY */
+  --wedge-fill: #232429; /* matte black reactor wedges — both themes */
+  --wedge-line: rgba(231, 230, 225, 0.16);
+  --clock-col: #141519; /* light clock = black */
 }
 
 .dark {
@@ -47,6 +50,7 @@
   --hero-ink: #e7e6e1;
   --hero-crimson: #ee3a54; /* slightly brighter matte crimson on graphite */
   --hdr-edge: rgba(227, 34, 64, 0.42); /* faint crimson header outline */
+  --clock-col: #ff7a1f; /* dark clock = neon orange */
 }
 
 html { scroll-behavior: smooth; }
@@ -121,8 +125,10 @@ body {
 .hdr-shell {
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 56px) 100%, 56px 100%, 0 calc(100% - 14px));
 }
-.time-neon { color: var(--crimson); }
-.dark .time-neon { text-shadow: 0 0 10px rgba(227, 34, 64, 0.5), 0 0 2px rgba(227, 34, 64, 0.75); }
+/* futuristic technical clock — black on light, neon orange on dark */
+.f-clock { font-family: "Share Tech Mono", "IBM Plex Mono", monospace; }
+.clock-num { color: var(--clock-col); }
+.dark .clock-num { text-shadow: 0 0 12px rgba(255, 122, 31, 0.55), 0 0 3px rgba(255, 122, 31, 0.85); }
 
 /* DESIGNFOLIO fluid identity — thin→bold→mixed weight→color wave→micro glitch→hops→rest */
 .logo-letter { display: inline-block; animation: logoFlow 9s cubic-bezier(0.4, 0.2, 0.3, 1) infinite; will-change: transform, filter; }
@@ -234,7 +240,7 @@ body {
 .wedge-rock { animation: wedgeRock 9s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes wedgeRock { 0%, 100% { transform: rotate(-1.4deg); } 50% { transform: rotate(1.4deg); } }
 .wedge-hot { animation: wedgeHot 5.5s ease-in-out infinite; }
-@keyframes wedgeHot { 0%, 100% { opacity: 0.28; } 50% { opacity: 0.85; } }
+@keyframes wedgeHot { 0%, 100% { opacity: 0.55; } 50% { opacity: 0.95; } }
 .head-pulse { transform-box: fill-box; transform-origin: center; animation: headPulse 2.4s ease-in-out infinite; }
 @keyframes headPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
 .surge-arc { transform-origin: 300px 300px; animation: surgeArcSpin 1.5s cubic-bezier(0.3, 0.6, 0.3, 1) 1 both; }

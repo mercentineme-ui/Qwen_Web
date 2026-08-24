@@ -4,7 +4,7 @@ import { LinkedInIcon, MoonIcon, SunIcon } from "./icons";
 
 const NAV = [
   { label: "ABOUT", href: "#about" },
-  { label: "SHOW REEL", href: "#showreel" },
+  { label: "CREATIVES", href: "#showreel" },
   { label: "AI LAB", href: "#ailab" },
   { label: "ARC", href: "#arc" },
   { label: "CONTACT ME", href: "#contact" },
@@ -77,7 +77,7 @@ export default function Header() {
             <div className="hidden md:flex flex-col items-end leading-none mr-1">
               <span className="f-mono text-[8.5px] tracking-[0.32em] text-[var(--ink2)]">LOCAL TIME</span>
               <span className="mt-1.5 flex items-baseline gap-2">
-                <span className="f-automata text-[16px] lg:text-[19px] tabular-nums tracking-[0.04em] time-neon">
+                <span className="f-clock text-[18px] lg:text-[21px] tabular-nums tracking-[0.05em] clock-num">
                   {hhmm}
                 </span>
                 <span className={`f-tech font-bold text-[10.5px] lg:text-[11.5px] tracking-[0.2em] px-1.5 py-[3px] rounded-[6px] ${

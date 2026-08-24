@@ -229,8 +229,8 @@ export default function Hero() {
 
           {/* CTAs + rotation counter (counter lives outside the circle) */}
           <div className="mt-10 flex flex-wrap items-center gap-4">
-            <a href="#showreel" className="btn btn-crimson">{h.ctaPrimary}</a>
-            <a href="#expertise" className="btn btn-ghost border-[var(--ink)] text-[var(--ink)]">{h.ctaSecondary}</a>
+            <a href="#showreel" className="btn btn-crimson">{/enter/i.test(h.ctaPrimary) ? "CREATIVES →" : h.ctaPrimary}</a>
+            <a href="#core" className="btn btn-ghost border-[var(--ink)] text-[var(--ink)]">{/index|expertise/i.test(h.ctaSecondary) ? "CREATIVE CORE ↓" : h.ctaSecondary}</a>
             <span className="f-mono text-[11px] tracking-[0.26em] text-[var(--ink2)] tabular-nums ml-1">
               <span className="text-[var(--crimson)]">{String(idx + 1).padStart(2, "0")}</span> / {String(n).padStart(2, "0")}
             </span>
@@ -273,12 +273,12 @@ export default function Hero() {
               blocks, quadrant plates, radial teeth — not line art */}
           <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden>
             <g ref={ringRef}>
-              {/* solid annulus band with engraved depth (dark cut + light shoulder) */}
-              <circle cx="50" cy="50" r="47.2" fill="none" stroke="var(--sup2)" strokeWidth="5" opacity="0.9" />
-              <circle cx="50" cy="50" r="49.4" fill="none" stroke="var(--line)" strokeWidth="0.5" />
-              <circle cx="50" cy="50" r="45" fill="none" stroke="var(--line)" strokeWidth="0.5" />
-              <path d="M50 2.2 A47.8 47.8 0 0 1 97.8 50" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="0.7" />
-              <path d="M50 97.8 A47.8 47.8 0 0 1 2.2 50" fill="none" stroke="rgba(0,0,0,0.22)" strokeWidth="0.7" />
+              {/* solid annulus band — half the previous width, with engraved depth */}
+              <circle cx="50" cy="50" r="40.7" fill="none" stroke="var(--sup2)" strokeWidth="2.4" opacity="0.9" />
+              <circle cx="50" cy="50" r="42.3" fill="none" stroke="var(--line)" strokeWidth="0.4" />
+              <circle cx="50" cy="50" r="39.5" fill="none" stroke="var(--line)" strokeWidth="0.4" />
+              <path d="M50 8.7 A41.3 41.3 0 0 1 91.3 50" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="0.6" />
+              <path d="M50 91.3 A41.3 41.3 0 0 1 8.7 50" fill="none" stroke="rgba(0,0,0,0.22)" strokeWidth="0.6" />
 
               {/* meander (greek key) — solid engraved units with structural breaks */}
               {Array.from({ length: 24 }).map((_, i) => {
@@ -286,53 +286,53 @@ export default function Hero() {
                 return (
                   <g key={i} transform={`rotate(${i * 15} 50 50)`}>
                     {isBreak ? (
-                      <rect x="47.7" y="1.6" width="4.6" height="4.6" fill="var(--sup1)" stroke="var(--ink2)" strokeWidth="0.5" transform="rotate(45 50 3.9)" />
+                      <rect x="48.8" y="8.2" width="2.4" height="2.4" fill="var(--sup1)" stroke="var(--ink2)" strokeWidth="0.45" transform="rotate(45 50 9.4)" />
                     ) : (
                       <>
-                        <path d="M45.6 1.8 h8.8 v4.6 h-6.2 v-2.3 h3.6" fill="none"
-                          stroke={hovered ? "var(--ink)" : "var(--ink2)"} strokeWidth="0.9" strokeLinecap="square"
+                        <path d="M45.6 8.2 h8.8 v2.2 h-6.2 v-1.1 h3.6" fill="none"
+                          stroke={hovered ? "var(--ink)" : "var(--ink2)"} strokeWidth="0.7" strokeLinecap="square"
                           style={{ transition: "stroke .5s ease" }} />
-                        <rect x="45.6" y="1.8" width="1.6" height="1.6" fill={hovered ? "var(--ink)" : "var(--ink2)"} style={{ transition: "fill .5s ease" }} />
+                        <rect x="45.6" y="8.2" width="1" height="1" fill={hovered ? "var(--ink)" : "var(--ink2)"} style={{ transition: "fill .5s ease" }} />
                       </>
                     )}
                   </g>
                 );
               })}
 
-              {/* quadrant construction plates under the teeth */}
+              {/* quadrant construction plates */}
               {[0, 90, 180, 270].map((deg) => (
                 <path key={deg} transform={`rotate(${deg} 50 50)`}
-                  d="M50 6.6 A43.4 43.4 0 0 1 80.7 19.3 L78 22 A39.6 39.6 0 0 0 50 10.4 Z"
-                  fill="var(--sup1)" stroke="var(--line)" strokeWidth="0.35" opacity="0.85" />
+                  d="M50 10.8 A39.2 39.2 0 0 1 77.7 22.3 L76.4 23.6 A37.4 37.4 0 0 0 50 12.6 Z"
+                  fill="var(--sup1)" stroke="var(--line)" strokeWidth="0.3" opacity="0.85" />
               ))}
 
               {/* radial teeth — solid filled, alternating depths */}
               {Array.from({ length: 72 }).map((_, i) => {
                 const a = (i * 5 * Math.PI) / 180;
                 const long = i % 6 === 0;
-                const r1 = 43.6, r2 = long ? 39.8 : 42;
+                const r1 = 39.1, r2 = 38.2;
                 const x1 = 50 + r1 * Math.cos(a), y1 = 50 + r1 * Math.sin(a);
                 const x2 = 50 + r2 * Math.cos(a), y2 = 50 + r2 * Math.sin(a);
                 return long ? (
-                  <rect key={i} x={-0.9} y={-2.4} width="1.8" height="4.8"
+                  <rect key={i} x={-0.6} y={-1.5} width="1.2" height="3"
                     transform={`translate(${x2} ${y2}) rotate(${(i * 5) + 90})`}
                     fill={hovered ? "var(--ink)" : "var(--ink2)"} opacity="0.9" />
                 ) : (
                   <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
-                    stroke="var(--ink2)" strokeWidth="0.5" opacity="0.55" />
+                    stroke="var(--ink2)" strokeWidth="0.45" opacity="0.55" />
                 );
               })}
 
               {/* layered inner engraved circles */}
-              <circle cx="50" cy="50" r="38.6" fill="none" stroke="var(--ink2)" strokeWidth="1" opacity="0.75" />
-              <circle cx="50" cy="50" r="37" fill="none" stroke="var(--ink2)" strokeWidth="0.5" strokeDasharray="0.5 2.2" opacity="0.7" />
-              <circle cx="50" cy="50" r="35.6" fill="none" stroke="var(--line)" strokeWidth="0.4" />
+              <circle cx="50" cy="50" r="36.4" fill="none" stroke="var(--ink2)" strokeWidth="0.8" opacity="0.75" />
+              <circle cx="50" cy="50" r="35.9" fill="none" stroke="var(--ink2)" strokeWidth="0.4" strokeDasharray="0.5 2.2" opacity="0.7" />
+              <circle cx="50" cy="50" r="35.5" fill="none" stroke="var(--line)" strokeWidth="0.35" />
 
               {/* cardinal laurel stops */}
               {[45, 135, 225, 315].map((deg) => {
                 const a = (deg * Math.PI) / 180;
-                const x = 50 + 47.2 * Math.cos(a), y = 50 + 47.2 * Math.sin(a);
-                return <circle key={deg} cx={x} cy={y} r="1" fill="var(--ink2)" opacity="0.85" />;
+                const x = 50 + 40.7 * Math.cos(a), y = 50 + 40.7 * Math.sin(a);
+                return <circle key={deg} cx={x} cy={y} r="0.8" fill="var(--ink2)" opacity="0.85" />;
               })}
             </g>
 
