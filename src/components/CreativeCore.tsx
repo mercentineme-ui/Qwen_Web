@@ -157,7 +157,7 @@ export default function CreativeCore() {
                 </g>
 
                 {/* concentric rings — counter rotation + radial breathing */}
-                <circle cx="300" cy="300" r="88" fill="var(--wedge-fill)" stroke="var(--wedge-line)" strokeWidth="1.5" />
+                <circle cx="300" cy="300" r="88" fill="var(--wedge-fill)" stroke={surge} strokeOpacity="0.6" strokeWidth="1.6" />
                 <g className={reduced ? undefined : "react-spin-mid"}>
                   <circle cx="300" cy="300" r="72" fill="none" stroke={surge} strokeOpacity="0.45" strokeWidth="1.2" strokeDasharray="10 6" />
                   {[0, 120, 240].map((a) => {
@@ -208,9 +208,9 @@ export default function CreativeCore() {
 
                 {/* ONE small crimson bloom triangle — tracks mouse direction, settles outward at top */}
                 <g ref={headRef} transform="rotate(0 300 300)">
-                  <g className={reduced ? undefined : "head-pulse"} style={{ filter: "drop-shadow(0 0 8px rgba(227,34,64,0.65))" }}>
-                    <path d="M300 194 Q303 212 319 223 Q300 217 281 223 Q297 212 300 194 Z" fill="var(--crimson)" />
-                    <path d="M300 203 Q301.6 212 309 218 Q300 215 291 218 Q298.4 212 300 203 Z" fill="#f4f2ed" opacity="0.26" />
+                  <g className={reduced ? undefined : "head-pulse"} style={{ filter: "drop-shadow(0 0 9px rgba(227,34,64,0.65))" }}>
+                    <path d="M300 176 Q305 204 326 221 Q300 212 274 221 Q295 204 300 176 Z" fill="var(--crimson)" />
+                    <path d="M300 190 Q302.6 204 313 213 Q300 208.5 287 213 Q297.4 204 300 190 Z" fill="#f4f2ed" opacity="0.26" />
                   </g>
                 </g>
               </svg>
@@ -219,7 +219,7 @@ export default function CreativeCore() {
               {disciplines.map((dis, i) => {
                 const Icon = disciplineIcons[dis.icon] ?? disciplineIcons.direction;
                 const isActive = i === sel;
-                const [x, y] = polar(50, 50, 39.5, (i / disciplines.length) * 360);
+                const [x, y] = polar(50, 50, 35, (i / disciplines.length) * 360);
                 return (
                   <button key={dis.id}
                     onMouseEnter={() => setHoverIdx(i)}
