@@ -36,7 +36,7 @@ export default function Header() {
           backdrop blur kept at ~30% so depth remains but type stays readable */}
       <div className="hdr-shell relative"
         style={{ backgroundColor: "color-mix(in srgb, var(--page) 88%, transparent)", backdropFilter: "blur(3px)" }}>
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 h-[64px] lg:h-[80px] flex items-center gap-4 lg:gap-6">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 h-[48px] lg:h-[58px] flex items-center gap-4 lg:gap-6">
           {/* ---------- CBK | DESIGNFOLIO ---------- */}
           <a href="#about" className="flex items-center gap-3.5 lg:gap-4 shrink-0 group" aria-label="CBK Designfolio home">
             <span className="relative f-automata text-[19px] lg:text-[22px] leading-none tracking-[0.08em] text-[var(--ink)] transition-colors duration-300 group-hover:text-[var(--crimson)]">
@@ -113,15 +113,15 @@ export default function Header() {
 
         {/* structural bottom edge — horizontal line + diagonal shoulder rises,
             faint graphite outline on light / faint crimson on dark */}
-        <div className="h-[14px] relative" aria-hidden>
-          <svg width="56" height="14" viewBox="0 0 56 14" fill="none" className="absolute left-0 bottom-0">
-            <path d="M0 0.5 L55 13.5" stroke="var(--hdr-edge)" strokeWidth="1.5" />
-            <path d="M47 12.5 h9" stroke="var(--crimson)" strokeWidth="2" />
+        <div className="h-[12px] relative" aria-hidden>
+          <svg width="52" height="12" viewBox="0 0 52 12" fill="none" className="absolute left-0 bottom-0">
+            <path d="M0 0.5 L51 11.5" stroke="var(--hdr-edge)" strokeWidth="1.5" />
+            <path d="M44 10.8 h8" stroke="var(--crimson)" strokeWidth="2" />
           </svg>
-          <div className="absolute inset-x-[56px] bottom-0 h-px" style={{ background: "var(--hdr-edge)" }} />
-          <svg width="56" height="14" viewBox="0 0 56 14" fill="none" className="absolute right-0 bottom-0">
-            <path d="M56 0.5 L1 13.5" stroke="var(--hdr-edge)" strokeWidth="1.5" />
-            <path d="M0 12.5 h9" stroke="var(--crimson)" strokeWidth="2" />
+          <div className="absolute inset-x-[52px] bottom-0 h-px" style={{ background: "var(--hdr-edge)" }} />
+          <svg width="52" height="12" viewBox="0 0 52 12" fill="none" className="absolute right-0 bottom-0">
+            <path d="M52 0.5 L1 11.5" stroke="var(--hdr-edge)" strokeWidth="1.5" />
+            <path d="M0 10.8 h8" stroke="var(--crimson)" strokeWidth="2" />
           </svg>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useReducedMotion, useStore } from "../lib/store";
 import { disciplineIcons } from "./icons";
-import { Reveal, SectionHead, Tag } from "./ui";
+import { Reveal, SectionHead } from "./ui";
 
 const polar = (cx: number, cy: number, r: number, deg: number) => {
   const a = ((deg - 90) * Math.PI) / 180;
@@ -219,7 +219,10 @@ export default function CreativeCore() {
               {disciplines.map((dis, i) => {
                 const Icon = disciplineIcons[dis.icon] ?? disciplineIcons.direction;
                 const isActive = i === sel;
-                const [x, y] = polar(50, 50, 35, (i / disciplines.length) * 360);
+                const isHover = i === hoverIdx;
+                /* medium matte nodes riding the outer circular guide — no bloom */
+                const [x, y] = polar(50, 50, 42, (i / disciplines.length) * 360);
+                const fill = isActive ? "var(--crimson)" : isHover ? "var(--hero-crimson)" : "var(--outer-bg)";
                 return (
                   <button key={dis.id}
                     onMouseEnter={() => setHoverIdx(i)}
@@ -228,17 +231,23 @@ export default function CreativeCore() {
                     className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 group"
                     style={{ left: `${x}%`, top: `${y}%` }}
                     aria-label={dis.name}>
-                    <span className={`relative grid place-items-center rounded-lg border transition-all duration-400 mat-texture ${
-                      isActive
-                        ? "bg-[var(--crimson)] border-[var(--crimson)] text-[#f4f2ed] shadow-[0_12px_30px_-10px_rgba(227,34,64,0.7)] scale-110"
-                        : "bg-[var(--sup1)] border-[var(--line)] text-[var(--ink)] group-hover:border-[var(--ink2)] group-hover:scale-105"
-                    }`} style={{ width: 96, height: 96 }}>
-                      <Icon size={40} strokeWidth={1.7} />
-                      <span className={`absolute -top-2 -left-2 f-mono text-[9.5px] tracking-widest px-1.5 py-0.5 rounded-sm ${isActive ? "bg-[#f4f2ed] text-[var(--crimson)]" : "bg-[var(--ink)] text-[var(--page)]"}`}>
+                    <span className="relative grid place-items-center rounded-lg transition-all duration-400 mat-texture"
+                      style={{
+                        width: 74, height: 74,
+                        backgroundColor: fill,
+                        color: isActive || isHover ? "#f4f2ed" : "var(--outer-ink)",
+                        boxShadow: isActive
+                          ? "inset 0 0 0 1.5px rgba(244,242,237,0.4), 0 12px 26px -14px rgba(227,34,64,0.55)"
+                          : isHover
+                            ? "inset 0 0 0 1.5px rgba(244,242,237,0.3)"
+                            : "inset 0 0 0 1.5px color-mix(in srgb, var(--outer-ink) 22%, transparent)",
+                      }}>
+                      <Icon size={30} strokeWidth={1.8} />
+                      <span className={`absolute -top-2 -left-2 f-mono text-[9px] tracking-widest px-1.5 py-0.5 rounded-sm ${isActive || isHover ? "bg-[#f4f2ed] text-[var(--crimson)]" : "bg-[var(--outer-ink)] text-[var(--outer-bg)]"}`}>
                         {dis.num}
                       </span>
                     </span>
-                    <span className={`f-tech font-bold text-[13px] tracking-[0.1em] text-center leading-tight max-w-[118px] transition-colors duration-300 ${isActive ? "text-[var(--crimson)]" : "text-[var(--ink2)] group-hover:text-[var(--ink)]"}`}>
+                    <span className={`f-tech font-bold text-[12px] tracking-[0.1em] text-center leading-tight max-w-[104px] transition-colors duration-300 ${isActive ? "text-[var(--crimson)]" : "text-[var(--ink2)] group-hover:text-[var(--crimson)]"}`}>
                       {dis.name}
                     </span>
                   </button>
@@ -249,22 +258,30 @@ export default function CreativeCore() {
 
           {/* ---------- DETAIL CARD ---------- */}
           <Reveal delay={0.1}>
-            <div className="mat-page-card mat-texture rounded-xl border border-[var(--line)] p-6 sm:p-8 relative overflow-hidden">
+            {/* matte black on light / matte white on dark — content inverts with it */}
+            <div className="mat-outer mat-texture rounded-xl p-6 sm:p-8 relative overflow-hidden"
+              style={{ boxShadow: "inset 0 0 0 1.5px color-mix(in srgb, var(--outer-ink) 18%, transparent)" }}>
               <span className="absolute top-0 left-0 h-[3px] bg-[var(--crimson)] scan-pass" style={{ width: "42%" }} aria-hidden />
               <div key={d.id} className="dossier-swap">
                 <div className="flex items-center justify-between">
                   <span className="f-mono text-[11px] tracking-[0.3em] text-[var(--crimson)]">{d.num} / 09</span>
-                  <span className="f-mono text-[9px] tracking-[0.26em] text-[var(--ink2)] flex items-center gap-2">
+                  <span className="f-mono text-[9px] tracking-[0.26em] flex items-center gap-2" style={{ color: "var(--m-sub)" }}>
                     <span className={`w-1.5 h-1.5 ${surgeOn ? "bg-[var(--surge)]" : "bg-[var(--crimson)]"} live-blink`} />
                     {hoverIdx !== null ? "SCANNING" : "LOCKED"}
                   </span>
                 </div>
-                <h3 className="f-display text-[clamp(1.6rem,2.6vw,2.3rem)] leading-tight mt-3">{d.name}</h3>
-                <p className="mt-4 text-[13.5px] sm:text-[14px] leading-relaxed text-[var(--ink2)]">{d.blurb}</p>
+                <h3 className="f-display text-[clamp(1.6rem,2.6vw,2.3rem)] leading-tight mt-3" style={{ color: "var(--outer-ink)" }}>{d.name}</h3>
+                <p className="mt-4 text-[13.5px] sm:text-[14px] leading-relaxed" style={{ color: "var(--outer-ink)", opacity: 0.92 }}>{d.blurb}</p>
                 <div className="mt-6 flex flex-wrap gap-2.5">
-                  {d.tags.map((t) => <span key={t} className="text-[var(--ink)]"><Tag>{t}</Tag></span>)}
+                  {d.tags.map((t) => (
+                    <span key={t} className="inline-block rounded-[6px] px-3 py-1.5 f-tech font-bold text-[10.5px] tracking-[0.14em]"
+                      style={{ backgroundColor: "var(--outer-ink)", color: "var(--outer-bg)" }}>
+                      {t}
+                    </span>
+                  ))}
                 </div>
-                <div className="mt-6 pt-4 border-t border-[var(--line)] f-mono text-[9px] tracking-[0.24em] text-[var(--ink2)] flex justify-between">
+                <div className="mt-6 pt-4 f-mono text-[9px] tracking-[0.24em] flex justify-between"
+                  style={{ borderTop: "1px solid var(--m-line)", color: "var(--m-sub)" }}>
                   <span>HOVER — SCAN · CLICK — LOCK</span>
                   <span className="text-[var(--crimson)]">CORE/{d.num}</span>
                 </div>

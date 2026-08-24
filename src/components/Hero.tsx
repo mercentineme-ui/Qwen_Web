@@ -159,7 +159,7 @@ export default function Hero() {
   const ringLeave = () => { rot.current.hovered = false; setHovered(false); };
 
   return (
-    <section id="about" className="relative overflow-hidden pt-[118px] lg:pt-[150px] pb-16 lg:pb-24 scroll-mt-20">
+    <section id="about" className="relative overflow-hidden pt-[98px] lg:pt-[118px] pb-16 lg:pb-24 scroll-mt-20">
       {/* print-rough filter for matte pigment surfaces */}
       <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden>
         <filter id="cbk-print-rough">
@@ -185,7 +185,7 @@ export default function Hero() {
 
           {/* name — MAGOLA REGULAR resting, temporal resolve on load, glitch on interaction */}
           <h1 className="mt-8 lg:mt-9 leading-[0.94] cursor-default select-none" onMouseEnter={triggerGlitch} onClick={triggerGlitch}>
-            <NameLine text={h.nameA} glitchKey={glitchKey} glitchOn={glitchOn} resolve={!reduced}
+            <NameLine text={h.nameA.replace(/^C\.\s+/i, "C.")} glitchKey={glitchKey} glitchOn={glitchOn} resolve={!reduced}
               className="text-[clamp(2.2rem,4.6vw,3.8rem)] tracking-[0.02em]" delay="0s" />
             <NameLine text={h.nameB} glitchKey={glitchKey} glitchOn={glitchOn} resolve={!reduced} accent
               className="text-[clamp(3rem,6.6vw,5.8rem)] tracking-[0.01em] mt-1.5" delay="0.12s" />
@@ -269,42 +269,12 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* greek circular ornament — engraved, solid, built: filled band, meander
-              blocks, quadrant plates, radial teeth — not line art */}
+          {/* grey technical ring — radial ticks + engraved circles, mechanical rotation */}
           <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden>
             <g ref={ringRef}>
-              {/* solid annulus band — half the previous width, with engraved depth */}
-              <circle cx="50" cy="50" r="40.7" fill="none" stroke="var(--sup2)" strokeWidth="2.4" opacity="0.9" />
+              {/* boundary hairlines */}
               <circle cx="50" cy="50" r="42.3" fill="none" stroke="var(--line)" strokeWidth="0.4" />
               <circle cx="50" cy="50" r="39.5" fill="none" stroke="var(--line)" strokeWidth="0.4" />
-              <path d="M50 8.7 A41.3 41.3 0 0 1 91.3 50" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="0.6" />
-              <path d="M50 91.3 A41.3 41.3 0 0 1 8.7 50" fill="none" stroke="rgba(0,0,0,0.22)" strokeWidth="0.6" />
-
-              {/* meander (greek key) — solid engraved units with structural breaks */}
-              {Array.from({ length: 24 }).map((_, i) => {
-                const isBreak = i % 6 === 0;
-                return (
-                  <g key={i} transform={`rotate(${i * 15} 50 50)`}>
-                    {isBreak ? (
-                      <rect x="48.8" y="8.2" width="2.4" height="2.4" fill="var(--sup1)" stroke="var(--ink2)" strokeWidth="0.45" transform="rotate(45 50 9.4)" />
-                    ) : (
-                      <>
-                        <path d="M45.6 8.2 h8.8 v2.2 h-6.2 v-1.1 h3.6" fill="none"
-                          stroke={hovered ? "var(--ink)" : "var(--ink2)"} strokeWidth="0.7" strokeLinecap="square"
-                          style={{ transition: "stroke .5s ease" }} />
-                        <rect x="45.6" y="8.2" width="1" height="1" fill={hovered ? "var(--ink)" : "var(--ink2)"} style={{ transition: "fill .5s ease" }} />
-                      </>
-                    )}
-                  </g>
-                );
-              })}
-
-              {/* quadrant construction plates */}
-              {[0, 90, 180, 270].map((deg) => (
-                <path key={deg} transform={`rotate(${deg} 50 50)`}
-                  d="M50 10.8 A39.2 39.2 0 0 1 77.7 22.3 L76.4 23.6 A37.4 37.4 0 0 0 50 12.6 Z"
-                  fill="var(--sup1)" stroke="var(--line)" strokeWidth="0.3" opacity="0.85" />
-              ))}
 
               {/* radial teeth — solid filled, alternating depths */}
               {Array.from({ length: 72 }).map((_, i) => {
@@ -327,13 +297,6 @@ export default function Hero() {
               <circle cx="50" cy="50" r="36.4" fill="none" stroke="var(--ink2)" strokeWidth="0.8" opacity="0.75" />
               <circle cx="50" cy="50" r="35.9" fill="none" stroke="var(--ink2)" strokeWidth="0.4" strokeDasharray="0.5 2.2" opacity="0.7" />
               <circle cx="50" cy="50" r="35.5" fill="none" stroke="var(--line)" strokeWidth="0.35" />
-
-              {/* cardinal laurel stops */}
-              {[45, 135, 225, 315].map((deg) => {
-                const a = (deg * Math.PI) / 180;
-                const x = 50 + 40.7 * Math.cos(a), y = 50 + 40.7 * Math.sin(a);
-                return <circle key={deg} cx={x} cy={y} r="0.8" fill="var(--ink2)" opacity="0.85" />;
-              })}
             </g>
 
             {/* active-frame marker — small crimson diamond, rotates per frame */}

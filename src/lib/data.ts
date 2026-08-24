@@ -135,7 +135,7 @@ export const defaultData: PortfolioData = {
       EVENING: "A Beautiful {DAYPART} to you, welcome in.",
     },
     aboutLabel: "ABOUT ME:",
-    nameA: "C. BALA",
+    nameA: "C.BALA",
     nameB: "KRISHNAN",
     chips: ["CREATIVE DIRECTION", "GENERATIVE AI", "VISUAL DEVELOPMENT", "CINEMATIC STORYTELLING"],
     description:

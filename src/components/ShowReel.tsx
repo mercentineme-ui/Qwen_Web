@@ -268,13 +268,9 @@ export default function ShowReel() {
               </div>
             </div>
 
-            {/* ONE physical track control — directly below the sea visual */}
-            <TrackRail progress={progress} legs={landscapes.length}
-              onScrub={(ratio) => { setOffset(ratio * maxOffset); poke(); }} />
-
             {/* landscape media — free horizontal drag */}
             <div ref={viewRef}
-              className="track-drag overflow-hidden px-4 sm:px-6 pb-6 pt-1 select-none"
+              className="track-drag overflow-hidden px-4 sm:px-6 pb-2 pt-1 select-none"
               onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onPointerLeave={onUp}>
               <div ref={innerRef} className="flex gap-4 sm:gap-5 w-max"
                 style={{ transform: `translateX(${-offset}px)`, transition: drag.current.active ? "none" : "transform .2s cubic-bezier(.25,.8,.3,1)" }}>
@@ -304,6 +300,10 @@ export default function ShowReel() {
                 ))}
               </div>
             </div>
+
+            {/* ONE physical track control — below the landscape upload cards */}
+            <TrackRail progress={progress} legs={landscapes.length}
+              onScrub={(ratio) => { setOffset(ratio * maxOffset); poke(); }} />
           </div>
         </Reveal>
       </div>
