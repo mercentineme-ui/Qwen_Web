@@ -312,6 +312,18 @@ body::before {
 .ka-pendulum { animation: kaPend 2.3s ease-in-out infinite alternate; }
 @keyframes kaPend { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
 
+/* ---------- steam transmission engine ---------- */
+.rod-swing { animation: rodSwing 1.6s ease-in-out infinite; }
+@keyframes rodSwing { 0%, 100% { transform: rotate(-3.5deg); } 50% { transform: rotate(3.5deg); } }
+.belt-run { stroke-dasharray: 7 6; animation: beltRun 0.85s linear infinite; }
+@keyframes beltRun { to { stroke-dashoffset: -26; } }
+.valve-pop { animation: valvePop 0.8s steps(2, jump-none) infinite; }
+@keyframes valvePop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3.5px); } }
+.piston-deep { animation: pistonDeep ease-in-out infinite; }
+@keyframes pistonDeep { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(42px); } }
+.gauge-tremor { animation: gaugeTremor 2.8s ease-in-out infinite; }
+@keyframes gaugeTremor { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2.6deg); } }
+
 .valve-wiggle { animation: valveWiggle 3.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes valveWiggle { 0%, 100% { transform: rotate(0deg); } 30% { transform: rotate(24deg); } 60% { transform: rotate(-8deg); } }
 
