@@ -217,7 +217,7 @@ export default function Hero() {
               const title = LEGACY_CHIP[c] ?? c;
               return (
                 <div key={c}
-                  className="group mat-outer mat-texture relative transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_34px_-18px_rgba(0,0,0,0.55)] active:translate-y-0 active:scale-[0.985]"
+                  className="group mat-outer mat-texture relative transition-all duration-300 hover:-translate-y-1.5 hover:translate-x-0.5 hover:shadow-[0_18px_34px_-18px_rgba(0,0,0,0.6)] active:translate-y-0 active:scale-[0.985]"
                   style={{ clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)" }}>
                   {/* inset technical frame */}
                   <span aria-hidden className="absolute inset-[5px] pointer-events-none"
@@ -227,17 +227,29 @@ export default function Hero() {
                     style={{ background: "linear-gradient(225deg, var(--crimson) 0 50%, transparent 50%)" }} />
                   <div className="relative px-4 pt-4 pb-4">
                     <div className="flex items-center justify-between">
-                      <span className="f-mono font-semibold text-[10px] tracking-[0.2em] px-1.5 py-0.5 rounded-[4px] bg-[var(--crimson)] text-[#f4f2ed]">
+                      {/* index block */}
+                      <span className="grid place-items-center w-7 h-7 f-mono font-semibold text-[11px] tracking-[0.08em] bg-[var(--crimson)] text-[#DDDDD8]">
                         {String(i + 1).padStart(2, "0")}
                       </span>
-                      <span className="w-1.5 h-1.5 rotate-45 transition-transform duration-300 group-hover:rotate-[135deg] group-hover:scale-125"
-                        style={{ background: "color-mix(in srgb, var(--outer-ink) 45%, transparent)" }} />
+                      {/* signal indicators */}
+                      <span className="flex items-end gap-1.5">
+                        {[0, 1, 2].map((k) => (
+                          <span key={k} className="w-1 rounded-[1px] transition-all duration-300"
+                            style={{
+                              height: `${7 + k * 3}px`,
+                              background: k <= i % 3 ? "var(--crimson)" : "color-mix(in srgb, var(--outer-ink) 28%, transparent)",
+                              opacity: k <= i % 3 ? 1 : 0.4,
+                            }} />
+                        ))}
+                      </span>
                     </div>
-                    <span className="mt-3.5 block f-striker text-[12.5px] sm:text-[13.5px] tracking-[0.05em] leading-tight" style={{ color: "var(--outer-ink)" }}>
+                    {/* role — large futuristic type */}
+                    <span className="mt-3.5 block f-striker text-[15px] sm:text-[16.5px] tracking-[0.06em] leading-[1.15]" style={{ color: "var(--outer-ink)" }}>
                       {title}
                     </span>
-                    {/* structural tick + underline edge response */}
-                    <div className="mt-3.5 flex items-center gap-1.5">
+                    {/* technical readout + underline edge response */}
+                    <div className="mt-3.5 flex items-center gap-2">
+                      <span className="f-mono text-[7.5px] tracking-[0.22em]" style={{ color: "var(--m-sub)" }}>MODULE/{String(i + 1).padStart(2, "0")}</span>
                       <span className="h-[2px] flex-1 rounded overflow-hidden" style={{ background: "color-mix(in srgb, var(--outer-ink) 16%, transparent)" }}>
                         <span className="block h-full w-full bg-[var(--crimson)] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-400" />
                       </span>
@@ -281,10 +293,10 @@ export default function Hero() {
                     <div className="absolute inset-0 gv2-sc"><Frame idx={idx} /></div>
                   </div>
                   <div className="absolute inset-0 gv2-ghost-l mix-blend-multiply" style={{ backgroundColor: "var(--hero-crimson)" }} />
-                  <div className="absolute inset-0 gv2-ghost-r mix-blend-screen" style={{ backgroundColor: "#E7E6E1" }} />
+                  <div className="absolute inset-0 gv2-ghost-r mix-blend-screen" style={{ backgroundColor: "#DDDDD8" }} />
                   <div className="absolute inset-0 gv2-smear"
                     style={{ background: "repeating-linear-gradient(90deg, transparent 0 10px, rgba(27,28,32,0.32) 10px 13px, transparent 13px 26px)" }} />
-                  <div className="absolute inset-x-0 gv2-tear" style={{ top: "24%", height: "5px", background: "#E7E6E1" }} />
+                  <div className="absolute inset-x-0 gv2-tear" style={{ top: "24%", height: "5px", background: "#DDDDD8" }} />
                   <div className="absolute inset-x-0 gv2-tear" style={{ top: "63%", height: "3px", background: "var(--hero-crimson)", animationDelay: "0.08s" }} />
                 </>
               )}

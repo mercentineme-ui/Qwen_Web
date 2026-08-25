@@ -92,7 +92,7 @@ export default function Header() {
 
             <button onClick={toggleTheme} aria-label="Toggle theme"
               className={`w-[42px] h-[42px] lg:w-11 lg:h-11 grid place-items-center rounded-lg border transition-colors duration-500 ${
-                theme === "light" ? "bg-[#1B1C20] border-[#1B1C20]" : "bg-[#E7E6E1] border-[#E7E6E1]"
+                theme === "light" ? "bg-[#222328] border-[#222328]" : "bg-[#DDDDD8] border-[#DDDDD8]"
               }`}>
               {theme === "light" ? <span className="moon-drift"><MoonIcon size={22} /></span> : <SunIcon size={22} />}
             </button>

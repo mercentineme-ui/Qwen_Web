@@ -108,8 +108,14 @@ export default function CreativeCore() {
           <Reveal>
             <div ref={discRef} className="relative mx-auto w-full max-w-[660px] aspect-square select-none">
               <svg viewBox="0 0 600 600" className="absolute inset-0 w-full h-full">
+                {/* rear structural layer — ground shadow + outer guide rings */}
+                <ellipse cx="300" cy="318" rx="252" ry="30" fill="#222328" opacity="0.22" />
+                <circle cx="300" cy="300" r="276" fill="none" stroke="var(--line-soft)" strokeWidth="1.4" />
+                <circle cx="300" cy="300" r="266" fill="none" stroke="var(--line-soft)" strokeWidth="1" strokeDasharray="3 9"
+                  className={reduced ? undefined : "gear-ccw-slow"} style={{ transformOrigin: "300px 300px" }} />
+
                 {/* baseplate + rivets + engraved grooves */}
-                <circle cx="300" cy="300" r="252" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="2" />
+                <circle cx="300" cy="300" r="252" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="2" style={{ filter: "drop-shadow(0 10px 18px rgba(34,35,40,0.35))" }} />
                 {Array.from({ length: 16 }).map((_, i) => {
                   const [x, y] = polar(300, 300, 243, (i / 16) * 360);
                   return <circle key={i} cx={x} cy={y} r="3.4" fill="var(--machine-line)" stroke="var(--machine-plate)" strokeWidth="1.2" />;

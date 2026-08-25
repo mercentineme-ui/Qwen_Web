@@ -34,29 +34,30 @@ function ModuleHeading({ tag, title, right }: { tag: string; title: string; righ
   );
 }
 
-/* ============================================================
-   CAREER NODE MAP — CHAPTER CONSTELLATION / DATA ARCHITECTURE
-   Four primary chapter stations on staggered structural layers,
-   angular data routes converging on a dossier-link terminal.
-   ============================================================ */
+/* ================= CAREER NODE MAP — LIVING PRODUCTION-PROGRESSION NETWORK =================
+   Career climbs PREMA SAI → CYBEREDGE → DNEG → IMPROMP2LABS.
+   Rear depth bands + shadow chain, looping signal flow, branch satellites (real skill data),
+   blinking junctions, pulsing active station. Hover scans · click locks. */
 
-const STATIONS = [
-  { left: 3,  top: 6,  clip: "polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%)", anchor: [47, 14.5] },
-  { left: 40, top: 26, clip: "polygon(18px 0, 100% 0, 100% 100%, 0 100%, 0 18px)",              anchor: [84, 34.5] },
-  { left: 5,  top: 52, clip: "polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%)", anchor: [49, 60.5] },
-  { left: 42, top: 73, clip: "polygon(0 18px, 18px 0, 100% 0, 100% 100%, 0 100%)",              anchor: [86, 81.5] },
+const STATION_POS: Record<number, { x: number; y: number }> = {
+  3: { x: 84, y: 330 },   /* PREMA SAI DESIGNERS — origin */
+  2: { x: 210, y: 246 },  /* CYBEREDGE */
+  1: { x: 336, y: 162 },  /* DNEG */
+  0: { x: 448, y: 78 },   /* IMPROMP2LABS — current */
+};
+const ORDER = [3, 2, 1, 0]; /* progression, oldest → newest */
+const CHAIN_PTS: [number, number][] = [
+  [84, 330], [148, 292], [210, 246], [274, 208], [336, 162], [394, 124], [448, 78],
 ];
-
-const ROUTES = [
-  "M47 14.5 H60 L66 20.5 V54.5 L72 60.5 V85 L78 91 H87",
-  "M84 34.5 H87.5 L90.5 37.5 V86",
-  "M49 60.5 H56 L62 66.5 V80 L68 86 H87",
-  "M86 81.5 H89.5 L92.5 84.5 V86.5",
-];
-
-const JUNCTIONS: [number, number][] = [
-  [66, 20.5], [72, 60.5], [90.5, 37.5], [62, 66.5], [78, 91],
-];
+const ELBOWS: [number, number][] = [[148, 292], [274, 208], [394, 124]];
+const SAT_OFFSET: Record<number, [number, number]> = {
+  3: [-46, 56],
+  2: [-46, 56],
+  1: [-46, 56],
+  0: [44, 40],
+};
+const chainD = (pts: [number, number][]) =>
+  pts.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x} ${y}`).join(" ");
 
 function NodeMap({
   active, hoverIdx, locked, reduced, companies, onHover, onLeaveRow, onPick,
@@ -65,121 +66,155 @@ function NodeMap({
   hoverIdx: number | null;
   locked: boolean;
   reduced: boolean;
-  companies: { id: string; num: string; name: string; date: string }[];
+  companies: { id: string; num: string; name: string; date: string; skills: string[] }[];
   onHover: (i: number) => void;
   onLeaveRow: () => void;
   onPick: (i: number) => void;
 }) {
+  const activeRank = ORDER.indexOf(active); /* 0 at PREMA … 3 at IMPROMP2 */
+  const litPts = CHAIN_PTS.slice(0, activeRank * 2 + 1);
+  const litD = litPts.length > 1 ? chainD(litPts) : "";
+
   return (
-    <div className="relative border rounded-xl mat-texture corner-bracket overflow-hidden h-[430px] sm:h-[490px] lg:h-[520px]"
-      style={{ borderColor: "var(--m-line)", backgroundColor: "color-mix(in srgb, var(--outer-ink) 5%, transparent)" }}>
+    <div className="relative border rounded-xl mat-texture corner-bracket overflow-hidden"
+      style={{ borderColor: "var(--m-line)", backgroundColor: "color-mix(in srgb, var(--outer-ink) 5%, transparent)", aspectRatio: "520 / 430" }}
+      onMouseLeave={onLeaveRow}>
 
-      {/* layered structural strata — depth bands behind the constellation */}
-      <span className="absolute inset-x-0 top-[24%] h-px opacity-60" style={{ background: "var(--m-line)" }} />
-      <span className="absolute inset-x-0 top-[50%] h-px opacity-40" style={{ background: "var(--m-line)" }} />
-      <span className="absolute inset-x-0 top-[76%] h-px opacity-60" style={{ background: "var(--m-line)" }} />
-      <span className="absolute left-[6%] top-[8%] bottom-[6%] w-[3px] opacity-25"
-        style={{ background: "repeating-linear-gradient(180deg, var(--outer-ink) 0 10px, transparent 10px 18px)" }} />
+      {/* ---------- wiring + depth layers ---------- */}
+      <svg viewBox="0 0 520 430" className="absolute inset-0 w-full h-full" fill="none" aria-hidden>
+        {/* rear structural depth bands */}
+        <rect x="-60" y="306" width="680" height="92" transform="rotate(-33 280 352)" fill="var(--line-soft)" />
+        <rect x="-60" y="272" width="680" height="12" transform="rotate(-33 280 278)" fill="var(--line-soft)" opacity="0.85" />
+        <rect x="-60" y="392" width="680" height="5" transform="rotate(-33 280 394)" fill="var(--line-soft)" opacity="0.6" />
 
-      {/* data network — angular routes, junctions, architectural datum */}
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full" fill="none" aria-hidden>
-        {/* architectural datum line with survey ticks */}
-        <path d="M62 3 V97" stroke="var(--m-line)" strokeWidth="1" strokeDasharray="0.8 2.4" vectorEffect="non-scaling-stroke" />
-        {Array.from({ length: 12 }).map((_, i) => (
-          <path key={i} d={`M60.6 ${7 + i * 8} H63.4`} stroke="var(--m-line)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+        {/* chain drop shadow */}
+        <path d={chainD(CHAIN_PTS)} stroke="#222328" strokeOpacity="0.2" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" transform="translate(3 6)" />
+        {/* base chain */}
+        <path d={chainD(CHAIN_PTS)} stroke="var(--m-line)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+        {/* ambient looping signal along the whole chain */}
+        {!reduced && (
+          <path d={chainD(CHAIN_PTS)} stroke="var(--m-sub)" strokeWidth="2" strokeLinecap="round" pathLength={360} className="route-signal" opacity="0.5" />
+        )}
+        {/* active route — crimson, lit up to the selected station */}
+        {litD && (
+          <>
+            <path d={litD} stroke="var(--crimson)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" opacity="0.92" />
+            {!reduced && <path d={litD} stroke="#DDDDD8" strokeWidth="2" strokeLinecap="round" pathLength={360} className="route-signal" />}
+          </>
+        )}
+
+        {/* junction elbows — blinking cores */}
+        {ELBOWS.map(([x, y], k) => (
+          <g key={k}>
+            <rect x={x - 7} y={y - 7} width="14" height="14" transform={`rotate(45 ${x} ${y})`}
+              fill="#59595B" stroke="var(--m-line)" strokeWidth="1.4" />
+            <circle cx={x} cy={y} r="2.6" fill="#A6A6A4" className={reduced ? undefined : "live-blink"}
+              style={{ animationDelay: `${k * 0.5}s` }} />
+          </g>
         ))}
 
-        {/* structural routes per chapter */}
-        {ROUTES.map((d, i) => {
+        {/* terminal block beyond the newest chapter */}
+        <g>
+          <path d="M462 64 L486 48" stroke="var(--m-line)" strokeWidth="3" strokeLinecap="round" strokeDasharray="1 7" />
+          <rect x="470" y="28" width="42" height="22" fill="color-mix(in srgb, var(--outer-ink) 10%, transparent)" stroke="var(--m-line)" strokeWidth="1.4" />
+          <path d="M482 39 h12 M490 34 l6 5 -6 5" stroke="var(--m-sub)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        </g>
+
+        {/* branch satellites — one per chapter, labelled with its lead skill */}
+        {companies.map((c, i) => {
+          const p = STATION_POS[i];
+          const [dx, dy] = SAT_OFFSET[i];
+          const sx = p.x + dx, sy = p.y + dy;
           const on = i === active;
           return (
-            <g key={i}>
-              <path d={d} stroke={on ? "var(--crimson)" : "var(--m-line)"} strokeWidth={on ? 2.4 : 1.7}
-                vectorEffect="non-scaling-stroke"
-                style={{ transition: "stroke .35s ease" }} />
-              {on && !reduced && (
-                <path d={d} stroke="var(--crimson)" strokeWidth="2.6" className="route-signal" pathLength={100}
-                  vectorEffect="non-scaling-stroke" opacity="0.95" />
-              )}
+            <g key={`sat-${c.id}`}>
+              <path d={`M${p.x} ${p.y} L${sx} ${sy}`} stroke={on ? "var(--crimson)" : "var(--m-line)"} strokeWidth="2"
+                strokeDasharray={on && !reduced ? undefined : "3 5"} style={{ transition: "stroke .35s ease" }} />
+              <rect x={sx - 6.5} y={sy - 6.5} width="13" height="13" transform={`rotate(45 ${sx} ${sy})`}
+                fill={on ? "var(--crimson)" : "#59595B"} stroke="var(--m-line)" strokeWidth="1.3" style={{ transition: "fill .35s ease" }} />
+              <circle cx={sx} cy={sy} r="2" fill={on ? "#DDDDD8" : "#A6A6A4"} className={reduced ? undefined : "live-blink"} style={{ animationDelay: `${i * 0.37}s` }} />
+              <text x={sx} y={sy + 21} textAnchor="middle" fontSize="8.5" letterSpacing="1.5"
+                fill={on ? "var(--crimson)" : "var(--m-sub)"} style={{ fontFamily: "IBM Plex Mono, monospace", transition: "fill .35s ease" }}>
+                {(c.skills[0] ?? "").slice(0, 16)}
+              </text>
             </g>
+          );
+        })}
+
+        {/* station echo plates — offset depth behind each company node */}
+        {companies.map((c, i) => {
+          const p = STATION_POS[i];
+          return (
+            <rect key={`echo-${c.id}`} x={p.x - 66} y={p.y - 22} width="140" height="52"
+              fill="#59595B" opacity="0.34" transform="translate(6 7)"
+              style={{ clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)" }} />
           );
         })}
       </svg>
 
-      {/* junction elements — solid diamonds at route elbows */}
-      {JUNCTIONS.map(([x, y], i) => (
-        <span key={i} className="absolute w-[9px] h-[9px] rotate-45 -translate-x-1/2 -translate-y-1/2"
-          style={{
-            left: `${x}%`, top: `${y}%`,
-            backgroundColor: "color-mix(in srgb, var(--outer-ink) 20%, transparent)",
-            boxShadow: "inset 0 0 0 1.5px var(--m-line)",
-          }} />
-      ))}
-
-      {/* dossier-link terminal — where every route lands */}
-      <div className="absolute flex flex-col items-center justify-center gap-1 rounded-lg mat-texture"
-        style={{
-          left: "87%", top: "86%", width: "11.5%", height: "11%", minWidth: 86,
-          backgroundColor: active >= 0 ? "color-mix(in srgb, var(--crimson) 16%, transparent)" : "color-mix(in srgb, var(--outer-ink) 10%, transparent)",
-          boxShadow: `inset 0 0 0 1.5px ${active >= 0 ? "var(--crimson)" : "var(--m-line)"}`,
-          transition: "background-color .35s ease, box-shadow .35s ease",
-        }}>
-        <span className="f-mono text-[7.5px] tracking-[0.2em]" style={{ color: "var(--m-sub)" }}>DOSSIER</span>
-        <span className="f-tech font-bold text-[9px] tracking-[0.18em] text-[var(--crimson)]">LINK ◂</span>
-      </div>
-
-      {/* chapter stations — the primary objects */}
+      {/* ---------- company stations (primary nodes) ---------- */}
       {companies.map((c, i) => {
-        const st = STATIONS[i % STATIONS.length];
+        const p = STATION_POS[i];
         const isActive = i === active;
         const isHover = i === hoverIdx;
-        const lit = isActive || isHover;
         return (
           <button key={c.id}
-            onMouseEnter={() => onHover(i)}
-            onMouseLeave={onLeaveRow}
             onClick={() => onPick(i)}
-            className="absolute text-left group"
+            onMouseEnter={() => onHover(i)}
+            className="absolute -translate-x-1/2 -translate-y-1/2 text-left mat-texture"
             style={{
-              left: `${st.left}%`, top: `${st.top}%`, width: "44%", height: "17%",
-              clipPath: st.clip,
-              backgroundColor: isActive
-                ? "var(--crimson)"
+              left: `${(p.x / 520) * 100}%`,
+              top: `${(p.y / 430) * 100}%`,
+              width: "clamp(120px, 27%, 152px)",
+              clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)",
+              backgroundColor: isActive ? "var(--crimson)" : "var(--outer-bg)",
+              boxShadow: isActive
+                ? "inset 0 0 0 1.5px rgba(221,221,216,0.5), 0 14px 30px -14px rgba(231,34,65,0.65)"
                 : isHover
-                  ? "var(--hero-crimson)"
-                  : "color-mix(in srgb, var(--outer-ink) 9%, transparent)",
-              color: lit ? "#f4f2ed" : "var(--outer-ink)",
-              boxShadow: `inset 0 0 0 1.5px ${isActive ? "rgba(244,242,237,0.5)" : isHover ? "rgba(244,242,237,0.35)" : "var(--m-line)"}, ${isActive ? "0 16px 36px -18px rgba(227,34,64,0.65)" : "0 10px 24px -18px rgba(0,0,0,0.6)"}`,
-              transform: lit ? "translateY(-3px)" : "none",
-              transition: "background-color .35s ease, color .35s ease, transform .35s cubic-bezier(.3,.8,.3,1), box-shadow .35s ease",
+                  ? "inset 0 0 0 1.5px var(--crimson)"
+                  : "inset 0 0 0 1.5px color-mix(in srgb, var(--outer-ink) 24%, transparent)",
+              transform: `translate(-50%, -50%) ${isHover && !isActive ? "translateX(4px)" : ""}`,
+              transition: "background-color .35s ease, box-shadow .35s ease, transform .35s ease",
             }}
-            aria-label={`Select ${c.name}`}>
-            <span className="absolute inset-0 mat-texture pointer-events-none" />
-            {/* anchor nub — solid connector into the route network */}
-            <span className="absolute right-0 top-1/2 -translate-y-1/2 w-[7px] h-5"
-              style={{ background: lit ? "#f4f2ed" : "var(--m-line)", transition: "background .35s ease" }} />
-            <span className="relative flex items-center justify-between gap-2 h-full px-4 sm:px-5">
+            aria-label={`${c.name} — ${c.date}`}>
+            {/* active pulse ring */}
+            {isActive && !reduced && (
+              <span className="absolute -inset-1.5 pointer-events-none"
+                style={{ border: "2px solid var(--crimson)", clipPath: "inherit", animation: "stationPulse 1.8s cubic-bezier(.3,.7,.4,1) infinite" }} />
+            )}
+            <span className="relative flex items-center gap-2.5 px-3 py-2.5 sm:px-3.5 sm:py-3">
+              <span className="grid place-items-center w-6 h-6 sm:w-7 sm:h-7 shrink-0 f-mono font-semibold text-[10px] sm:text-[11px]"
+                style={{
+                  background: isActive ? "#DDDDD8" : "var(--crimson)",
+                  color: isActive ? "var(--crimson)" : "#DDDDD8",
+                  transition: "background-color .35s ease, color .35s ease",
+                }}>
+                {c.num}
+              </span>
               <span className="min-w-0">
-                <span className="block f-tech font-bold text-[11px] sm:text-[13.5px] tracking-[0.12em] leading-tight truncate">{c.name}</span>
-                <span className="block f-mono text-[7.5px] sm:text-[8.5px] tracking-[0.14em] mt-1.5"
-                  style={{ color: lit ? "rgba(244,242,237,0.8)" : "var(--m-sub)", transition: "color .35s ease" }}>
+                <span className="block f-tech font-bold text-[10.5px] sm:text-[12px] tracking-[0.1em] leading-tight truncate"
+                  style={{ color: isActive ? "#DDDDD8" : "var(--outer-ink)" }}>
+                  {c.name}
+                </span>
+                <span className="block f-mono text-[6.5px] sm:text-[7.5px] tracking-[0.12em] mt-1 truncate"
+                  style={{ color: isActive ? "rgba(221,221,216,0.75)" : "var(--m-sub)" }}>
                   {c.date.split("·")[0].trim()}
                 </span>
               </span>
-              <span className="f-display text-[26px] sm:text-[32px] leading-none shrink-0" style={{ opacity: isActive ? 0.5 : 0.16 }}>
-                {c.num}
-              </span>
             </span>
-            {isActive && locked && <span className="absolute bottom-1.5 left-3 w-2 h-2 rotate-45 bg-[#f4f2ed]" />}
+            {isActive && locked && <span className="absolute bottom-1 right-1.5 w-2 h-2 rotate-45 bg-[#DDDDD8]" />}
           </button>
         );
       })}
 
-      {/* system legend — micro metadata */}
-      <div className="absolute left-4 bottom-3 flex items-center gap-4 f-mono text-[7.5px] tracking-[0.22em]" style={{ color: "var(--m-sub)" }}>
-        <span>CHAPTER CONSTELLATION</span>
-        <span className="hidden sm:inline">4 STATIONS · 5 JUNCTIONS · 1 TERMINAL</span>
-      </div>
+      {/* map captions */}
+      <span className="absolute left-4 bottom-3 f-mono text-[8px] tracking-[0.24em] flex items-center gap-2" style={{ color: "var(--m-sub)" }}>
+        <span className="w-5 h-[2px] bg-[var(--crimson)]" />
+        CAREER PROGRESSION 2018 → PRESENT
+      </span>
+      <span className="absolute right-4 top-3 f-mono text-[8px] tracking-[0.24em]" style={{ color: "var(--m-sub)" }}>
+        HOVER — SCAN · CLICK — LOCK
+      </span>
     </div>
   );
 }
@@ -267,7 +302,7 @@ export default function Expertise() {
             <div className="grid lg:grid-cols-[1.02fr_0.98fr] gap-6 lg:gap-10 lg:items-start"
               onMouseEnter={() => setHover(true)} onMouseLeave={() => { setHover(false); setHoverIdx(null); }}>
 
-              {/* ================= CAREER INFO (LEFT) — adapts to the selected chapter ================= */}
+              {/* ================= CAREER INFO (LEFT) — adapts to the selected company ================= */}
               <div className="mat-inner mat-texture dossier-clip corner-bracket relative p-5 sm:p-7 flex flex-col min-h-0 overflow-hidden lg:min-h-[640px] order-1">
                 <span className="absolute inset-[7px] border pointer-events-none dossier-clip-sm" style={{ borderColor: "var(--m-line)" }} aria-hidden />
                 <span key={`edge-${co.id}`} className="absolute top-0 left-0 h-[3px] bg-[var(--crimson)] scan-pass" style={{ width: "46%" }} aria-hidden />
@@ -337,7 +372,7 @@ export default function Expertise() {
                         style={{ animation: `progFill ${CYCLE_MS}ms linear both`, animationPlayState: hover || locked ? "paused" : "running" }} />
                     </span>
                   )}
-                  <span className="flex items-center gap-2"><span className="w-3 h-[3px] bg-[var(--crimson)]" />SIGNAL</span>
+                  <span className="flex items-center gap-2"><span className="w-3 h-[3px] bg-[var(--crimson)]" />ROUTE</span>
                   <span className="hidden sm:flex items-center gap-2"><span className="w-2.5 h-2.5 border-[1.5px]" style={{ borderColor: "var(--m-sub)" }} />JUNCTION</span>
                   <span className="ml-auto tabular-nums">{String(active + 1).padStart(2, "0")} / {String(n).padStart(2, "0")}</span>
                 </div>

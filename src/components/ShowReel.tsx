@@ -249,7 +249,7 @@ export default function ShowReel() {
               {/* ODYSSEY — solid 2D graphic galley, docks BESIDE the island at full voyage */}
               <div className="absolute bottom-5 transition-[left] duration-200 ease-linear" style={{ left: `calc(2% + ${progress * 94}% - ${progress * 224}px)` }}>
                 <div className={`relative ship-bob transition-colors duration-500 ${arrived ? "text-[var(--crimson)]" : "text-[var(--ink)]"}`}>
-                  <GreekShip size={140} arrived={arrived} />
+                  <GreekShip size={116} arrived={arrived} />
                   {arrived && (
                     <span className="ahoy-pop absolute -top-7 left-1/2 -translate-x-[30%] z-20 whitespace-nowrap f-tech font-bold text-[10px] tracking-[0.2em] px-3 py-1.5 rounded-lg bg-[var(--ink)] text-[var(--page)]"
                       style={{ clipPath: "polygon(0 0, 100% 0, 100% 78%, 34% 78%, 26% 100%, 20% 78%, 0 78%)" }}>

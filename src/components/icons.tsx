@@ -64,10 +64,10 @@ export const MoonIcon = (p: P) => (
 );
 export const SunIcon = (p: P) => (
   <svg width={p.size ?? 16} height={p.size ?? 16} viewBox="0 0 24 24" className={p.className}>
-    <g className="sun-spin" stroke="#E32240" strokeWidth="1.8" strokeLinecap="round">
+    <g className="sun-spin" stroke="#E72241" strokeWidth="1.8" strokeLinecap="round">
       <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M19.4 4.6l-2.1 2.1M6.7 17.3l-2.1 2.1" />
     </g>
-    <circle cx="12" cy="12" r="5.4" fill="#E32240" className="sun-pulse" />
+    <circle cx="12" cy="12" r="5.4" fill="#E72241" className="sun-pulse" />
     <circle cx="12" cy="12" r="2.7" fill="#F07A3C" />
   </svg>
 );
@@ -97,34 +97,33 @@ export const PaperPlane = (p: P) => (
   </svg>
 );
 
-/* ---- ODYSSEY : solid 2D graphic ancient galley — strict black/white blocking ---- */
+/* ---- ODYSSEY : clean 2D black/white line-art galley — readable but secondary ---- */
 export const GreekShip = (p: P & { arrived?: boolean }) => {
   const s = p.size ?? 128;
   return (
-    <svg width={s} height={s * 0.62} viewBox="0 0 128 80" fill="none" className={p.className}>
-      {/* hull — solid blocked shape */}
-      <path d="M8 46c4 12 20 20 56 20s52-8 56-20l-10 2c-6 8-20 12-46 12s-40-4-46-12z" fill="currentColor" opacity="0.55" />
-      <path d="M10 40c8 12 24 18 54 18s46-6 54-18l-4-6H14z" fill="currentColor" />
-      {/* trim band + oar ports */}
-      <rect x="16" y="38" width="96" height="5" fill="currentColor" opacity="0.8" />
-      {[28, 42, 56, 70, 84, 98].map((x) => <rect key={x} x={x} y="39.4" width="5" height="2.4" fill="var(--page)" opacity="0.9" />)}
-      {/* prow + stern (solid, curved) */}
-      <path d="M10 40C5 32 5 22 12 12c1.6 6 4 10 8 12l-3 9z" fill="currentColor" opacity="0.7" />
-      <path d="M12 12c3-2 6-2 8 0-3 1-5 3-6 6z" fill="currentColor" />
-      <path d="M118 40c5-8 5-18-2-28-1.6 6-4 10-8 12l3 9z" fill="currentColor" opacity="0.7" />
+    <svg width={s} height={s * 0.6} viewBox="0 0 128 78" fill="none" className={p.className}
+      stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      {/* hull — outlined silhouette with one shade line */}
+      <path d="M10 40c8 13 24 19 54 19s46-6 54-19l-4-6H14z" />
+      <path d="M18 47c10 7 25 10 46 10s36-3 46-10" strokeWidth="1.3" opacity="0.65" />
+      {/* gunwale + oar ports */}
+      <path d="M14 34h100" strokeWidth="1.6" />
+      {[30, 44, 58, 72, 86, 100].map((x) => <circle key={x} cx={x} cy="37.5" r="1.7" fill="currentColor" stroke="none" />)}
+      {/* prow + stern curls */}
+      <path d="M10 40C5 32 5 22 12 12c1.8 6 4 9.6 8 11.6" />
+      <path d="M118 40c5-8 5-18-2-28-1.8 6-4 9.6-8 11.6" />
       {/* oars */}
-      <g stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.8">
-        {[30, 44, 58, 72, 86].map((x) => <path key={x} d={`M${x} 46l-7 12`} />)}
+      <g strokeWidth="1.6" opacity="0.85">
+        {[32, 46, 60, 74, 88].map((x) => <path key={x} d={`M${x} 46l-8 13`} />)}
       </g>
-      {/* mast + solid sail */}
-      <rect x="61.5" y="6" width="5" height="34" fill="currentColor" />
-      <path d="M36 10h56l-7 24H43z" fill="var(--page)" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M36 10h56l-2 7H38z" fill="currentColor" opacity="0.22" />
-      <rect x="58" y="17" width="12" height="17" fill="currentColor" opacity="0.9" />
+      {/* mast + outlined sail */}
+      <path d="M64 6v30" strokeWidth="2.4" />
+      <path d="M38 10h52l-6.5 22H44.5z" />
+      <path d="M41 17h46" strokeWidth="1.2" opacity="0.6" />
       {/* flag — hoists on arrival */}
-      <g className="flag-hoist" style={{ transform: p.arrived ? "translateY(0)" : "translateY(9px)", opacity: p.arrived ? 1 : 0, transition: "transform .9s cubic-bezier(.2,.9,.25,1.2), opacity .5s ease" }}>
-        <rect x="62.6" y="-4" width="2.4" height="12" fill="currentColor" />
-        <path d="M65 -4h15l-4 4.5 4 4.5H65z" fill="#e32240" />
+      <g style={{ transform: p.arrived ? "translateY(0)" : "translateY(9px)", opacity: p.arrived ? 1 : 0, transition: "transform .9s cubic-bezier(.2,.9,.25,1.2), opacity .5s ease" }}>
+        <path d="M64 -3v10" strokeWidth="2" />
+        <path d="M66 -3h14l-3.6 4 3.6 4H66z" fill="#E72241" stroke="none" />
       </g>
     </svg>
   );

@@ -249,7 +249,7 @@ export function FullscreenViewer({
                     setT(v.currentTime);
                   }}
                   aria-label="Seek"
-                  className="flex-1 h-[3px] cursor-pointer" style={{ accentColor: "#e32240" }}
+                  className="flex-1 h-[3px] cursor-pointer" style={{ accentColor: "#E72241" }}
                 />
                 <span className="f-mono text-[10px] tabular-nums text-[#a3a49f] w-11 text-right">{fmt(dur)}</span>
                 <button onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}
