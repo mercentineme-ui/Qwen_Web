@@ -34,30 +34,17 @@ function ModuleHeading({ tag, title, right }: { tag: string; title: string; righ
   );
 }
 
-/* ================= CAREER NODE MAP — LIVING PRODUCTION-PROGRESSION NETWORK =================
-   Career climbs PREMA SAI → CYBEREDGE → DNEG → IMPROMP2LABS.
-   Rear depth bands + shadow chain, looping signal flow, branch satellites (real skill data),
-   blinking junctions, pulsing active station. Hover scans · click locks. */
+/* ================= CAREER NODE MAP — VERTICAL CHAPTER LADDER =================
+   One strong vertical spine, four PRIMARY chapter stations (01 → 04, top → bottom),
+   solid structural sections + branch points + junction nodes + a continuously
+   looping signal. Stations carry name / number / date / category; skill satellites
+   branch off each chapter. COMPANY → CAREER CHAPTER → NEXT CHAPTER. */
 
-const STATION_POS: Record<number, { x: number; y: number }> = {
-  3: { x: 84, y: 330 },   /* PREMA SAI DESIGNERS — origin */
-  2: { x: 210, y: 246 },  /* CYBEREDGE */
-  1: { x: 336, y: 162 },  /* DNEG */
-  0: { x: 448, y: 78 },   /* IMPROMP2LABS — current */
-};
-const ORDER = [3, 2, 1, 0]; /* progression, oldest → newest */
-const CHAIN_PTS: [number, number][] = [
-  [84, 330], [148, 292], [210, 246], [274, 208], [336, 162], [394, 124], [448, 78],
-];
-const ELBOWS: [number, number][] = [[148, 292], [274, 208], [394, 124]];
-const SAT_OFFSET: Record<number, [number, number]> = {
-  3: [-46, 56],
-  2: [-46, 56],
-  1: [-46, 56],
-  0: [44, 40],
-};
-const chainD = (pts: [number, number][]) =>
-  pts.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x} ${y}`).join(" ");
+const SPINE_X = 118;
+const ROW_Y = [70, 176, 282, 388]; /* chapter rows, top → newest-first order */
+const SPINE_TOP = 26;
+const SPINE_BOT = 444;
+const JUNCTION_MIDS = [123, 229, 335];
 
 function NodeMap({
   active, hoverIdx, locked, reduced, companies, onHover, onLeaveRow, onPick,
@@ -66,124 +53,148 @@ function NodeMap({
   hoverIdx: number | null;
   locked: boolean;
   reduced: boolean;
-  companies: { id: string; num: string; name: string; date: string; skills: string[] }[];
+  companies: { id: string; num: string; name: string; date: string; role: string; skills: string[] }[];
   onHover: (i: number) => void;
   onLeaveRow: () => void;
   onPick: (i: number) => void;
 }) {
-  const activeRank = ORDER.indexOf(active); /* 0 at PREMA … 3 at IMPROMP2 */
-  const litPts = CHAIN_PTS.slice(0, activeRank * 2 + 1);
-  const litD = litPts.length > 1 ? chainD(litPts) : "";
+  const activeY = ROW_Y[Math.min(active, ROW_Y.length - 1)];
+  const litD = `M${SPINE_X} ${SPINE_TOP} V${activeY}`;
+  const category = (role: string) => role.split("·")[0].trim();
 
   return (
     <div className="relative border rounded-xl mat-texture corner-bracket overflow-hidden"
-      style={{ borderColor: "var(--m-line)", backgroundColor: "color-mix(in srgb, var(--outer-ink) 5%, transparent)", aspectRatio: "520 / 430" }}
+      style={{ borderColor: "var(--m-line)", backgroundColor: "color-mix(in srgb, var(--outer-ink) 5%, transparent)", aspectRatio: "520 / 470" }}
       onMouseLeave={onLeaveRow}>
 
-      {/* ---------- wiring + depth layers ---------- */}
-      <svg viewBox="0 0 520 430" className="absolute inset-0 w-full h-full" fill="none" aria-hidden>
-        {/* rear structural depth bands */}
-        <rect x="-60" y="306" width="680" height="92" transform="rotate(-33 280 352)" fill="var(--line-soft)" />
-        <rect x="-60" y="272" width="680" height="12" transform="rotate(-33 280 278)" fill="var(--line-soft)" opacity="0.85" />
-        <rect x="-60" y="392" width="680" height="5" transform="rotate(-33 280 394)" fill="var(--line-soft)" opacity="0.6" />
+      {/* ---------- spine + branches + depth ---------- */}
+      <svg viewBox="0 0 520 470" className="absolute inset-0 w-full h-full" fill="none" aria-hidden>
+        {/* rear structural housing — depth band behind the spine */}
+        <rect x="100" y="14" width="36" height="442" fill="#3C3D42" opacity="0.4" />
+        <rect x="96" y="14" width="4" height="442" fill="#3C3D42" opacity="0.22" />
+        {/* faint horizontal chapter strata */}
+        {ROW_Y.map((y) => (
+          <rect key={y} x="8" y={y + 26} width="504" height="1.5" fill="var(--line-soft)" />
+        ))}
 
-        {/* chain drop shadow */}
-        <path d={chainD(CHAIN_PTS)} stroke="#222328" strokeOpacity="0.2" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" transform="translate(3 6)" />
-        {/* base chain */}
-        <path d={chainD(CHAIN_PTS)} stroke="var(--m-line)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-        {/* ambient looping signal along the whole chain */}
+        {/* spine — solid structural rail + inset channel + shadow */}
+        <path d={`M${SPINE_X} ${SPINE_TOP} V${SPINE_BOT}`} stroke="#222328" strokeOpacity="0.28" strokeWidth="13" transform="translate(4 5)" />
+        <path d={`M${SPINE_X} ${SPINE_TOP} V${SPINE_BOT}`} stroke="#59595B" strokeWidth="13" />
+        <path d={`M${SPINE_X} ${SPINE_TOP} V${SPINE_BOT}`} stroke="var(--m-line)" strokeWidth="9" />
+        <path d={`M${SPINE_X} ${SPINE_TOP} V${SPINE_BOT}`} stroke="#A6A6A4" strokeWidth="2" opacity="0.5" />
+
+        {/* looping signal packets — continuous controlled motion down the spine */}
         {!reduced && (
-          <path d={chainD(CHAIN_PTS)} stroke="var(--m-sub)" strokeWidth="2" strokeLinecap="round" pathLength={360} className="route-signal" opacity="0.5" />
-        )}
-        {/* active route — crimson, lit up to the selected station */}
-        {litD && (
           <>
-            <path d={litD} stroke="var(--crimson)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" opacity="0.92" />
-            {!reduced && <path d={litD} stroke="#DDDDD8" strokeWidth="2" strokeLinecap="round" pathLength={360} className="route-signal" />}
+            <path d={`M${SPINE_X} ${SPINE_TOP} V${SPINE_BOT}`} stroke="#A6A6A4" strokeWidth="2.4" pathLength={420} className="route-signal" opacity="0.55" />
+            <path d={`M${SPINE_X} ${SPINE_TOP} V${SPINE_BOT}`} stroke="#DDDDD8" strokeWidth="1.6" pathLength={420} className="route-signal" style={{ animationDelay: "-1.4s", animationDuration: "2s" }} opacity="0.4" />
           </>
         )}
 
-        {/* junction elbows — blinking cores */}
-        {ELBOWS.map(([x, y], k) => (
+        {/* top cap + bottom cap housings */}
+        {[SPINE_TOP - 8, SPINE_BOT - 2].map((yy, k) => (
           <g key={k}>
-            <rect x={x - 7} y={y - 7} width="14" height="14" transform={`rotate(45 ${x} ${y})`}
+            <rect x={SPINE_X - 19} y={yy - 6} width="38" height="16" fill="#59595B" stroke="var(--m-line)" strokeWidth="1.4" />
+            <circle cx={SPINE_X - 11} cy={yy + 2} r="2" fill="#A6A6A4" />
+            <circle cx={SPINE_X + 11} cy={yy + 2} r="2" fill="#A6A6A4" />
+          </g>
+        ))}
+        <path d={`M${SPINE_X - 5} ${SPINE_BOT + 18} l5 6 l5 -6`} stroke="var(--m-sub)" strokeWidth="1.6" strokeLinecap="round" />
+
+        {/* inter-chapter junction nodes + flow chevrons */}
+        {JUNCTION_MIDS.map((yy, k) => (
+          <g key={yy}>
+            <rect x={SPINE_X - 8} y={yy - 8} width="16" height="16" transform={`rotate(45 ${SPINE_X} ${yy})`}
               fill="#59595B" stroke="var(--m-line)" strokeWidth="1.4" />
-            <circle cx={x} cy={y} r="2.6" fill="#A6A6A4" className={reduced ? undefined : "live-blink"}
-              style={{ animationDelay: `${k * 0.5}s` }} />
+            <circle cx={SPINE_X} cy={yy} r="3" fill="#A6A6A4" className={reduced ? undefined : "live-blink"} style={{ animationDelay: `${k * 0.45}s` }} />
+            <path d={`M${SPINE_X - 4.5} ${yy + 20} l4.5 5 l4.5 -5`} stroke="var(--m-sub)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </g>
         ))}
 
-        {/* terminal block beyond the newest chapter */}
-        <g>
-          <path d="M462 64 L486 48" stroke="var(--m-line)" strokeWidth="3" strokeLinecap="round" strokeDasharray="1 7" />
-          <rect x="470" y="28" width="42" height="22" fill="color-mix(in srgb, var(--outer-ink) 10%, transparent)" stroke="var(--m-line)" strokeWidth="1.4" />
-          <path d="M482 39 h12 M490 34 l6 5 -6 5" stroke="var(--m-sub)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </g>
-
-        {/* branch satellites — one per chapter, labelled with its lead skill */}
+        {/* branch arms + branch-point junctions + skill satellites */}
         {companies.map((c, i) => {
-          const p = STATION_POS[i];
-          const [dx, dy] = SAT_OFFSET[i];
-          const sx = p.x + dx, sy = p.y + dy;
+          const y = ROW_Y[i];
           const on = i === active;
+          const arm = `M${SPINE_X + 6} ${y} H172`;
           return (
-            <g key={`sat-${c.id}`}>
-              <path d={`M${p.x} ${p.y} L${sx} ${sy}`} stroke={on ? "var(--crimson)" : "var(--m-line)"} strokeWidth="2"
-                strokeDasharray={on && !reduced ? undefined : "3 5"} style={{ transition: "stroke .35s ease" }} />
-              <rect x={sx - 6.5} y={sy - 6.5} width="13" height="13" transform={`rotate(45 ${sx} ${sy})`}
-                fill={on ? "var(--crimson)" : "#59595B"} stroke="var(--m-line)" strokeWidth="1.3" style={{ transition: "fill .35s ease" }} />
-              <circle cx={sx} cy={sy} r="2" fill={on ? "#DDDDD8" : "#A6A6A4"} className={reduced ? undefined : "live-blink"} style={{ animationDelay: `${i * 0.37}s` }} />
-              <text x={sx} y={sy + 21} textAnchor="middle" fontSize="8.5" letterSpacing="1.5"
-                fill={on ? "var(--crimson)" : "var(--m-sub)"} style={{ fontFamily: "IBM Plex Mono, monospace", transition: "fill .35s ease" }}>
-                {(c.skills[0] ?? "").slice(0, 16)}
-              </text>
+            <g key={`branch-${c.id}`}>
+              {/* branch arm */}
+              <path d={arm} stroke="#222328" strokeOpacity="0.28" strokeWidth="7" transform="translate(3 4)" />
+              <path d={arm} stroke={on ? "var(--crimson)" : "#59595B"} strokeWidth="7" style={{ transition: "stroke .35s ease" }} />
+              <path d={arm} stroke={on ? "#DDDDD8" : "var(--m-line)"} strokeWidth="2.4" style={{ transition: "stroke .35s ease" }} />
+              {/* branch point on the spine */}
+              <rect x={SPINE_X - 9} y={y - 9} width="18" height="18" transform={`rotate(45 ${SPINE_X} ${y})`}
+                fill={on ? "var(--crimson)" : "#59595B"} stroke={on ? "#DDDDD8" : "var(--m-line)"} strokeWidth="1.5"
+                style={{ transition: "fill .35s ease, stroke .35s ease" }} />
+              <circle cx={SPINE_X} cy={y} r="2.6" fill={on ? "#DDDDD8" : "#A6A6A4"} className={reduced ? undefined : "live-blink"} style={{ animationDelay: `${i * 0.3}s` }} />
+
+              {/* skill satellites — secondary supporting nodes */}
+              {c.skills.slice(0, 2).map((s, k) => {
+                const sy = y + (k === 0 ? -17 : 17);
+                return (
+                  <g key={s}>
+                    <path d={`M400 ${y} L418 ${sy}`} stroke={on ? "var(--crimson)" : "var(--m-line)"} strokeWidth="1.6"
+                      strokeDasharray={on ? undefined : "3 4"} style={{ transition: "stroke .35s ease" }} />
+                    <rect x="414" y={sy - 5} width="10" height="10" transform={`rotate(45 419 ${sy})`}
+                      fill={on ? "var(--crimson)" : "#59595B"} stroke="var(--m-line)" strokeWidth="1.2" style={{ transition: "fill .35s ease" }} />
+                    <text x="430" y={sy + 3} fontSize="7.5" letterSpacing="1.2"
+                      fill={on ? "var(--crimson)" : "var(--m-sub)"} style={{ fontFamily: "IBM Plex Mono, monospace", transition: "fill .35s ease" }}>
+                      {s.length > 17 ? s.slice(0, 16) + "…" : s}
+                    </text>
+                  </g>
+                );
+              })}
             </g>
           );
         })}
 
-        {/* station echo plates — offset depth behind each company node */}
-        {companies.map((c, i) => {
-          const p = STATION_POS[i];
-          return (
-            <rect key={`echo-${c.id}`} x={p.x - 66} y={p.y - 22} width="140" height="52"
-              fill="#59595B" opacity="0.34" transform="translate(6 7)"
-              style={{ clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)" }} />
-          );
-        })}
+        {/* active route — lit from the origin down to the selected chapter */}
+        {active > 0 && (
+          <>
+            <path d={litD} stroke="var(--crimson)" strokeWidth="4.5" strokeLinecap="round" opacity="0.95" />
+            {!reduced && <path d={litD} stroke="#DDDDD8" strokeWidth="1.8" pathLength={420} className="route-signal" style={{ animationDuration: "1.4s" }} />}
+          </>
+        )}
+
+        {/* station echo plates — offset depth behind each chapter */}
+        {companies.map((c, i) => (
+          <rect key={`echo-${c.id}`} x="178" y={ROW_Y[i] - 26} width="228" height="60"
+            fill="#59595B" opacity="0.32" transform="translate(6 7)"
+            style={{ clipPath: "polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px)" }} />
+        ))}
       </svg>
 
-      {/* ---------- company stations (primary nodes) ---------- */}
+      {/* ---------- PRIMARY chapter stations ---------- */}
       {companies.map((c, i) => {
-        const p = STATION_POS[i];
+        const y = ROW_Y[i];
         const isActive = i === active;
         const isHover = i === hoverIdx;
         return (
           <button key={c.id}
             onClick={() => onPick(i)}
             onMouseEnter={() => onHover(i)}
-            className="absolute -translate-x-1/2 -translate-y-1/2 text-left mat-texture"
+            className="absolute -translate-y-1/2 text-left mat-texture"
             style={{
-              left: `${(p.x / 520) * 100}%`,
-              top: `${(p.y / 430) * 100}%`,
-              width: "clamp(120px, 27%, 152px)",
-              clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)",
+              left: "34.2%",
+              top: `${(y / 470) * 100}%`,
+              width: "clamp(170px, 44%, 230px)",
+              clipPath: "polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px)",
               backgroundColor: isActive ? "var(--crimson)" : "var(--outer-bg)",
               boxShadow: isActive
                 ? "inset 0 0 0 1.5px rgba(221,221,216,0.5), 0 14px 30px -14px rgba(231,34,65,0.65)"
                 : isHover
                   ? "inset 0 0 0 1.5px var(--crimson)"
                   : "inset 0 0 0 1.5px color-mix(in srgb, var(--outer-ink) 24%, transparent)",
-              transform: `translate(-50%, -50%) ${isHover && !isActive ? "translateX(4px)" : ""}`,
+              transform: `translateY(-50%) ${isHover && !isActive ? "translateX(5px)" : ""}`,
               transition: "background-color .35s ease, box-shadow .35s ease, transform .35s ease",
             }}
             aria-label={`${c.name} — ${c.date}`}>
-            {/* active pulse ring */}
             {isActive && !reduced && (
               <span className="absolute -inset-1.5 pointer-events-none"
                 style={{ border: "2px solid var(--crimson)", clipPath: "inherit", animation: "stationPulse 1.8s cubic-bezier(.3,.7,.4,1) infinite" }} />
             )}
-            <span className="relative flex items-center gap-2.5 px-3 py-2.5 sm:px-3.5 sm:py-3">
-              <span className="grid place-items-center w-6 h-6 sm:w-7 sm:h-7 shrink-0 f-mono font-semibold text-[10px] sm:text-[11px]"
+            <span className="relative flex items-center gap-3 px-3.5 py-3">
+              <span className="grid place-items-center w-8 h-8 shrink-0 f-mono font-semibold text-[11px]"
                 style={{
                   background: isActive ? "#DDDDD8" : "var(--crimson)",
                   color: isActive ? "var(--crimson)" : "#DDDDD8",
@@ -191,18 +202,29 @@ function NodeMap({
                 }}>
                 {c.num}
               </span>
-              <span className="min-w-0">
-                <span className="block f-tech font-bold text-[10.5px] sm:text-[12px] tracking-[0.1em] leading-tight truncate"
+              <span className="min-w-0 flex-1">
+                <span className="block f-tech font-bold text-[11.5px] sm:text-[13px] tracking-[0.09em] leading-tight truncate"
                   style={{ color: isActive ? "#DDDDD8" : "var(--outer-ink)" }}>
                   {c.name}
                 </span>
-                <span className="block f-mono text-[6.5px] sm:text-[7.5px] tracking-[0.12em] mt-1 truncate"
-                  style={{ color: isActive ? "rgba(221,221,216,0.75)" : "var(--m-sub)" }}>
+                <span className="block f-mono text-[7px] sm:text-[7.5px] tracking-[0.1em] mt-1 truncate"
+                  style={{ color: isActive ? "rgba(221,221,216,0.78)" : "var(--m-sub)" }}>
                   {c.date.split("·")[0].trim()}
                 </span>
               </span>
             </span>
-            {isActive && locked && <span className="absolute bottom-1 right-1.5 w-2 h-2 rotate-45 bg-[#DDDDD8]" />}
+            {/* secondary category strip */}
+            <span className="relative block px-3.5 pb-2.5 -mt-0.5">
+              <span className="inline-block f-mono text-[7px] tracking-[0.18em] px-2 py-[3px] uppercase truncate max-w-full"
+                style={{
+                  background: isActive ? "rgba(221,221,216,0.18)" : "color-mix(in srgb, var(--outer-ink) 10%, transparent)",
+                  color: isActive ? "#DDDDD8" : "var(--m-sub)",
+                  border: `1px solid ${isActive ? "rgba(221,221,216,0.35)" : "var(--m-line)"}`,
+                }}>
+                {category(c.role)}
+              </span>
+            </span>
+            {isActive && locked && <span className="absolute bottom-1.5 right-2 w-2 h-2 rotate-45 bg-[#DDDDD8]" />}
           </button>
         );
       })}

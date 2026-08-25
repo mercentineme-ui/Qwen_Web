@@ -114,6 +114,8 @@ export default function CreativeCore() {
                 <circle cx="300" cy="300" r="266" fill="none" stroke="var(--line-soft)" strokeWidth="1" strokeDasharray="3 9"
                   className={reduced ? undefined : "gear-ccw-slow"} style={{ transformOrigin: "300px 300px" }} />
 
+                {/* ---------- MID machine layer (scaled in, leaves a clean outer orbit) ---------- */}
+                <g transform="translate(300 300) scale(0.9) translate(-300 -300)">
                 {/* baseplate + rivets + engraved grooves */}
                 <circle cx="300" cy="300" r="252" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="2" style={{ filter: "drop-shadow(0 10px 18px rgba(34,35,40,0.35))" }} />
                 {Array.from({ length: 16 }).map((_, i) => {
@@ -223,6 +225,34 @@ export default function CreativeCore() {
                   </>
                 )}
 
+                {/* tiny internal signal — a courier dot travelling the mid ring */}
+                {!reduced && (
+                  <g className="gear-cw" style={{ animationDuration: "11s" }}>
+                    <circle cx="300" cy="152" r="4.2" fill="#A6A6A4" stroke="#DDDDD8" strokeWidth="1.2" />
+                    <circle cx="300" cy="448" r="3" fill="#59595B" stroke="#A6A6A4" strokeWidth="1" />
+                  </g>
+                )}
+                </g>
+
+                {/* ---------- FOREGROUND mechanical hardware — rests in front of the machine ---------- */}
+                <g className={reduced ? undefined : "wedge-rock"} style={{ animationDuration: "12s" }}>
+                  {/* lower-right graphite service band */}
+                  <path d={`M${polar(300, 300, 262, 30)[0]} ${polar(300, 300, 262, 30)[1]} A262 262 0 0 1 ${polar(300, 300, 262, 104)[0]} ${polar(300, 300, 262, 104)[1]} L${polar(300, 300, 236, 104)[0]} ${polar(300, 300, 236, 104)[1]} A236 236 0 0 0 ${polar(300, 300, 236, 30)[0]} ${polar(300, 300, 236, 30)[1]} Z`}
+                    fill="#59595B" stroke="#A6A6A4" strokeWidth="1.4" opacity="0.95"
+                    style={{ filter: "drop-shadow(0 6px 10px rgba(34,35,40,0.4))" }} />
+                  {[42, 60, 78, 93].map((deg) => {
+                    const [x, y] = polar(300, 300, 249, deg);
+                    return <circle key={deg} cx={x} cy={y} r="3" fill="#222328" stroke="#DDDDD8" strokeWidth="1" />;
+                  })}
+                  <path d={`M${polar(300, 300, 249, 34)[0]} ${polar(300, 300, 249, 34)[1]} A249 249 0 0 1 ${polar(300, 300, 249, 100)[0]} ${polar(300, 300, 249, 100)[1]}`}
+                    fill="none" stroke="#A6A6A4" strokeWidth="1.6" strokeDasharray="2 8" opacity="0.8" />
+                  {/* upper-left pale actuator band */}
+                  <path d={`M${polar(300, 300, 258, 206)[0]} ${polar(300, 300, 258, 206)[1]} A258 258 0 0 1 ${polar(300, 300, 258, 244)[0]} ${polar(300, 300, 258, 244)[1]} L${polar(300, 300, 240, 244)[0]} ${polar(300, 300, 240, 244)[1]} A240 240 0 0 0 ${polar(300, 300, 240, 206)[0]} ${polar(300, 300, 240, 206)[1]} Z`}
+                    fill="#DDDDD8" stroke="#A6A6A4" strokeWidth="1.2" opacity="0.92" />
+                  <circle cx={polar(300, 300, 249, 216)[0]} cy={polar(300, 300, 249, 216)[1]} r="2.6" fill="#59595B" />
+                  <circle cx={polar(300, 300, 249, 234)[0]} cy={polar(300, 300, 249, 234)[1]} r="2.6" fill="#59595B" />
+                </g>
+
                 {/* selector head — small crimson arrowhead, no tail */}
                 <g ref={headRef} transform="rotate(0 300 300)">
                   <path d="M300 176 Q305 204 326 221 Q300 212 274 221 Q295 204 300 176 Z" fill="var(--crimson)"
@@ -235,7 +265,8 @@ export default function CreativeCore() {
                 const Icon = disciplineIcons[dis.icon] ?? disciplineIcons.direction;
                 const isActive = i === sel;
                 const isHover = i === hoverIdx;
-                const [x, y] = polar(50, 50, 42, (i / disciplines.length) * 360);
+                /* clean outer orbit — node + name stay clear of the machine rim */
+                const [x, y] = polar(50, 50, 44.5, (i / disciplines.length) * 360);
                 const fill = isActive ? "var(--crimson)" : isHover ? "var(--machine-crimson)" : "var(--outer-bg)";
                 return (
                   <button key={dis.id}

@@ -187,10 +187,10 @@ export function HowIBuild() {
               color: "#222328",
             }}>
             <span className="absolute top-3 left-4 f-mono text-[9px] tracking-[0.3em] text-[#9E2237]">PHASE 03 — BEYOND</span>
-            <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-10 lg:gap-14 items-center mt-4">
+            <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-10 lg:gap-14 items-start mt-4">
               {/* LEFT — speech bubble + empty upload frame */}
               <div className="relative min-w-0">
-                <div className="relative z-10 mb-[-14px] ml-2 sm:ml-6 w-[88%] rounded-[18px] border-[3px] border-[#222328] bg-[#DDDDD8] px-5 py-4 shadow-[5px_5px_0_#222328]">
+                <div className="relative z-10 mb-[-14px] ml-2 sm:ml-6 w-[88%] rounded-[18px] border-[3px] border-[#222328] bg-[#DDDDD8] px-5 py-4 -rotate-1 shadow-[5px_5px_0_#E72241,9px_9px_0_#222328]">
                   <p className="f-tech font-bold text-[14px] sm:text-[15.5px] leading-snug">
                     {b.bubble}
                   </p>
@@ -200,15 +200,17 @@ export function HowIBuild() {
                     <path d="M3 0 H31 L12 16 Z" fill="#DDDDD8" />
                   </svg>
                 </div>
-                <div className="relative border-4 border-[#222328] bg-[#C3C1BC] shadow-[7px_7px_0_#59232F]">
-                  <MediaSlot item={b.reveal.image} ratio="4/3" className="!rounded-none !border-0" />
+                <div className="relative border-4 border-[#222328] bg-[#C3C1BC] shadow-[8px_8px_0_#E72241,14px_14px_0_#59232F]">
+                  <MediaSlot item={b.reveal.image} ratio="3/4" className="!rounded-none !border-0" />
                   <span className="absolute top-2 left-2 f-mono text-[8px] tracking-[0.26em] px-2 py-1 bg-[#222328] text-[#DDDDD8]">UPLOAD SPACE</span>
+                  <span className="absolute bottom-2 right-2 f-mono text-[8px] tracking-[0.26em] px-2 py-1 bg-[#E72241] text-[#DDDDD8]">VERTICAL · 3:4</span>
                 </div>
               </div>
 
               {/* RIGHT — established continuation copy */}
               <div className="min-w-0">
-                <span className="f-mono text-[10px] tracking-[0.32em] text-[#E72241]">BEYOND THE FOUR NODES</span>
+                <span className="block f-mono text-[9px] tracking-[0.3em]" style={{ color: "rgba(34,35,40,0.6)" }}>CONTINUED FROM PAGE 615</span>
+                <span className="block f-mono text-[10px] tracking-[0.32em] text-[#E72241] mt-1.5">BEYOND THE FOUR NODES</span>
                 <h3 className="f-display leading-[0.98] mt-4 text-[clamp(2rem,4.4vw,3.4rem)]">
                   {b.reveal.heading}{" "}
                   <span className="text-[#E72241]">{b.reveal.headingAccent}</span>
@@ -217,9 +219,12 @@ export function HowIBuild() {
                   {b.reveal.narrator}
                 </p>
                 <button onClick={replay}
-                  className="mt-8 inline-flex items-center gap-3 f-tech font-bold text-[11px] tracking-[0.24em] px-4 py-3 rounded-lg border-2 border-[#222328] hover:bg-[#222328] hover:text-[#DDDDD8] transition-colors duration-300">
-                  ↺ REPLAY THE PIPELINE
+                  className="mt-8 inline-flex items-center gap-3 f-tech font-bold text-[11px] tracking-[0.24em] px-4 py-3 rounded-lg border-2 border-[#222328] shadow-[4px_4px_0_#E72241] hover:bg-[#222328] hover:text-[#DDDDD8] hover:shadow-[2px_2px_0_#E72241] transition-all duration-300">
+                  ↻ RUN IT AGAIN
                 </button>
+                <span className="mt-4 block f-mono text-[8.5px] tracking-[0.3em]" style={{ color: "rgba(34,35,40,0.55)" }}>
+                  H8 · ISSUE 01 · END OF PAGE
+                </span>
               </div>
             </div>
           </div>
