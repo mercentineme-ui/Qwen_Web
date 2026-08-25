@@ -294,6 +294,14 @@ body::before {
 
 .valve-wiggle { animation: valveWiggle 3.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes valveWiggle { 0%, 100% { transform: rotate(0deg); } 30% { transform: rotate(24deg); } 60% { transform: rotate(-8deg); } }
+
+/* laboratory fluid / electrical life */
+.fluid-flow { stroke-dasharray: 5 9; animation: fluidFlow 1.5s linear infinite; }
+@keyframes fluidFlow { to { stroke-dashoffset: -14; } }
+.bubble { animation: bubbleRise 3s ease-in infinite; }
+@keyframes bubbleRise { 0% { transform: translateY(0); opacity: 0; } 12% { opacity: 0.6; } 100% { transform: translateY(-30px); opacity: 0; } }
+.spark { animation: sparkFlash 2.6s steps(1, end) infinite; }
+@keyframes sparkFlash { 0%, 86%, 100% { opacity: 0; } 88%, 93% { opacity: 1; } }
 .fly-pulse { animation: flyPulse 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes flyPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
 .head-pulse { transform-box: fill-box; transform-origin: center; animation: headPulse 2.4s ease-in-out infinite; }

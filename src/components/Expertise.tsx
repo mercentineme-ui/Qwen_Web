@@ -34,34 +34,38 @@ function ModuleHeading({ tag, title, right }: { tag: string; title: string; righ
   );
 }
 
-/* ================= CLOCKWORK CAREER ENGINE =================
-   A vertical watch-engine that records a career through mechanical
-   transmission. Four detachable transmission modules (companies) sit
-   PARKED on the left; the engaged chapter physically plugs into the
-   central clockwork core. Hover = extend preview · click = lock ·
-   again = release · the 20s cycle runs the same physical handoff.   */
+/* ================= VERTICAL STEAMPUNK TRANSMISSION LAB =================
+   A tall clockwork / laboratory engine that stores four career chapters.
+   The four companies are detachable transmission cartridges parked on the
+   LEFT. Hovering one physically wakes it — the plaque slides out, its
+   telescoping connector unfolds (sleeve → shaft → joint → gear → clutch)
+   and plugs into the machine. Clicking locks it as the live chapter: its
+   gear spins faster and a crimson signal travels wall → manifold → core.
+   The 20s cycle runs the same physical handoff. Machine inverts with theme
+   via the --machine-* material set (matte black on light / off-white on dark). */
 
-const ROWS = [78, 190, 302, 414];         /* connection heights */
-const PLATE_X = [10, 26, 14, 30];         /* organic stagger on the left */
-const CORE = { x: 452, y: 262 };          /* clock core center */
-const SHAFT_X = 398;
+const ROWS = [95, 235, 375, 515];                       /* node / connection heights */
+const NAMES = ["IMPROMP2LABS", "DNEG", "CYBEREDGE", "PSD"];
+const CORE = { x: 415, y: 350 };                        /* main clock / power core */
+const MANI_X = 282;                                     /* vertical manifold shaft */
 
-function MiniGear({ cx, cy, r, teeth, spin, hot }: { cx: number; cy: number; r: number; teeth: number; spin: string; hot?: boolean }) {
-  const edge = hot ? "var(--crimson)" : "var(--machine-line)";
+function Gear({ cx, cy, r, teeth, spin, dur, fill = "var(--machine-deep)", stroke = "var(--machine-line)", hub = true }: {
+  cx: number; cy: number; r: number; teeth: number; spin?: string; dur?: string;
+  fill?: string; stroke?: string; hub?: boolean;
+}) {
   return (
-    <g className={spin}>
+    <g className={spin} style={spin && dur ? { animationDuration: dur } : undefined}>
       {Array.from({ length: teeth }).map((_, i) => {
         const a = (i / teeth) * Math.PI * 2;
         const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
         return (
-          <rect key={i} x={-r * 0.14} y={-r * 0.17} width={r * 0.28} height={r * 0.34}
+          <rect key={i} x={-r * 0.16} y={-r * 0.2} width={r * 0.32} height={r * 0.4}
             transform={`translate(${x} ${y}) rotate(${(a * 180) / Math.PI})`}
-            fill="var(--machine-inv)" stroke={edge} strokeWidth="1" style={{ transition: "stroke .35s ease" }} />
+            fill={fill} stroke={stroke} strokeWidth={1} />
         );
       })}
-      <circle cx={cx} cy={cy} r={r * 0.9} fill="var(--machine-inv)" stroke={edge} strokeWidth="1.3" style={{ transition: "stroke .35s ease" }} />
-      <circle cx={cx} cy={cy} r={r * 0.34} fill="var(--machine-deep)" stroke={edge} strokeWidth="1" />
-      <circle cx={cx} cy={cy} r={r * 0.1} fill={hot ? "var(--crimson)" : "var(--machine-line)"} style={{ transition: "fill .35s ease" }} />
+      <circle cx={cx} cy={cy} r={r * 0.82} fill={fill} stroke={stroke} strokeWidth={1.4} />
+      {hub && <circle cx={cx} cy={cy} r={r * 0.28} fill="var(--machine-plate)" stroke={stroke} strokeWidth={1.2} />}
     </g>
   );
 }
@@ -73,335 +77,305 @@ function NodeMap({
   hoverIdx: number | null;
   locked: boolean;
   reduced: boolean;
-  companies: { id: string; num: string; name: string; date: string; role: string; skills: string[] }[];
+  companies: { id: string }[];
   onHover: (i: number) => void;
   onLeaveRow: () => void;
   onPick: (i: number) => void;
 }) {
-  const ROMANS = ["I", "II", "III", "IV"];
+  const spin = (s?: string) => (reduced || !s ? undefined : s);
+
   return (
-    <div className="relative border rounded-xl mat-texture corner-bracket overflow-hidden"
-      style={{ borderColor: "var(--m-line)", backgroundColor: "color-mix(in srgb, var(--outer-ink) 5%, transparent)", aspectRatio: "560 / 520" }}
-      onMouseLeave={onLeaveRow}>
-
-      <svg viewBox="0 0 560 520" className="absolute inset-0 w-full h-full">
-        <rect x="0" y="0" width="560" height="520" fill="var(--outer-ink)" opacity="0.03" />
-        <line x1="0" y1="504" x2="560" y2="504" stroke="var(--m-line)" strokeWidth="1" />
-
-        {/* ================= CENTRAL VERTICAL CLOCK CORE ================= */}
+    <div
+      className="mat-inner mat-texture relative rounded-xl border overflow-hidden"
+      style={{ borderColor: "color-mix(in srgb, var(--machine-line) 55%, transparent)", aspectRatio: "560 / 640" }}
+      onMouseLeave={onLeaveRow}
+    >
+      <svg viewBox="0 0 560 640" className="absolute inset-0 w-full h-full">
+        {/* ============================================================
+            THE MACHINE — tall housing, manifold, clock core, lab gear
+            ============================================================ */}
         <g>
-          {/* heavy housing — thick plates, rivets, recessed window */}
-          <rect x="344" y="24" width="204" height="476" rx="5" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="2.4" />
-          <rect x="354" y="34" width="184" height="456" rx="3" fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth="1.1" />
-          {[[352, 32], [540, 32], [352, 492], [540, 492], [352, 262], [540, 262]].map(([rx, ry], k) => (
-            <g key={k}>
-              <circle cx={rx} cy={ry} r="3.1" fill="var(--machine-line)" stroke="var(--machine-inv)" strokeWidth="0.9" />
-              <line x1={rx - 1.6} y1={ry} x2={rx + 1.6} y2={ry} stroke="var(--machine-inv)" strokeWidth="0.7" />
-            </g>
-          ))}
-          {/* pressure fittings */}
-          {[[368, 52], [524, 52], [368, 472], [524, 472]].map(([fx, fy], k) => (
-            <g key={k}>
-              <circle cx={fx} cy={fy} r="4.6" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.1" />
-              <path d={`M${fx - 2.4} ${fy} h4.8 M${fx} ${fy - 2.4} v4.8`} stroke="var(--machine-inv)" strokeWidth="0.9" />
-            </g>
-          ))}
-          {/* calibration marks along the housing edge */}
-          {Array.from({ length: 23 }).map((_, k) => (
-            <line key={k} x1="541" y1={48 + k * 20} x2={k % 5 === 0 ? "533" : "537"} y2={48 + k * 20}
-              stroke="var(--machine-inv)" strokeWidth="0.9" opacity="0.55" />
+          {/* bottom legs + top input stack (break the box silhouette) */}
+          <rect x="258" y="612" width="24" height="20" rx="2" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.4" />
+          <rect x="498" y="612" width="24" height="20" rx="2" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.4" />
+          <rect x="448" y="18" width="26" height="26" rx="2" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.4" />
+          <rect x="454" y="10" width="14" height="10" rx="2" fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth="1.2" />
+
+          {/* outer chamfered housing */}
+          <polygon
+            points="225,55 245,35 525,35 545,55 545,595 525,615 245,615 225,595"
+            fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth="2.5"
+            style={{ filter: "drop-shadow(0 12px 20px rgba(0,0,0,0.3))" }}
+          />
+          {/* recessed inner deck */}
+          <rect x="234" y="44" width="302" height="562" rx="4" fill="var(--machine-deep)" opacity="0.9" />
+          {/* frame rivets */}
+          {[[238, 48], [532, 48], [238, 602], [532, 602], [238, 325], [532, 325]].map(([x, y], k) => (
+            <circle key={k} cx={x} cy={y} r="2.6" fill="var(--machine-line)" stroke="var(--machine-inv)" strokeWidth="0.8" opacity="0.8" />
           ))}
 
-          {/* vertical drive shaft — bearings + moving segmentation */}
-          <rect x={SHAFT_X - 6} y="44" width="12" height="436" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1" />
-          <line x1={SHAFT_X} y1="50" x2={SHAFT_X} y2="474" stroke="var(--machine-inv)" strokeWidth="3.4" opacity="0.9" />
+          {/* ---------- vertical manifold shaft ---------- */}
+          <rect x={MANI_X - 4} y="66" width="8" height="520" fill="var(--machine-line)" opacity="0.85" />
+          <rect x={MANI_X - 1.5} y="66" width="3" height="520" fill="var(--machine-inv)" opacity="0.35" />
+          <rect x={MANI_X - 10} y="58" width="20" height="12" rx="2" fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth="1.4" />
+          <rect x={MANI_X - 10} y="580" width="20" height="12" rx="2" fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth="1.4" />
+
+          {/* ---------- TOP: winding crown + input gears + coil + escapement ---------- */}
+          <Gear cx={415} cy={84} r={20} teeth={10} spin={spin("gear-cw")} dur="14s" fill="var(--machine-plate)" stroke="var(--machine-line)" />
           {!reduced && (
-            <line x1={SHAFT_X} y1="50" x2={SHAFT_X} y2="474" stroke="var(--machine-line)" strokeWidth="3.4"
-              strokeDasharray="6 14" className="packet-2" opacity="0.6" />
+            <line x1={415} y1={84} x2={415} y2={58} stroke="var(--machine-inv)" strokeWidth={3.4} strokeLinecap="round">
+              <animateTransform attributeName="transform" type="rotate" from={`0 415 84`} to={`360 415 84`} dur="7s" repeatCount="indefinite" />
+            </line>
           )}
-          {[60, 262, 464].map((by) => (
-            <g key={by}>
-              <rect x={SHAFT_X - 11} y={by - 6} width="22" height="12" rx="2" fill="var(--machine-line)" stroke="var(--machine-inv)" strokeWidth="0.9" />
-              <circle cx={SHAFT_X - 6} cy={by} r="1.4" fill="var(--machine-deep)" />
-              <circle cx={SHAFT_X + 6} cy={by} r="1.4" fill="var(--machine-deep)" />
-            </g>
-          ))}
-
-          {/* winding crown + ratchet at the shaft top */}
+          <Gear cx={347} cy={132} r={22} teeth={11} spin={spin("gear-ccw")} dur="18s" />
+          <Gear cx={375} cy={106} r={12} teeth={8} spin={spin("gear-cw")} dur="9s" />
+          {/* electrical coil + crimson spark */}
           <g>
-            <rect x={SHAFT_X - 9} y="26" width="18" height="12" rx="2" fill="var(--machine-line)" stroke="var(--machine-inv)" strokeWidth="1" />
-            <rect x={SHAFT_X - 3} y="29.5" width="6" height="5" fill="var(--machine-deep)" />
-            <path d={`M${SHAFT_X - 12} 24 a12 12 0 0 1 24 0`} fill="none" stroke="var(--machine-inv)" strokeWidth="1.2" strokeDasharray="3 3" opacity="0.7" />
+            <ellipse cx={503} cy={102} rx={15} ry={22} fill="none" stroke="var(--machine-line)" strokeWidth={2.4} />
+            <ellipse cx={503} cy={102} rx={9} ry={15} fill="none" stroke="var(--machine-line)" strokeWidth={2} />
+            <circle cx={503} cy={102} r={3.4} fill="var(--machine-crimson-hot)" className={spin("core-beat")} />
+            <path d="M503 76 L497 90 L505 90 L498 106" fill="none" stroke="var(--machine-crimson-hot)" strokeWidth={1.8}
+              strokeLinecap="round" strokeLinejoin="round" className={spin("spark")} />
+          </g>
+          {/* escapement */}
+          <g transform="translate(468 200)">
+            <Gear cx={0} cy={0} r={14} teeth={8} spin={spin("gear-cw")} dur="10s" fill="var(--machine-plate)" />
+            <g className={spin("escapement")} style={{ transformOrigin: "0px -16px" }}>
+              <path d="M-8 -20 L0 -12 L8 -20" fill="none" stroke="var(--machine-inv)" strokeWidth={2.4} strokeLinecap="round" />
+            </g>
           </g>
 
-          {/* tension springs */}
-          <path d={`M366 74 l6 -6 6 12 6 -12 6 12 6 -12 6 12 6 -6`} fill="none" stroke="var(--machine-inv)" strokeWidth="1.4"
-            className={reduced ? undefined : "spring-stretch"} style={{ transformOrigin: "366px 74px" }} />
-          <path d={`M470 452 l6 -6 6 12 6 -12 6 12 6 -12 6 12 6 -6`} fill="none" stroke="var(--machine-inv)" strokeWidth="1.4"
-            className={reduced ? undefined : "spring-stretch"} style={{ transformOrigin: "470px 452px", animationDelay: "1.2s" }} />
+          {/* ---------- UPPER gear cluster ---------- */}
+          <Gear cx={332} cy={203} r={25} teeth={12} spin={spin("gear-cw")} dur="20s" />
+          <Gear cx={366} cy={182} r={12} teeth={8} spin={spin("gear-ccw")} dur="8s" />
 
-          {/* escapement — escape wheel + ticking anchor above the clock */}
+          {/* ---------- cable + fluid conduits (right side) ---------- */}
+          <path d="M505 122 C 540 220 540 380 498 478" fill="none" stroke="var(--machine-line)" strokeWidth={2.6} opacity={0.65} />
+          <path d="M475 478 L475 462 L447 452" fill="none" stroke="var(--machine-line)" strokeWidth={4.4} strokeLinecap="round" />
+          <path d="M475 478 L475 462 L447 452" fill="none" stroke="var(--machine-crimson)" strokeWidth={1.6}
+            strokeLinecap="round" className={spin("fluid-flow")} opacity={0.8} />
+
+          {/* ---------- MAIN CLOCK / POWER CORE ---------- */}
           <g>
-            <line x1={CORE.x} y1="176" x2={CORE.x} y2="196" stroke="var(--machine-line)" strokeWidth="3" />
-            <g className={reduced ? undefined : "gear-cw-fast"} style={{ animationDuration: "9s" }}>
-              {Array.from({ length: 8 }).map((_, i) => {
-                const a = (i / 8) * Math.PI * 2;
-                return <path key={i} d={`M${CORE.x + 13 * Math.cos(a - 0.14)} ${158 + 13 * Math.sin(a - 0.14)} L${CORE.x + 19 * Math.cos(a)} ${158 + 19 * Math.sin(a)} L${CORE.x + 13 * Math.cos(a + 0.14)} ${158 + 13 * Math.sin(a + 0.14)}`}
-                  fill="var(--machine-inv)" stroke="var(--machine-line)" strokeWidth="0.8" />;
-              })}
-              <circle cx={CORE.x} cy="158" r="12.5" fill="var(--machine-inv)" stroke="var(--machine-line)" strokeWidth="1.2" />
-            </g>
-            <g className={reduced ? undefined : "escapement"} style={{ transformOrigin: `${CORE.x}px 138px` }}>
-              <path d={`M${CORE.x - 13} 152 Q${CORE.x} 132 ${CORE.x + 13} 152`} fill="none" stroke="var(--machine-line)" strokeWidth="3.4" strokeLinecap="round" />
-              <circle cx={CORE.x - 13} cy="152" r="2.6" fill="var(--machine-inv)" stroke="var(--machine-line)" strokeWidth="1" />
-              <circle cx={CORE.x + 13} cy="152" r="2.6" fill="var(--machine-inv)" stroke="var(--machine-line)" strokeWidth="1" />
-              <line x1={CORE.x} y1="138" x2={CORE.x} y2="128" stroke="var(--machine-line)" strokeWidth="2.4" />
-            </g>
-            <circle cx={CORE.x} cy="138" r="2.2" fill="var(--machine-inv)" />
-          </g>
-
-          {/* balance wheel + hairspring — continuous oscillation */}
-          <g>
-            <line x1={CORE.x + 14} y1="140" x2="496" y2="100" stroke="var(--machine-line)" strokeWidth="1.6" opacity="0.8" />
-            <g className={reduced ? undefined : "balance"} style={{ transformOrigin: "500px 88px" }}>
-              <circle cx="500" cy="88" r="18" fill="none" stroke="var(--machine-inv)" strokeWidth="3" />
-              <line x1="500" y1="70" x2="500" y2="106" stroke="var(--machine-line)" strokeWidth="2" />
-              <line x1="482" y1="88" x2="518" y2="88" stroke="var(--machine-line)" strokeWidth="2" />
-              <circle cx="500" cy="88" r="3.2" fill="var(--machine-inv)" stroke="var(--machine-line)" strokeWidth="1" />
-            </g>
-            {[6, 9.5, 13].map((r) => (
-              <path key={r} d={`M${500 + r} 88 a${r} ${r} 0 1 1 -${r * 0.4} -${r * 0.9}`} fill="none" stroke="var(--machine-line)" strokeWidth="0.9" opacity="0.75" />
-            ))}
-          </g>
-
-          {/* small upper idler — faster rotation */}
-          <MiniGear cx={SHAFT_X} cy={112} r={13} teeth={7} spin={reduced ? "" : "gear-cw-fast"} />
-
-          {/* the four shaft gears — the transmission cluster */}
-          {ROWS.map((cy, i) => (
-            <MiniGear key={cy} cx={SHAFT_X} cy={cy} r={19} teeth={9} hot={i === active}
-              spin={reduced ? "" : i % 2 ? "gear-ccw" : "gear-cw"} />
-          ))}
-
-          {/* lower piston pair — occasional pumping movement */}
-          {[[486, 344], [486, 388]].map(([px, py], k) => (
-            <g key={k}>
-              <rect x={px - 10} y={py} width="20" height="30" rx="2" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.2" />
-              <rect x={px - 3} y={py - 12} width="6" height="14" fill="var(--machine-inv)" stroke="var(--machine-line)" strokeWidth="0.8"
-                className={reduced ? undefined : "piston"} style={{ animationDelay: `${k * 1.1}s` }} />
-              <rect x={px - 7} y={py + 24} width="14" height="5" rx="1.5" fill="var(--machine-line)" />
-            </g>
-          ))}
-          <line x1="404" y1="352" x2="476" y2="352" stroke="var(--machine-line)" strokeWidth="2.4" />
-
-          {/* ============ THE CLOCK — recessed dial, rotating tooth ring, hands ============ */}
-          <circle cx={CORE.x} cy={CORE.y} r="86" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.8" />
-          {/* rotating toothed ring behind the dial */}
-          <g className={reduced ? undefined : "gear-ccw-slow"}>
-            {Array.from({ length: 36 }).map((_, i) => {
-              const a = (i / 36) * Math.PI * 2;
-              const x = CORE.x + 78 * Math.cos(a), y = CORE.y + 78 * Math.sin(a);
-              return <rect key={i} x="-5" y="-6" width="10" height="12"
-                transform={`translate(${x} ${y}) rotate(${(a * 180) / Math.PI})`}
-                fill="var(--machine-line)" opacity="0.9" />;
+            {/* outer toothed ring */}
+            {Array.from({ length: 28 }).map((_, i) => {
+              const a = (i / 28) * Math.PI * 2;
+              const x = CORE.x + 96 * Math.cos(a), y = CORE.y + 96 * Math.sin(a);
+              return (
+                <rect key={i} x={-7} y={-9} width={14} height={18}
+                  transform={`translate(${x} ${y}) rotate(${(a * 180) / Math.PI})`}
+                  fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth={1} />
+              );
             })}
+            <circle cx={CORE.x} cy={CORE.y} r={88} fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth={3} />
+            <circle cx={CORE.x} cy={CORE.y} r={72} fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth={1.6} />
+            {/* calibration ticks */}
+            {Array.from({ length: 60 }).map((_, i) => {
+              const a = (i / 60) * Math.PI * 2;
+              const big = i % 5 === 0;
+              const r1 = big ? 60 : 64, r2 = 69;
+              return (
+                <line key={i}
+                  x1={CORE.x + r1 * Math.cos(a)} y1={CORE.y + r1 * Math.sin(a)}
+                  x2={CORE.x + r2 * Math.cos(a)} y2={CORE.y + r2 * Math.sin(a)}
+                  stroke="var(--machine-inv)" strokeWidth={big ? 1.6 : 0.7} opacity={big ? 0.8 : 0.4} />
+              );
+            })}
+            {/* roman fragments */}
+            {[["XII", 0], ["III", 90], ["VI", 180], ["IX", 270]].map(([t, deg]) => {
+              const a = ((deg as number) - 90) * (Math.PI / 180);
+              return (
+                <text key={t as string} x={CORE.x + 50 * Math.cos(a)} y={CORE.y + 50 * Math.sin(a) + 3}
+                  textAnchor="middle" className="f-mono" fontSize={9} fill="var(--machine-inv)" opacity={0.75}>{t as string}</text>
+              );
+            })}
+            {/* rotating inner ring */}
+            <circle cx={CORE.x} cy={CORE.y} r={44} fill="none" stroke="var(--machine-line)" strokeWidth={1.4}
+              strokeDasharray="4 8" className={spin("gear-cw")} style={{ animationDuration: "22s" }} />
+            {/* hands */}
+            {!reduced && (
+              <g>
+                <line x1={CORE.x} y1={CORE.y} x2={CORE.x} y2={CORE.y - 34} stroke="var(--machine-inv)" strokeWidth={3.2} strokeLinecap="round">
+                  <animateTransform attributeName="transform" type="rotate" from={`0 ${CORE.x} ${CORE.y}`} to={`360 ${CORE.x} ${CORE.y}`} dur="46s" repeatCount="indefinite" />
+                </line>
+                <line x1={CORE.x} y1={CORE.y} x2={CORE.x} y2={CORE.y - 52} stroke="var(--machine-inv)" strokeWidth={1.7} strokeLinecap="round" opacity={0.85}>
+                  <animateTransform attributeName="transform" type="rotate" from={`0 ${CORE.x} ${CORE.y}`} to={`360 ${CORE.x} ${CORE.y}`} dur="12s" repeatCount="indefinite" />
+                </line>
+              </g>
+            )}
+            {/* central bearing + crimson heartbeat core */}
+            <circle cx={CORE.x} cy={CORE.y} r={14} fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth={1.6} />
+            <circle key={`beat-${active}`} cx={CORE.x} cy={CORE.y} r={14} fill="none" stroke="var(--machine-crimson-hot)" strokeWidth={2}
+              className={reduced ? undefined : "core-engage"} />
+            <circle cx={CORE.x} cy={CORE.y} r={7.5} fill="var(--machine-crimson-hot)" className={spin("core-beat")} />
+            <circle cx={CORE.x} cy={CORE.y} r={2.6} fill="var(--machine-inv)" opacity={0.9} />
           </g>
-          <circle cx={CORE.x} cy={CORE.y} r="74" fill="var(--machine-inv)" stroke="var(--machine-line)" strokeWidth="2.2" />
-          {/* minute ticks */}
-          {Array.from({ length: 60 }).map((_, i) => {
-            const a = (i / 60) * Math.PI * 2;
-            const major = i % 5 === 0;
-            return <line key={i}
-              x1={CORE.x + (major ? 60 : 64) * Math.cos(a)} y1={CORE.y + (major ? 60 : 64) * Math.sin(a)}
-              x2={CORE.x + 68 * Math.cos(a)} y2={CORE.y + 68 * Math.sin(a)}
-              stroke="var(--machine-plate)" strokeWidth={major ? 2 : 0.9} opacity={major ? 0.9 : 0.55} />;
-          })}
-          {/* roman numeral fragments */}
-          {[["XII", 0], ["III", 90], ["VI", 180], ["IX", 270]].map(([rn, deg]) => {
-            const a = ((Number(deg) - 90) * Math.PI) / 180;
-            return (
-              <text key={rn as string} x={CORE.x + 49 * Math.cos(a)} y={CORE.y + 49 * Math.sin(a) + 4}
-                textAnchor="middle" className="f-display" fontSize="11" fill="var(--machine-plate)" opacity="0.85">{rn}</text>
-            );
-          })}
-          <circle cx={CORE.x} cy={CORE.y} r="40" fill="none" stroke="var(--machine-line)" strokeWidth="1" opacity="0.6" />
-          <circle cx={CORE.x} cy={CORE.y} r="34" fill="none" stroke="var(--machine-line)" strokeWidth="0.7" strokeDasharray="2 5" opacity="0.6" />
-          {/* clock hands — slow independent rotation */}
-          <g className={reduced ? undefined : "gear-cw"} style={{ animationDuration: "240s", transformOrigin: `${CORE.x}px ${CORE.y}px` }}>
-            <line x1={CORE.x} y1={CORE.y} x2={CORE.x} y2={CORE.y - 26} stroke="var(--machine-plate)" strokeWidth="4.4" strokeLinecap="round" />
+
+          {/* manifold → core drive rod */}
+          <rect x={MANI_X} y={CORE.y - 4} width={CORE.x - 92 - MANI_X} height={8} rx={2} fill="var(--machine-line)" />
+          <circle cx={MANI_X + 14} cy={CORE.y} r={4.5} fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth={1.2} />
+
+          {/* ---------- BOTTOM: pistons + gauge + reservoir + contacts ---------- */}
+          {[330, 366].map((x, k) => (
+            <g key={x}>
+              <rect x={x - 9} y={470} width={18} height={34} rx={3} fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth={1.4} />
+              <rect x={x - 3} y={500} width={6} height={16} fill="var(--machine-inv)" opacity={0.8}
+                className={spin("piston")} style={{ animationDelay: `${k * 0.9}s` }} />
+              <rect x={x - 7} y={514} width={14} height={6} rx={2} fill="var(--machine-line)" />
+            </g>
+          ))}
+          {/* pressure gauge */}
+          <g transform="translate(330 562)">
+            <circle r={16} fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth={1.6} />
+            <path d="M-10 0 A10 10 0 0 1 10 0" fill="none" stroke="var(--machine-inv)" strokeWidth={1.2} opacity={0.6} />
+            <line x1={0} y1={0} x2={7} y2={-7} stroke="var(--machine-crimson-hot)" strokeWidth={1.8} strokeLinecap="round"
+              className={spin("valve-wiggle")} style={{ animationDuration: "4s" }} />
+            <circle r={2.2} fill="var(--machine-inv)" />
           </g>
-          <g className={reduced ? undefined : "gear-cw"} style={{ animationDuration: "60s", transformOrigin: `${CORE.x}px ${CORE.y}px` }}>
-            <line x1={CORE.x} y1={CORE.y} x2={CORE.x} y2={CORE.y - 40} stroke="var(--machine-plate)" strokeWidth="2.6" strokeLinecap="round" />
+          {/* fluid reservoir with rising bubbles */}
+          <g>
+            <rect x={440} y={482} width={72} height={76} rx={10} fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth={1.8} />
+            <rect x={446} y={488} width={60} height={64} rx={7} fill="var(--machine-deep)" />
+            <rect x={446} y={516} width={60} height={36} rx={7} fill="var(--machine-crimson)" opacity={0.32} />
+            {[[458, 546, 0], [476, 550, 1], [492, 544, 2]].map(([bx, by, k]) => (
+              <circle key={k as number} cx={bx as number} cy={by as number} r={2.6} fill="var(--machine-inv)" opacity={0.5}
+                className={spin("bubble")} style={{ animationDelay: `${(k as number) * 0.9}s` }} />
+            ))}
+            <rect x={468} y={476} width={16} height={8} rx={2} fill="var(--machine-line)" />
           </g>
-          {/* jewel-bearing core — the soulpunk heartbeat */}
-          <g className={reduced ? undefined : "core-beat"}>
-            <circle cx={CORE.x} cy={CORE.y} r="12" fill="var(--machine-deep)" stroke="var(--crimson)" strokeWidth="1.6" />
-            <circle cx={CORE.x} cy={CORE.y} r="6.5" fill="var(--crimson)" />
-            <circle cx={CORE.x - 2} cy={CORE.y - 2} r="1.6" fill="#DDDDD8" opacity="0.8" />
+          {/* electrical contacts + rotating disc */}
+          <g transform="translate(415 580)">
+            <Gear cx={0} cy={0} r={13} teeth={8} spin={spin("gear-cw-fast")} fill="var(--machine-plate)" />
+            <circle cx={-20} cy={0} r={3} fill="var(--machine-crimson-hot)" className={spin("spark")} />
+            <circle cx={20} cy={0} r={3} fill="var(--machine-crimson-hot)" className={spin("spark")} style={{ animationDelay: "1.2s" }} />
+            <path d="M-20 0 L-8 -6 M20 0 L8 6" stroke="var(--machine-crimson-hot)" strokeWidth={1.4} className={spin("spark")} style={{ animationDelay: "0.6s" }} />
           </g>
-          {/* engagement pulse — fires when a chapter plugs in */}
-          <circle key={active} cx={CORE.x} cy={CORE.y} r="24" fill="none" stroke="var(--crimson)" strokeWidth="2"
-            className={reduced ? undefined : "core-engage"} style={{ opacity: reduced ? 0 : undefined }} />
         </g>
 
-        {/* ============ TRANSMISSION CHAINS — one per chapter ============ */}
+        {/* ============================================================
+            FOUR CAREER CARTRIDGES + TELESCOPING CONNECTORS (LEFT)
+            ============================================================ */}
         {companies.map((co, i) => {
           const cy = ROWS[i];
-          const engaged = i === active;
-          const path = `M344 ${cy} L374 ${cy} L${SHAFT_X} ${cy} L${SHAFT_X} ${CORE.y} L${CORE.x - 16} ${CORE.y}`;
-          return (
-            <g key={co.id + "-chain"}>
-              <path d={path} fill="none" stroke="var(--machine-line)" strokeWidth="1.2" opacity="0.4" />
-              {engaged && (
-                <>
-                  {!reduced && <path d={path} fill="none" stroke="var(--crimson)" strokeWidth="2.2" className="channel-flow" />}
-                  {/* physical signal bead travelling company gear → shaft → core */}
-                  {!reduced && (
-                    <circle r="3.6" fill="var(--crimson)" stroke="#DDDDD8" strokeWidth="1">
-                      <animateMotion dur="1.5s" repeatCount="indefinite" path={path} />
-                    </circle>
-                  )}
-                </>
-              )}
-              {/* idler gear inside the machine, driven when its chapter engages */}
-              <MiniGear cx={374} cy={cy} r={12} teeth={7} hot={engaged} spin={reduced ? "" : engaged ? "gear-cw-fast" : "gear-ccw"} />
-              {/* clutch socket + roman position mark */}
-              <rect x="338" y={cy - 14} width="13" height="28" rx="2" fill="var(--machine-deep)"
-                stroke={engaged ? "var(--crimson)" : "var(--machine-line)"} strokeWidth={engaged ? 1.8 : 1.2}
-                style={{ transition: "stroke .4s ease" }} />
-              <text x="333" y={cy + 3} textAnchor="end" className="f-mono" fontSize="8" letterSpacing="1"
-                fill={engaged ? "var(--crimson)" : "var(--machine-inv)"} opacity="0.9" style={{ transition: "fill .4s ease" }}>{ROMANS[i]}</text>
-            </g>
-          );
-        })}
+          const isActive = i === active;
+          const isHover = i === hoverIdx;
+          const extended = isActive || isHover;
+          const wallStroke = isActive ? "var(--machine-crimson-hot)" : isHover ? "var(--machine-inv)" : "var(--machine-line)";
+          const nameFill = isActive || isHover ? "var(--machine-crimson-hot)" : "var(--machine-inv)";
+          const ease = "cubic-bezier(.3,.85,.3,1)";
 
-        {/* ============ CLOCKWORK LINKAGE ARMS — node → arm → joint → gear → clutch ============ */}
-        {companies.map((co, i) => {
-          const cy = ROWS[i];
-          const px = PLATE_X[i];
-          const extended = i === active || i === hoverIdx;
-          const engaged = i === active;
-          const preview = i === hoverIdx && i !== active;
-          const armX0 = px + 190;
           return (
-            <g key={co.id + "-arm"}>
-              {/* rod + tie-rod + joint — folds back when parked */}
-              <g style={{
-                transform: extended ? "none" : "translateX(-46px) scaleX(0.45)",
-                transformBox: "fill-box", transformOrigin: "0% 50%",
-                transition: reduced ? "none" : "transform .65s cubic-bezier(.45,.05,.3,1)",
-                opacity: extended ? 1 : 0.55,
-              }}>
-                <line x1={armX0} y1={cy} x2="312" y2={cy} stroke="var(--machine-line)" strokeWidth="7" strokeLinecap="round" />
-                <line x1={armX0} y1={cy} x2="312" y2={cy} stroke={engaged ? "var(--crimson)" : "var(--machine-plate)"} strokeWidth="2.6" strokeLinecap="round"
-                  style={{ transition: "stroke .4s ease" }} />
-                <line x1={armX0 + 6} y1={cy - 8} x2="296" y2={cy - 8} stroke="var(--machine-line)" strokeWidth="1.6" opacity="0.8" />
-                <circle cx="252" cy={cy} r="5.6" fill="var(--machine-deep)" stroke={engaged ? "var(--crimson)" : "var(--machine-inv)"} strokeWidth="1.3"
-                  style={{ transition: "stroke .4s ease" }} />
-                <path d={`M248.6 ${cy} h6.8 M252 ${cy - 3.4} v6.8`} stroke="var(--machine-inv)" strokeWidth="0.9" />
-              </g>
-              {/* small gear — slides in and spins up when extended */}
-              <g style={{
-                transform: extended ? "none" : "translateX(-58px)",
-                opacity: extended ? 1 : 0.4,
-                transition: reduced ? "none" : "transform .6s cubic-bezier(.45,.05,.3,1) .12s, opacity .5s ease .12s",
-              }}>
-                <MiniGear cx={296} cy={cy} r={13} teeth={8} hot={engaged}
-                  spin={reduced ? "" : engaged ? "gear-cw-fast" : extended ? "gear-cw" : "gear-ccw-slow"} />
-              </g>
-              {/* clutch sleeve — the last mechanical move before the transmission */}
-              <g style={{
-                transform: engaged ? "translateX(20px)" : extended ? "translateX(6px)" : "translateX(-58px)",
-                opacity: extended ? 1 : 0.35,
-                transition: reduced ? "none" : "transform .42s cubic-bezier(.4,.1,.3,1) .26s, opacity .45s ease .26s",
-              }}>
-                <rect x="312" y={cy - 10} width="22" height="20" rx="2"
-                  fill={engaged ? "var(--machine-line)" : "var(--machine-deep)"}
-                  stroke={engaged ? "var(--crimson)" : "var(--machine-line)"} strokeWidth={engaged ? 1.8 : 1.2}
-                  style={{ transition: "stroke .35s ease, fill .35s ease" }} />
-                {[0, 1, 2].map((k) => (
-                  <rect key={k} x="334" y={cy - 7.5 + k * 5.6} width="6" height="3.6"
-                    fill={engaged ? "var(--crimson)" : "var(--machine-line)"} style={{ transition: "fill .35s ease" }} />
+            <g key={co.id}>
+              {/* wall receptacle / clutch housing on the machine */}
+              <rect x={220} y={cy - 12} width={18} height={24} rx={2}
+                fill="var(--machine-plate)" stroke={isActive ? "var(--machine-crimson-hot)" : "var(--machine-line)"}
+                strokeWidth={isActive ? 2 : 1.4} style={{ transition: "stroke .35s ease" }} />
+              <rect x={225} y={cy - 4} width={8} height={8} rx={1}
+                fill={isActive ? "var(--machine-crimson-hot)" : "var(--machine-deep)"} style={{ transition: "fill .35s ease" }} />
+
+              {/* feed junction gear on the manifold */}
+              <Gear cx={MANI_X} cy={cy} r={13} teeth={8}
+                spin={spin(extended ? "gear-cw-fast" : "gear-cw")} dur={extended ? "4s" : "16s"}
+                fill={isActive ? "var(--machine-plate)" : "var(--machine-deep)"}
+                stroke={isActive ? "var(--machine-crimson-hot)" : "var(--machine-line)"} />
+              {/* conduit wall → manifold */}
+              <line x1={238} y1={cy} x2={MANI_X - 13} y2={cy} stroke="var(--machine-line)" strokeWidth={4.6} strokeLinecap="round" />
+              {isActive && !reduced && (
+                <line x1={238} y1={cy} x2={MANI_X - 13} y2={cy} stroke="var(--machine-crimson-hot)" strokeWidth={1.8}
+                  strokeLinecap="round" className="channel-flow" />
+              )}
+              {/* crimson signal bead travelling wall → manifold → core */}
+              {isActive && !reduced && (
+                <circle r={3.6} fill="var(--machine-crimson-hot)">
+                  <animateMotion dur="1.7s" repeatCount="indefinite"
+                    path={`M 238 ${cy} L ${MANI_X} ${cy} L ${MANI_X} ${CORE.y} L ${CORE.x - 92} ${CORE.y}`} />
+                </circle>
+              )}
+
+              {/* ------- the cartridge (slides outward when extended) ------- */}
+              <g
+                onMouseEnter={() => onHover(i)}
+                onClick={() => onPick(i)}
+                className="cursor-pointer"
+                style={{
+                  transform: `translateX(${extended ? 18 : 0}px)`,
+                  transition: reduced ? "none" : `transform .55s ${ease}`,
+                }}
+              >
+                {/* telescoping connector: shaft, then joint + gear + clutch (staggered follow-through) */}
+                <rect x={158} y={cy - 3} width={44} height={6} rx={2} fill="var(--machine-line)"
+                  style={{
+                    transform: `translateX(${extended ? 0 : -42}px)`,
+                    opacity: extended ? 1 : 0.45,
+                    transition: reduced ? "none" : `transform .6s ${ease} .08s, opacity .4s ease .08s`,
+                  }} />
+                <g style={{
+                  transform: `translateX(${extended ? 0 : -54}px)`,
+                  opacity: extended ? 1 : 0.35,
+                  transition: reduced ? "none" : `transform .6s ${ease} .16s, opacity .4s ease .16s`,
+                }}>
+                  <circle cx={206} cy={cy} r={5} fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth={1.2} />
+                  <Gear cx={222} cy={cy} r={10} teeth={8}
+                    spin={spin(extended ? (isActive ? "gear-cw-fast" : "gear-cw") : undefined)} dur={isActive ? "3s" : "8s"}
+                    fill={isActive ? "var(--machine-crimson-hot)" : "var(--machine-deep)"}
+                    stroke={isActive ? "var(--machine-crimson-hot)" : "var(--machine-line)"} hub={false} />
+                  <rect x={229} y={cy - 4} width={7} height={8} rx={1}
+                    fill={isActive ? "var(--machine-crimson-hot)" : "var(--machine-line)"} />
+                </g>
+
+                {/* chamfered cartridge plaque */}
+                <polygon
+                  points={`20,${cy - 27} 132,${cy - 27} 148,${cy - 11} 148,${cy + 11} 132,${cy + 27} 20,${cy + 27} 12,${cy + 19} 12,${cy - 19}`}
+                  fill="var(--machine-plate)" stroke={wallStroke} strokeWidth={isActive ? 2.2 : 1.5}
+                  style={{ transition: "stroke .35s ease" }} />
+                {/* recessed nameplate band */}
+                <rect x={44} y={cy - 16} width={96} height={32} rx={2} fill="var(--machine-deep)" opacity={0.92} />
+                {/* corner fasteners */}
+                {[[20, cy - 21], [20, cy + 21], [128, cy - 21], [128, cy + 21]].map(([sx, sy], k) => (
+                  <g key={k}>
+                    <circle cx={sx} cy={sy} r={2} fill="var(--machine-line)" />
+                    <line x1={sx - 1.3} y1={sy} x2={sx + 1.3} y2={sy} stroke="var(--machine-plate)" strokeWidth={0.8} />
+                  </g>
                 ))}
+                {/* idle gear — the cartridge's own breathing mechanism */}
+                <Gear cx={28} cy={cy} r={10} teeth={7} spin={spin("gear-cw")} dur={`${12 + i * 4}s`}
+                  fill="var(--machine-deep)" stroke={isActive ? "var(--machine-crimson-hot)" : "var(--machine-line)"} />
+                {/* index */}
+                <text x={143} y={cy - 17} textAnchor="end" className="f-mono" fontSize={7.5} letterSpacing={1.4}
+                  fill="var(--machine-line)">{String(i + 1).padStart(2, "0")}</text>
+                {/* company name — the visual identity of the node */}
+                <text x={50} y={cy + 4.5} className="f-tech" fontWeight={700}
+                  fontSize={isActive || isHover ? 12 : 11} letterSpacing={isActive || isHover ? 1.6 : 1.1}
+                  fill={nameFill} style={{ transition: "fill .3s ease" }}>
+                  {NAMES[i]}
+                </text>
+                {/* socket sleeve on the right edge */}
+                <rect x={146} y={cy - 6} width={16} height={12} rx={2} fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth={1.2} />
+                <circle cx={154} cy={cy} r={2.4} fill={isActive ? "var(--machine-crimson-hot)" : "var(--machine-line)"}
+                  style={{ transition: "fill .3s ease" }} />
+                {/* engaged lock tab */}
+                {isActive && (
+                  <g>
+                    <rect x={12} y={cy - 37} width={30} height={9} rx={1.5} fill="var(--machine-crimson-hot)" />
+                    <text x={16} y={cy - 30} className="f-mono" fontSize={6.5} letterSpacing={1.4} fontWeight={700} fill="#DDDDD8">
+                      {locked ? "LOCK" : "RUN"}
+                    </text>
+                  </g>
+                )}
               </g>
-            </g>
-          );
-        })}
-
-        {/* ============ COMPANY MODULES — parked plaques on the LEFT ============ */}
-        {companies.map((co, i) => {
-          const cy = ROWS[i];
-          const px = PLATE_X[i];
-          const engaged = i === active;
-          const extended = i === active || i === hoverIdx;
-          const hovered = i === hoverIdx;
-          return (
-            <g key={co.id}
-              onMouseEnter={() => onHover(i)}
-              onClick={() => onPick(i)}
-              className="cursor-pointer"
-              style={{
-                transform: extended ? "translate(12px,0) scale(1.06)" : "none",
-                transformBox: "fill-box", transformOrigin: "0% 50%",
-                transition: reduced ? "none" : "transform .7s cubic-bezier(.4,.9,.3,1.05)",
-              }}>
-              {/* industrial plaque — chamfered toward the arm */}
-              <polygon
-                points={`${px},${cy - 33} ${px + 172},${cy - 33} ${px + 184},${cy - 21} ${px + 184},${cy + 21} ${px + 172},${cy + 33} ${px},${cy + 33}`}
-                fill={engaged ? "#3C3D42" : "#59595B"}
-                stroke={engaged ? "var(--crimson)" : hovered ? "#DDDDD8" : "#A6A6A4"}
-                strokeWidth={engaged ? 2 : 1.4}
-                style={{ transition: "fill .4s ease, stroke .4s ease" }} />
-              <line x1={px + 2} y1={cy - 29} x2={px + 170} y2={cy - 29} stroke="#A6A6A4" strokeWidth="0.8" opacity="0.4" />
-              {/* inset panel */}
-              <rect x={px + 44} y={cy - 25} width="132" height="50" rx="2"
-                fill="#222328" stroke={engaged ? "var(--crimson)" : "#3C3D42"} strokeWidth="1.3" style={{ transition: "stroke .4s ease" }} />
-              {engaged && <rect x={px + 44} y={cy - 25} width="4" height="50" fill="var(--crimson)" />}
-              {/* engraved index */}
-              <text x={px + 8} y={cy + 10} className="f-display" fontSize="26" fill="#222328" opacity="0.9">{co.num}</text>
-              <text x={px + 9} y={cy + 11} className="f-display" fontSize="26" fill="none" stroke={engaged ? "var(--crimson)" : "#DDDDD8"} strokeWidth="0.6" opacity="0.75">{co.num}</text>
-              {/* company name — always readable, grows with the plaque */}
-              <text x={px + 52} y={cy - 1} className="f-tech" fontSize="12" fontWeight="700" letterSpacing="0.8"
-                fill={engaged ? "#E72241" : "#DDDDD8"} style={{ transition: "fill .35s ease" }}>{co.name}</text>
-              {/* role + date — revealed only while extended */}
-              <text x={px + 52} y={cy + 13} className="f-tech" fontSize="7.5" fontWeight="700" letterSpacing="1.4"
-                fill={engaged ? "#CEB1AB" : "#A6A6A4"}
-                style={{ opacity: extended ? 1 : 0, transition: reduced ? "none" : "opacity .45s ease .25s" }}>
-                {co.role.split("·")[0].trim()}
-              </text>
-              <text x={px + 52} y={cy + 23} className="f-mono" fontSize="6.8" letterSpacing="1" fill="#A6A6A4"
-                style={{ opacity: extended ? 0.85 : 0, transition: reduced ? "none" : "opacity .45s ease .32s" }}>
-                {co.date}
-              </text>
-              {/* screws */}
-              {[[px + 8, cy - 26], [px + 176, cy - 26], [px + 8, cy + 26], [px + 170, cy + 26]].map(([sx, sy], k) => (
-                <g key={k}>
-                  <circle cx={sx} cy={sy} r="2.6" fill="#222328" stroke="#A6A6A4" strokeWidth="0.9" />
-                  <line x1={sx - 1.4} y1={sy} x2={sx + 1.4} y2={sy} stroke="#A6A6A4" strokeWidth="0.7" transform={`rotate(${k * 40} ${sx} ${sy})`} />
-                </g>
-              ))}
-              {/* arm socket + docking pin */}
-              <rect x={px + 182} y={cy - 7} width="12" height="14" rx="2" fill="#222328" stroke="#A6A6A4" strokeWidth="1.1" />
-              <circle cx={px + 188} cy={cy} r="2.6" fill={engaged ? "var(--crimson)" : "#59595B"} style={{ transition: "fill .35s ease" }} />
-              {/* state chip */}
-              {engaged && (
-                <g>
-                  <rect x={px} y={cy - 44} width="32" height="9" rx="1.5" fill="var(--crimson)" />
-                  <text x={px + 4} y={cy - 37} className="f-mono" fontSize="6.5" letterSpacing="1.4" fill="#DDDDD8" fontWeight="700">{locked ? "LOCK" : hovered ? "SYNC" : "RUN"}</text>
-                </g>
-              )}
             </g>
           );
         })}
       </svg>
 
       {/* status strip */}
-      <div className="absolute bottom-2.5 inset-x-4 flex items-center justify-between f-mono text-[8px] tracking-[0.24em] pointer-events-none" style={{ color: "var(--m-sub)" }}>
+      <div className="absolute bottom-2.5 inset-x-4 flex items-center justify-between f-mono text-[8px] tracking-[0.24em] pointer-events-none"
+        style={{ color: "var(--machine-line)" }}>
         <span className="flex items-center gap-2">
-          <span className={`w-1.5 h-1.5 bg-[var(--crimson)] ${locked ? "" : "live-blink"}`} />
-          {locked ? "CHAPTER LOCKED — CLICK AGAIN TO RELEASE" : hoverIdx !== null ? "COUPLING PREVIEW" : reduced ? "STATIC" : "AUTO SEQUENCE · 20S"}
+          <span className={`w-1.5 h-1.5 ${locked ? "" : "live-blink"}`} style={{ background: "var(--machine-crimson-hot)" }} />
+          {locked ? "CHAPTER LOCKED — CLICK AGAIN TO RELEASE" : hoverIdx !== null ? "SEQUENCE PAUSED — HOVER ONLY" : reduced ? "STATIC" : "AUTO SEQUENCE · 20S"}
         </span>
-        <span>MODULE → ARM → GEAR → CLUTCH → CORE</span>
+        <span className="hidden sm:inline">CARTRIDGE → CLUTCH → MANIFOLD → CORE</span>
       </div>
     </div>
   );
