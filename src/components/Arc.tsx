@@ -35,11 +35,12 @@ function Carousel({ items, idx, setIdx, ratio, wide, onCenter }: {
             aria-label={active ? `${it.name} — open fullscreen` : `Select ${it.name}`}
             className={`absolute top-1/2 left-1/2 rounded-lg overflow-hidden ${active ? "z-20 cursor-pointer" : "z-10 cursor-pointer"}`}
             style={{
-              width: wide ? "78%" : "50%",
+              width: wide ? "74%" : "47%",
               aspectRatio: ratio,
-              transform: `translate(-50%, -50%) translateX(${rel * (wide ? 62 : 74)}%) scale(${active ? 1 : 0.8})`,
-              opacity: active ? 1 : 0.42,
-              filter: active ? "none" : "saturate(0.65)",
+              /* unselected neighbours sit farther out — smaller, dimmer, slightly blurred */
+              transform: `translate(-50%, -50%) translateX(${rel * (wide ? 96 : 112)}%) scale(${active ? 1 : 0.58})`,
+              opacity: active ? 1 : 0.3,
+              filter: active ? "none" : "blur(2.5px) saturate(0.45) brightness(0.82)",
               transition: reduced ? "none" : "transform .55s cubic-bezier(.3,.85,.3,1), opacity .45s ease, filter .45s ease",
               boxShadow: active
                 ? "inset 0 0 0 2px var(--outer-ink), 0 16px 34px -18px rgba(34,35,40,0.8)"
@@ -86,10 +87,10 @@ function Carousel({ items, idx, setIdx, ratio, wide, onCenter }: {
 function ArcaneArrow({ onClick, label, dir }: { onClick: () => void; label: string; dir: "left" | "right" }) {
   return (
     <button onClick={onClick} aria-label={label}
-      className="group self-center justify-self-center transition-all duration-300 opacity-35 hover:opacity-95 focus:outline-none focus-visible:opacity-95"
+      className="group self-center justify-self-center transition-all duration-300 opacity-55 hover:opacity-100 focus:outline-none focus-visible:opacity-100"
       style={{ color: "var(--outer-ink)" }}>
-      <span className={`block relative transition-transform duration-300 ${dir === "left" ? "group-hover:-translate-x-1" : "group-hover:translate-x-1"}`}>
-        <NavArrowHead size={40} dir={dir} />
+      <span className={`block relative transition-transform duration-300 ${dir === "left" ? "group-hover:-translate-x-1.5" : "group-hover:translate-x-1.5"}`}>
+        <NavArrowHead size={58} dir={dir} />
         <span className="absolute left-1/2 top-1/2 -translate-y-1/2 h-[70%] w-[2px] opacity-0 group-hover:opacity-60 transition-opacity duration-300"
           style={{ background: "var(--outer-ink)", marginLeft: dir === "left" ? "10px" : "-14px" }} />
       </span>
@@ -184,7 +185,7 @@ export default function Arc() {
         {/* selector system — matte black (light) / matte white (dark) panel */}
         <Reveal className="mt-8">
           <div key={mode} className="dossier-swap mat-outer mat-texture rounded-xl p-4 sm:p-7">
-            <div className="grid lg:grid-cols-[180px_44px_minmax(0,1fr)_44px_300px] gap-3 lg:gap-4 items-stretch">
+            <div className="grid lg:grid-cols-[180px_58px_minmax(0,1fr)_58px_300px] gap-3 lg:gap-4 items-stretch">
               {/* LEFT — slot list */}
               <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0 items-stretch">
                 {items.map((it, i) => {

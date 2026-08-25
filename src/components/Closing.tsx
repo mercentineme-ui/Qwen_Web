@@ -74,7 +74,7 @@ export function HowIBuild() {
       if (w) setFlight(w - 150); /* the plane lands at the KNOW MORE dock */
     });
     if (reduced) { setPlaneDone(true); setLitN(4); return; }
-    [450, 980, 1500, 1950].forEach((t, k) =>
+    [550, 1080, 1480, 1920].forEach((t, k) =>
       timers.current.push(window.setTimeout(() => setLitN(k + 1), t)));
     timers.current.push(window.setTimeout(() => { setPlaneDone(true); setLitN(4); }, 2680));
   };
@@ -137,34 +137,38 @@ export function HowIBuild() {
 
                       {/* checkpoints — compact mechanical modules on docking struts, varied height */}
                       {b.nodes.map((nd, i) => {
-                        const on = reduced || planeDone || litN > i;
+                        const stage = planeDone || reduced ? 5 : litN; /* stages passed so far */
+                        const isCurrent = i === stage - 1;             /* ONLY the current checkpoint is active */
+                        const isPassed = i < stage - 1;
                         const topPct = [24, 76, 26, 74][i % 4];
                         const above = topPct < 50;
                         const moduleBox = (
                           <div className="relative px-3.5 py-2 text-center mat-texture dossier-clip-sm"
                             style={{
-                              background: on ? "#3C3D42" : "var(--outer-bg)",
-                              boxShadow: `inset 0 0 0 1.5px ${on ? "#E72241" : "rgba(221,221,216,0.22)"}`,
-                              transition: "box-shadow .4s ease, background .4s ease",
+                              background: isCurrent ? "#3C3D42" : "var(--outer-bg)",
+                              boxShadow: `inset 0 0 0 1.5px ${isCurrent ? "#E72241" : isPassed ? "rgba(231,34,65,0.4)" : "rgba(221,221,216,0.22)"}`,
+                              transform: isCurrent && !reduced ? "translateY(-2px)" : "none",
+                              transition: "box-shadow .4s ease, background .4s ease, transform .4s ease",
                             }}>
-                            <span className={`absolute top-1 right-1.5 w-1.5 h-1.5 rounded-full ${on ? "bg-[#E72241] live-blink" : ""}`}
-                              style={on ? undefined : { background: "rgba(221,221,216,0.25)" }} />
-                            <span className="f-mono text-[9px] tracking-[0.2em] block" style={{ color: on ? "#E72241" : "var(--m-sub)" }}>{nd.num}</span>
-                            <span className="f-tech font-bold text-[11px] sm:text-[12.5px] tracking-[0.16em] block mt-0.5 whitespace-nowrap" style={{ color: "var(--outer-ink)" }}>
+                            <span className={`absolute top-1 right-1.5 w-1.5 h-1.5 rounded-full ${isCurrent ? "bg-[#E72241] live-blink" : ""}`}
+                              style={isCurrent ? undefined : { background: isPassed ? "rgba(231,34,65,0.55)" : "rgba(221,221,216,0.25)" }} />
+                            <span className="f-mono text-[9px] tracking-[0.2em] block" style={{ color: isCurrent ? "#E72241" : isPassed ? "var(--outer-ink)" : "var(--m-sub)" }}>{nd.num}</span>
+                            <span className="f-tech font-bold text-[11px] sm:text-[12.5px] tracking-[0.16em] block mt-0.5 whitespace-nowrap"
+                              style={{ color: "var(--outer-ink)", opacity: isCurrent || planeDone || reduced ? 1 : isPassed ? 0.7 : 0.85 }}>
                               {nd.title}
                             </span>
                           </div>
                         );
                         const strut = (
-                          <span className="w-[3px] rounded" style={{ height: 10, background: on ? "#E72241" : "#59595B", transition: "background .4s ease" }} />
+                          <span className="w-[3px] rounded" style={{ height: 10, background: isCurrent ? "#E72241" : isPassed ? "rgba(231,34,65,0.45)" : "#59595B", transition: "background .4s ease" }} />
                         );
                         const foot = (
-                          <span className="w-4 h-[3px] rounded" style={{ background: on ? "#E72241" : "#59595B", transition: "background .4s ease" }} />
+                          <span className="w-4 h-[3px] rounded" style={{ background: isCurrent ? "#E72241" : isPassed ? "rgba(231,34,65,0.45)" : "#59595B", transition: "background .4s ease" }} />
                         );
                         return (
                           <div key={nd.num}
                             className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center node-pop"
-                            style={{ left: `${12 + i * 19}%`, top: `${topPct}%`, animationDelay: reduced ? "0s" : `${0.35 + i * 0.6}s` }}>
+                            style={{ left: `${12 + i * 19}%`, top: `${topPct}%`, animationDelay: reduced ? "0s" : `${0.3 + i * 0.55}s` }}>
                             {above ? (<>{moduleBox}{strut}{foot}</>) : (<>{foot}{strut}{moduleBox}</>)}
                           </div>
                         );
@@ -182,7 +186,7 @@ export function HowIBuild() {
                         style={{ animationDelay: reduced ? "0s" : "0.2s" }}>
                         {planeDone ? (
                           <button onClick={knowMore} className="btn btn-crimson !py-3">
-                            <PaperPlane size={16} /> {b.knowMore}
+                            <PaperPlane size={16} /> {b.knowMore} <ArrowRight size={14} strokeWidth={2.4} />
                           </button>
                         ) : (
                           <span className="px-3.5 py-2.5 f-tech font-bold text-[11px] tracking-[0.2em] whitespace-nowrap dossier-clip-sm"

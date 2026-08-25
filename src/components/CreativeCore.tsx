@@ -89,60 +89,94 @@ export default function CreativeCore() {
   }, [disciplines.length]);
   const surgeOn = phase !== 0;
 
-  /* ---- MECHANICAL GEAR POINTER ----------------------------------------
-     Mouse position controls the pointer. Node clicks control locking.
-     These are completely separate systems.
-     · inside the Core circle  → gear assembles, pointer tracks the ACTUAL
-       cursor position continuously (smooth lerp — never jumps or snaps)
-     · leaving the circle      → position is retained briefly, then the
-       pointer travels back to the exact reactor center and folds into
-       its resting gear form
-     · re-entering             → gear reassembles and picks up the current
-       cursor position from wherever it is sitting                      */
+  /* ---- CENTER-MOUNTED GEAR POINTER --------------------------------------
+     Built INTO the reactor center — NOT a floating cursor. Fixed central
+     axle · 2–3 interlocking gears · articulated arm · locking joint · head.
+     · mouse out    → compact: gears interlocked, arm retracted, 12 o'clock
+     · mouse inside → gears unfold, arm EXTENDS and continuously tracks the
+       CURRENT real mouse angle (never an old position, never a node)
+     · mouse leaves → arm retracts, linkage folds, gears rotate back and
+       interlock at 12 o'clock (~700ms physical motion)
+     Mouse position and node selection stay completely separate systems. */
   const discRef = useRef<HTMLDivElement>(null);
-  const ptrRef = useRef<SVGGElement>(null);
-  const ptr = useRef({ x: 300, y: 300, tx: 300, ty: 300, inside: false, returning: false, settled: true, raf: 0, holdTimer: 0 });
-  const [assembled, setAssembled] = useState(false);
+  const mech = useRef({
+    angle: 0, tAngle: 0, ext: 0, tExt: 0, spin: 0, inside: false, raf: 0, holdTimer: 0,
+  });
+  const mArm = useRef<SVGGElement>(null);
+  const mSeg1 = useRef<SVGLineElement>(null);
+  const mSeg2 = useRef<SVGLineElement>(null);
+  const mElbow = useRef<SVGGElement>(null);
+  const mCollar = useRef<SVGGElement>(null);
+  const mHead = useRef<SVGGElement>(null);
+  const mSatB = useRef<SVGGElement>(null);
+  const mSatC = useRef<SVGGElement>(null);
+  const mGearA = useRef<SVGGElement>(null);
+  const mGearB = useRef<SVGGElement>(null);
+  const mGearC = useRef<SVGGElement>(null);
   useEffect(() => {
     if (reduced) return;
-    const loop = () => {
-      const p = ptr.current;
-      if (p.inside) {
-        p.x += (p.tx - p.x) * 0.2;
-        p.y += (p.ty - p.y) * 0.2;
-        if (p.settled) { p.settled = false; setAssembled(true); }
-      } else if (p.returning) {
-        p.x += (300 - p.x) * 0.08;
-        p.y += (300 - p.y) * 0.08;
-        if (Math.hypot(300 - p.x, 300 - p.y) < 3.5) {
-          p.x = 300; p.y = 300;
-          p.returning = false;
-          if (!p.settled) { p.settled = true; setAssembled(false); }
-        }
-      }
-      if (ptrRef.current) ptrRef.current.setAttribute("transform", `translate(${p.x} ${p.y})`);
-      p.raf = requestAnimationFrame(loop);
+    let last = performance.now();
+    const loop = (t: number) => {
+      const m = mech.current;
+      const dt = Math.min(0.05, (t - last) / 1000);
+      last = t;
+      /* shortest-path angle chase — always toward the CURRENT target */
+      const diff = ((m.tAngle - m.angle + 180) % 360 + 360) % 360 - 180;
+      const dA = diff * Math.min(1, dt * 9);
+      m.angle += dA;
+      /* extension: unfolds in ~0.6s, folds in ~0.8s */
+      const dE = (m.tExt - m.ext) * Math.min(1, dt * (m.tExt > m.ext ? 5.2 : 4.2));
+      m.ext += dE;
+      /* gears spin from arm travel + extension change — then settle */
+      m.spin += Math.abs(dA) * 0.6 + Math.abs(dE) * 220 * dt * 60 * 0.016;
+      const e = m.ext;
+      const len = 34 + e * 46;                       /* arm reach */
+      const bend = (1 - e) * 15;                     /* elbow articulation */
+      const rad = (m.angle * Math.PI) / 180;
+      const dirX = Math.sin(rad), dirY = -Math.cos(rad);
+      const dist = 34 + e * 17;                      /* satellite gear unfold */
+      /* --- write mechanism geometry (arm drawn in the "up" frame, group rotates) --- */
+      if (mArm.current) mArm.current.setAttribute("transform", `rotate(${m.angle.toFixed(2)} 300 300)`);
+      const ex = 300 + bend, ey = 300 - len * 0.58;
+      if (mSeg1.current) { mSeg1.current.setAttribute("x2", ex.toFixed(1)); mSeg1.current.setAttribute("y2", ey.toFixed(1)); }
+      if (mSeg2.current) { mSeg2.current.setAttribute("x1", ex.toFixed(1)); mSeg2.current.setAttribute("y1", ey.toFixed(1)); mSeg2.current.setAttribute("y2", (300 - len - 9).toFixed(1)); }
+      if (mElbow.current) mElbow.current.setAttribute("transform", `translate(${ex.toFixed(1)} ${ey.toFixed(1)})`);
+      if (mCollar.current) mCollar.current.setAttribute("transform", `translate(${(300 + bend * 0.45).toFixed(1)} ${(300 - len * 0.27).toFixed(1)})`);
+      if (mHead.current) mHead.current.setAttribute("transform", `translate(300 ${(300 - len - 9).toFixed(1)})`);
+      /* satellite gears unfold from the hub, counter-rotating as they mesh */
+      const bx = 300 + dist * Math.cos(rad + 2.5), by = 300 + dist * Math.sin(rad + 2.5);
+      const cx = 300 + dist * Math.cos(rad - 2.5), cy = 300 + dist * Math.sin(rad - 2.5);
+      if (mSatB.current) mSatB.current.setAttribute("transform", `translate(${bx.toFixed(1)} ${by.toFixed(1)})`);
+      if (mSatC.current) mSatC.current.setAttribute("transform", `translate(${cx.toFixed(1)} ${cy.toFixed(1)})`);
+      if (mGearA.current) mGearA.current.setAttribute("transform", `rotate(${(-m.spin).toFixed(1)})`);
+      if (mGearB.current) mGearB.current.setAttribute("transform", `rotate(${(m.spin * 1.75).toFixed(1)})`);
+      if (mGearC.current) mGearC.current.setAttribute("transform", `rotate(${(m.spin * 1.75 + 14).toFixed(1)})`);
+      void dirX; void dirY;
+      m.raf = requestAnimationFrame(loop);
     };
-    ptr.current.raf = requestAnimationFrame(loop);
-    return () => { cancelAnimationFrame(ptr.current.raf); clearTimeout(ptr.current.holdTimer); };
+    mech.current.raf = requestAnimationFrame(loop);
+    return () => { cancelAnimationFrame(mech.current.raf); clearTimeout(mech.current.holdTimer); };
   }, [reduced]);
   const onDiscMove = (e: React.MouseEvent) => {
     const el = discRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
-    const p = ptr.current;
-    /* re-entering: reassemble and track the CURRENT cursor position — no jump to an old spot */
-    clearTimeout(p.holdTimer);
-    p.inside = true;
-    p.returning = false;
-    p.tx = ((e.clientX - r.left) / r.width) * 600;
-    p.ty = ((e.clientY - r.top) / r.height) * 600;
+    const mx = ((e.clientX - r.left) / r.width) * 600;
+    const my = ((e.clientY - r.top) / r.height) * 600;
+    const m = mech.current;
+    clearTimeout(m.holdTimer);
+    m.inside = true;
+    m.tExt = 1; /* gears unfold, arm extends */
+    /* track the CURRENT real mouse position around the fixed axle */
+    m.tAngle = (Math.atan2(my - 300, mx - 300) * 180) / Math.PI + 90;
   };
   const onDiscLeave = () => {
-    const p = ptr.current;
-    p.inside = false;
-    /* retain the current position briefly, then travel home and fold */
-    p.holdTimer = window.setTimeout(() => { if (!ptr.current.inside) ptr.current.returning = true; }, 240);
+    const m = mech.current;
+    m.inside = false;
+    /* brief hold, then retract + fold back to 12 o'clock */
+    m.holdTimer = window.setTimeout(() => {
+      if (!mech.current.inside) { mech.current.tExt = 0; mech.current.tAngle = 0; }
+    }, 200);
   };
   /* click = lock · click same again = unlock (movement never locks) */
   const pick = (i: number) => {
@@ -163,8 +197,9 @@ export default function CreativeCore() {
           meta="09 MODULES · ONE ENGINE"
         />
 
-        {/* reactor left · reserved clear gap · dossier pushed to the far right */}
-        <div className="mt-12 grid lg:grid-cols-[minmax(0,1fr)_minmax(0,390px)] gap-12 lg:gap-20 xl:gap-28 items-center">
+        {/* reactor left · reserved clear gap · dossier pushed to the far right —
+            the card never touches node labels or reactor graphics */}
+        <div className="mt-12 grid lg:grid-cols-[minmax(0,1.14fr)_minmax(0,352px)] gap-12 lg:gap-24 xl:gap-40 items-center">
           {/* ================= MECHANICAL CREATIVE ENGINE ================= */}
           <Reveal>
             <div ref={discRef} className="relative mx-auto w-full max-w-[620px] aspect-square select-none"
@@ -325,33 +360,72 @@ export default function CreativeCore() {
                     <circle cx={polar(300, 300, 210, 226)[0]} cy={polar(300, 300, 210, 226)[1]} r="2.6" fill="#59595B" />
                   </g>
 
-                  {/* MECHANICAL GEAR POINTER — position driven by the rAF loop (ptrRef).
-                      Assembled pointer form while tracking the cursor inside the Core;
-                      folds into its resting gear when settled at the reactor center. */}
-                  <g ref={ptrRef} transform="translate(300 300)" className={rebuilding ? "rb-e" : undefined}>
-                    <g className={assembled && !reduced ? "ptr-gear-spin" : undefined}
-                      style={{ opacity: assembled ? 0.92 : 1, transition: "opacity .4s ease" }}>
-                      {Array.from({ length: 8 }).map((_, i) => {
-                        const a = (i / 8) * Math.PI * 2;
-                        return <rect key={i} x={-2.4} y={-16} width="4.8" height="6" rx="1"
-                          transform={`rotate(${(a * 180) / Math.PI})`}
-                          fill="#59595B" stroke="#A6A6A4" strokeWidth="0.9" />;
-                      })}
-                      <circle r="12.5" fill="var(--machine-deep)" stroke="#A6A6A4" strokeWidth="1.4" />
-                      <circle r="6.5" fill="#222328" stroke="#A6A6A4" strokeWidth="1" />
+                  {/* CENTER-MOUNTED GEAR POINTER — fixed axle, interlocking gears,
+                      articulated arm with locking joint and mechanical head.
+                      Geometry is driven live by the rAF loop (mech refs). */}
+                  <g className={rebuilding ? "rb-e" : undefined}>
+                    {/* articulated arm (rotates about the fixed axle) */}
+                    <g ref={mArm}>
+                      <line ref={mSeg1} x1="300" y1="300" x2="300" y2="280" stroke="var(--machine-line)" strokeWidth="7" strokeLinecap="round" />
+                      <line ref={mSeg2} x1="300" y1="280" x2="300" y2="256" stroke="var(--machine-line)" strokeWidth="5.5" strokeLinecap="round" />
+                      {/* locking collar on the lower link */}
+                      <g ref={mCollar} transform="translate(300 291)">
+                        <rect x="-6.5" y="-3.4" width="13" height="6.8" rx="2.4" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.2" />
+                        <circle r="1.6" fill="var(--crimson)" />
+                      </g>
+                      {/* elbow joint */}
+                      <g ref={mElbow} transform="translate(300 280)">
+                        <circle r="5.6" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.4" />
+                        <circle r="2.2" fill="var(--machine-inv)" />
+                      </g>
+                      {/* mechanical pointer head */}
+                      <g ref={mHead} transform="translate(300 256)">
+                        <path d="M0 -17 L7.5 0 Q0 -4.5 -7.5 0 Z" fill="var(--crimson)" />
+                        <path d="M0 -12 L3.6 -3 Q0 -5.4 -3.6 -3 Z" fill="var(--machine-inv)" opacity="0.32" />
+                        <rect x="-5.5" y="-1.5" width="11" height="3" rx="1.5" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="0.9" />
+                      </g>
                     </g>
-                    <g style={{
-                      transform: assembled ? "scale(1)" : "scale(0.25)",
-                      opacity: assembled ? 1 : 0,
-                      transformOrigin: "0px 0px",
-                      transition: reduced ? "none" : "transform .45s cubic-bezier(.3,.9,.3,1.15), opacity .35s ease",
-                    }}>
-                      <line x1="0" y1="-13" x2="0" y2="-24" stroke="var(--crimson)" strokeWidth="3.4" strokeLinecap="round" />
-                      <path d="M0 -40 L8.5 -21 Q0 -26 -8.5 -21 Z" fill="var(--crimson)" />
-                      <path d="M0 -34 L4 -24.5 Q0 -27 -4 -24.5 Z" fill="#DDDDD8" opacity="0.3" />
-                      <rect x="-6" y="-12.5" width="12" height="2.4" rx="1.2" fill="var(--crimson)" opacity="0.85" />
+                    {/* interlocking gear cluster around the fixed axle */}
+                    <g ref={mSatB} transform="translate(272 316)">
+                      <g ref={mGearB}>
+                        {Array.from({ length: 7 }).map((_, i) => {
+                          const a = (i / 7) * Math.PI * 2;
+                          return <rect key={i} x={-2.6} y={-16} width="5.2" height="6.4" rx="1"
+                            transform={`rotate(${(a * 180) / Math.PI})`}
+                            fill="var(--machine-line)" stroke="var(--machine-inv)" strokeWidth="0.8" />;
+                        })}
+                        <circle r="12" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.4" />
+                        <circle r="4" fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth="1" />
+                      </g>
                     </g>
-                    <circle r="2.6" fill={assembled ? "var(--crimson)" : "#A6A6A4"} style={{ transition: "fill .35s ease" }} />
+                    <g ref={mSatC} transform="translate(328 316)">
+                      <g ref={mGearC}>
+                        {Array.from({ length: 7 }).map((_, i) => {
+                          const a = (i / 7) * Math.PI * 2;
+                          return <rect key={i} x={-2.6} y={-16} width="5.2" height="6.4" rx="1"
+                            transform={`rotate(${(a * 180) / Math.PI})`}
+                            fill="var(--machine-line)" stroke="var(--machine-inv)" strokeWidth="0.8" />;
+                        })}
+                        <circle r="12" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.4" />
+                        <circle r="4" fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth="1" />
+                      </g>
+                    </g>
+                    {/* primary gear on the axle (under the arm) */}
+                    <g transform="translate(300 300)">
+                      <g ref={mGearA}>
+                        {Array.from({ length: 8 }).map((_, i) => {
+                          const a = (i / 8) * Math.PI * 2;
+                          return <rect key={i} x={-3.4} y={-25} width="6.8" height="8" rx="1.2"
+                            transform={`rotate(${(a * 180) / Math.PI})`}
+                            fill="var(--machine-line)" stroke="var(--machine-inv)" strokeWidth="0.9" />;
+                        })}
+                        <circle r="20" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.6" />
+                        <circle r="13" fill="none" stroke="var(--machine-line)" strokeWidth="1" opacity="0.65" />
+                      </g>
+                    </g>
+                    {/* fixed central axle + hub collar */}
+                    <circle cx="300" cy="300" r="8.5" fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth="1.6" />
+                    <circle cx="300" cy="300" r="3.2" fill="var(--crimson)" />
                   </g>
                 </svg>
               </div>
@@ -367,7 +441,9 @@ export default function CreativeCore() {
                 const deg = (i / disciplines.length) * 360;
                 const [x, y] = polar(50, 50, 44.5, deg);
                 const fill = isActive ? "var(--crimson)" : isHover ? "var(--machine-crimson)" : "var(--machine-plate)";
-                const zone = deg < 30 || deg > 330 ? "above" : deg <= 120 ? "right" : deg <= 240 ? "below" : "left";
+                /* explicit reserved text zones: 01 above · 02 right · 03 below (clear of the card) · 09 left */
+                const zone = i === 0 ? "above" : i === 1 ? "right" : i === 2 ? "below" : i === disciplines.length - 1 ? "left"
+                  : deg < 30 || deg > 330 ? "above" : deg <= 120 ? "right" : deg <= 240 ? "below" : "left";
                 return (
                   <button key={dis.id}
                     onMouseEnter={() => setHoverIdx(i)}
