@@ -252,7 +252,7 @@ export default function Hero() {
           {/* CTAs + rotation counter (counter lives outside the circle) */}
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <a href="#showreel" className="btn btn-crimson">{/enter/i.test(h.ctaPrimary) ? "CREATIVES →" : h.ctaPrimary}</a>
-            <a href="#core" className="btn btn-ghost border-[var(--ink)] text-[var(--ink)]">{/index|expertise/i.test(h.ctaSecondary) ? "CREATIVE CORE ↓" : h.ctaSecondary}</a>
+            <a href="#core" className="btn btn-ghost border-[var(--ink)] text-[var(--ink)]">{/index|expertise/i.test(h.ctaSecondary) ? "CORE ↓" : h.ctaSecondary}</a>
             <span className="f-mono text-[11px] tracking-[0.26em] text-[var(--ink2)] tabular-nums ml-1">
               <span className="text-[var(--crimson)]">{String(idx + 1).padStart(2, "0")}</span> / {String(n).padStart(2, "0")}
             </span>

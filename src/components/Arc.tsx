@@ -17,7 +17,7 @@ function Carousel({ items, idx, setIdx, ratio, wide, onOpen }: {
   const reduced = useReducedMotion();
   const n = items.length;
   return (
-    <div className="relative w-full overflow-hidden py-3" style={{ aspectRatio: ratio }}>
+    <div className="relative w-full overflow-hidden py-3" style={{ aspectRatio: "16 / 14.5" }}>
       {items.map((it, i) => {
         const rel = relPos(i, idx, n);
         const active = rel === 0;
@@ -29,7 +29,7 @@ function Carousel({ items, idx, setIdx, ratio, wide, onOpen }: {
               active ? "border-[var(--crimson)] z-20 cursor-pointer" : "border-[var(--line)] z-10 cursor-pointer hover:border-[var(--ink2)]"
             }`}
             style={{
-              width: wide ? "78%" : "52%",
+              width: wide ? "78%" : "50%",
               aspectRatio: ratio,
               transform: `translate(-50%, -50%) translateX(${rel * (wide ? 62 : 74)}%) scale(${active ? 1 : 0.8})`,
               opacity: active ? 1 : 0.42,

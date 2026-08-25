@@ -26,10 +26,10 @@ export function Reveal({ children, className = "", delay = 0 }: { children: Reac
    SECTION NUMBER + EDITORIAL HEADING + SHORT DESCRIPTION + CRIMSON ACCENT
    ============================================================ */
 export function SectionHead({
-  label, title, titleAccent, titleNode, desc, meta, id, long,
+  label, title, titleAccent, titleNode, desc, meta, id, long, huge,
 }: {
   label: string; title?: string; titleAccent?: string; titleNode?: React.ReactNode;
-  desc?: string; meta?: string; id?: string; long?: boolean;
+  desc?: string; meta?: string; id?: string; long?: boolean; huge?: boolean;
 }) {
   const [numPart, ...rest] = label.split("—");
   const namePart = rest.join("—").trim();
@@ -52,7 +52,7 @@ export function SectionHead({
             <span className="f-mono text-[10px] sm:text-[11px] tracking-[0.22em] text-[var(--ink2)] pb-0.5 hidden md:block shrink-0">{meta}</span>
           )}
         </div>
-        <h2 className={`f-display leading-[0.95] tracking-wide mt-3 ${long ? "text-[clamp(1.5rem,3.7vw,3.15rem)]" : "text-[clamp(2rem,5.2vw,4.2rem)] whitespace-nowrap overflow-hidden text-ellipsis"}`}>
+        <h2 className={`f-display leading-[0.95] tracking-wide mt-3 ${huge ? "text-[clamp(2.8rem,7.5vw,5.8rem)]" : long ? "text-[clamp(1.5rem,3.7vw,3.15rem)]" : "text-[clamp(2rem,5.2vw,4.2rem)] whitespace-nowrap overflow-hidden text-ellipsis"}`}>
           {titleNode ?? (
             <>
               {title}

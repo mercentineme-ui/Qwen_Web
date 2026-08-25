@@ -183,7 +183,7 @@ function CoreEditor() {
   const core = data.core;
   const set = (next: typeof core) => update((d) => ({ ...d, core: next }));
   return (
-    <Group title="CREATIVE CORE — DISCIPLINES">
+    <Group title="CORE — DISCIPLINES">
       {core.map((dis, i) => (
         <div key={dis.id} className="border border-[var(--line)] rounded-lg p-4 flex flex-col gap-3.5">
           <div className="grid grid-cols-[80px_1fr] gap-3">
@@ -369,7 +369,7 @@ function ContactEditor() {
 const SECTIONS = [
   { id: "hero", num: "00", label: "HERO", el: <Hero /> },
   { id: "expertise", num: "01", label: "MY EXPERTISE", el: <Expertise /> },
-  { id: "core", num: "02", label: "CREATIVE CORE", el: <CreativeCore /> },
+  { id: "core", num: "02", label: "CORE", el: <CreativeCore /> },
   { id: "showreel", num: "03", label: "SHOW REEL", el: <ShowReel /> },
   { id: "ailab", num: "04", label: "AI LAB", el: <AILab /> },
   { id: "arc", num: "05", label: "ARC", el: <Arc /> },

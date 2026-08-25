@@ -246,33 +246,60 @@ export default function AILab() {
 
           {/* GHOST.EXE horizontal project card */}
           <Reveal className="mt-8">
-            <div className="mat-inner mat-texture chamfer p-6 sm:p-8 grid md:grid-cols-[1fr_auto] gap-6 items-start relative overflow-hidden">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="f-striker text-[11px] tracking-[0.16em] px-3 py-1.5 rounded-lg border" style={{ borderColor: "var(--crimson)", color: "var(--crimson)" }}>
-                    {lab.projectType}
-                  </span>
-                  <span className="f-tech font-bold text-[10px] tracking-[0.26em] px-3 py-1.5 rounded-lg bg-[var(--crimson)] text-[#f4f2ed]">
-                    {lab.projectStatus}
-                  </span>
-                </div>
-                <h3 className="f-display text-[clamp(2.2rem,5vw,4rem)] leading-none mt-4 tracking-wide">
-                  {(() => {
-                    const [a, b] = lab.projectName.split(".");
-                    return b ? (<>{a}<span className="text-[var(--crimson)]">.{b}</span></>) : <span>{a}<span className="text-[var(--crimson)]">.</span></span>;
-                  })()}
-                </h3>
-                <p className="mt-4 max-w-[64ch] text-[13px] sm:text-[14px] leading-relaxed opacity-85">{lab.projectDescription}</p>
+            <div className="mat-inner mat-texture chamfer p-6 sm:p-8 relative overflow-hidden">
+              {/* PROJECT header */}
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="f-mono text-[9px] tracking-[0.3em] px-2.5 py-1.5 rounded-md" style={{ background: "var(--ink)", color: "var(--page)" }}>PROJECT</span>
+                <span className="f-striker text-[11px] tracking-[0.16em] px-3 py-1.5 rounded-lg border" style={{ borderColor: "var(--crimson)", color: "var(--crimson)" }}>
+                  {lab.projectType}
+                </span>
+                <span className="f-tech font-bold text-[10px] tracking-[0.26em] px-3 py-1.5 rounded-lg bg-[var(--crimson)] text-[#f4f2ed]">
+                  {lab.projectStatus}
+                </span>
               </div>
-              <div className="md:w-56 shrink-0 md:border-l md:pl-6" style={{ borderColor: "var(--m-line)" }}>
-                <span className="f-mono text-[9px] tracking-[0.3em] block mb-3" style={{ color: "var(--m-sub)" }}>TOOLS IN PLAY</span>
-                <ul className="flex md:flex-col flex-wrap gap-x-3 gap-y-2">
-                  {lab.tools.map((t, i) => (
-                    <li key={t} className="f-tech font-bold text-[12px] tracking-[0.14em] flex items-center gap-2.5">
-                      <span className="f-mono text-[9px] text-[var(--crimson)]">{String(i + 1).padStart(2, "0")}</span>{t}
-                    </li>
-                  ))}
-                </ul>
+              <h3 className="f-display text-[clamp(2.2rem,5vw,4rem)] leading-none mt-4 tracking-wide">
+                {(() => {
+                  const [a, b] = lab.projectName.split(".");
+                  return b ? (<>{a}<span className="text-[var(--crimson)]">.{b}</span></>) : <span>{a}<span className="text-[var(--crimson)]">.</span></span>;
+                })()}
+              </h3>
+
+              {/* grouped dossier blocks — existing data, stronger hierarchy */}
+              <div className="mt-6 grid md:grid-cols-[1.35fr_1fr] gap-x-8 gap-y-5">
+                <div className="md:col-span-2 lg:col-span-1 lg:row-span-2 lg:border-r lg:pr-8" style={{ borderColor: "var(--m-line)" }}>
+                  <span className="f-mono text-[9px] tracking-[0.3em] block mb-2.5" style={{ color: "var(--m-sub)" }}>DESCRIPTION</span>
+                  <p className="max-w-[64ch] text-[13px] sm:text-[14px] leading-relaxed opacity-90">{lab.projectDescription}</p>
+                </div>
+
+                <div>
+                  <span className="f-mono text-[9px] tracking-[0.3em] block mb-2.5" style={{ color: "var(--m-sub)" }}>PRODUCTION APPROACH</span>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                    {lab.tools.map((t, i) => (
+                      <React.Fragment key={t}>
+                        <span className="f-tech font-bold text-[11px] sm:text-[12px] tracking-[0.12em]">{t}</span>
+                        {i < lab.tools.length - 1 && <span className="text-[var(--crimson)] text-[11px]">→</span>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <span className="f-mono text-[9px] tracking-[0.3em] block mb-2.5" style={{ color: "var(--m-sub)" }}>TOOLS IN PLAY</span>
+                  <ul className="flex flex-wrap gap-x-4 gap-y-1.5">
+                    {lab.tools.map((t, i) => (
+                      <li key={t} className="f-tech font-bold text-[12px] tracking-[0.14em] flex items-center gap-2">
+                        <span className="f-mono text-[9px] text-[var(--crimson)]">{String(i + 1).padStart(2, "0")}</span>{t}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="md:col-span-2 pt-4 flex flex-wrap items-center gap-x-6 gap-y-2" style={{ borderTop: "1px solid var(--m-line)" }}>
+                  <span className="f-mono text-[9px] tracking-[0.3em]" style={{ color: "var(--m-sub)" }}>OUTPUT / MEDIA</span>
+                  <span className="f-tech font-bold text-[11px] tracking-[0.16em]">01 FEATURED CUT — 16:9</span>
+                  <span className="text-[var(--crimson)]">+</span>
+                  <span className="f-tech font-bold text-[11px] tracking-[0.16em]">08 PRODUCTION STILLS — 16:9</span>
+                </div>
               </div>
               <span className="absolute -right-6 -top-10 f-display text-[9rem] leading-none opacity-[0.05] pointer-events-none select-none">GX</span>
             </div>

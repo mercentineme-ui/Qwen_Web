@@ -8,25 +8,29 @@ const polar = (cx: number, cy: number, r: number, deg: number) => {
   return [cx + r * Math.cos(a), cy + r * Math.sin(a)] as const;
 };
 
-const wedgePath = (i: number) => {
-  const gap = 6;
-  const a0 = i * 45 + gap / 2;
-  const a1 = (i + 1) * 45 - gap / 2;
-  const [ix0, iy0] = polar(300, 300, 96, a0);
-  const [ox0, oy0] = polar(300, 300, 152, a0);
-  const [ox1, oy1] = polar(300, 300, 152, a1);
-  const [ix1, iy1] = polar(300, 300, 96, a1);
-  return `M${ix0} ${iy0} L${ox0} ${oy0} A152 152 0 0 1 ${ox1} ${oy1} L${ix1} ${iy1} A96 96 0 0 0 ${ix0} ${iy0} Z`;
-};
-
-/* radial hairlines inside a wedge — holographic thin-line energy */
-function wedgeLines(i: number) {
-  const mid = i * 45 + 22.5;
-  return [mid - 7, mid, mid + 7].map((deg, k) => {
-    const [x1, y1] = polar(300, 300, 100, deg);
-    const [x2, y2] = polar(300, 300, 148, deg);
-    return { x1, y1, x2, y2, k };
-  });
+/* gear wheel — toothed ring + bolts, drawn once and spun as a whole via class */
+function Gear({ cx, cy, r, teeth, spin, plate = "var(--machine-plate)", bolts = 6 }: {
+  cx: number; cy: number; r: number; teeth: number; spin: string; plate?: string; bolts?: number;
+}) {
+  return (
+    <g className={spin}>
+      {Array.from({ length: teeth }).map((_, i) => {
+        const a = (i / teeth) * Math.PI * 2;
+        const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+        return (
+          <rect key={i} x={-r * 0.13} y={-r * 0.16} width={r * 0.26} height={r * 0.32}
+            transform={`translate(${x} ${y}) rotate(${(a * 180) / Math.PI})`}
+            fill={plate} stroke="var(--machine-line)" strokeWidth="1.2" />
+        );
+      })}
+      <circle cx={cx} cy={cy} r={r * 0.94} fill={plate} stroke="var(--machine-line)" strokeWidth="1.6" />
+      <circle cx={cx} cy={cy} r={r * 0.72} fill="none" stroke="var(--machine-line)" strokeWidth="1" opacity="0.7" />
+      {Array.from({ length: bolts }).map((_, i) => {
+        const [x, y] = polar(cx, cy, r * 0.58, (i / bolts) * 360);
+        return <circle key={i} cx={x} cy={y} r={r * 0.055} fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1" />;
+      })}
+    </g>
+  );
 }
 
 export default function CreativeCore() {
@@ -38,11 +42,30 @@ export default function CreativeCore() {
   const sel = hoverIdx ?? lockedIdx;
   const d = disciplines[sel] ?? disciplines[0];
 
-  /* ---- bloom-triangle pointer: tracks mouse direction, settles outward at top ---- */
+  /* ---- mechanical surge — every 30s, 3s: arms ignite, channels flush ---- */
+  const [phase, setPhase] = useState<0 | 1 | 2 | 3>(0);
+  const [lit, setLit] = useState(0);
+  const timers = useRef<number[]>([]);
+  useEffect(() => {
+    const iv = window.setInterval(() => {
+      timers.current.forEach(clearTimeout);
+      timers.current = [];
+      setPhase(1);
+      for (let i = 0; i < disciplines.length; i++) {
+        timers.current.push(window.setTimeout(() => setLit(i + 1), 90 * i));
+      }
+      timers.current.push(window.setTimeout(() => setPhase(2), 1050));
+      timers.current.push(window.setTimeout(() => setPhase(3), 2200));
+      timers.current.push(window.setTimeout(() => { setPhase(0); setLit(0); }, 3000));
+    }, 30000);
+    return () => { clearInterval(iv); timers.current.forEach(clearTimeout); };
+  }, [disciplines.length]);
+  const surgeOn = phase !== 0;
+
+  /* ---- selector head: tracks mouse direction around the machine, settles at top ---- */
   const discRef = useRef<HTMLDivElement>(null);
   const headRef = useRef<SVGGElement>(null);
   const angleRef = useRef({ cur: 0, target: 0, raf: 0 });
-
   useEffect(() => {
     if (reduced) return;
     const loop = () => {
@@ -57,172 +80,157 @@ export default function CreativeCore() {
     angleRef.current.raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(angleRef.current.raf);
   }, [reduced]);
-
   const onMove = (e: React.MouseEvent) => {
-    if (reduced || !discRef.current) return;
-    const r = discRef.current.getBoundingClientRect();
-    const cx = r.left + r.width / 2;
-    const cy = r.top + r.height / 2;
+    const el = discRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     angleRef.current.target = (Math.atan2(e.clientY - cy, e.clientX - cx) * 180) / Math.PI + 90;
   };
   const onLeave = () => { angleRef.current.target = 0; };
 
-  /* ---- surge engine — every 30s, 3s, holographic thin-line ---- */
-  const [lit, setLit] = useState(0);
-  const [phase, setPhase] = useState<0 | 1 | 2 | 3>(0);
-  const timers = useRef<number[]>([]);
-  useEffect(() => {
-    if (reduced) return;
-    const run = () => {
-      setPhase(1);
-      for (let i = 0; i <= 8; i++) {
-        timers.current.push(window.setTimeout(() => setLit(i), 90 * i));
-      }
-      timers.current.push(window.setTimeout(() => setPhase(2), 1050));
-      timers.current.push(window.setTimeout(() => setPhase(3), 2200));
-      timers.current.push(window.setTimeout(() => { setPhase(0); setLit(0); }, 3000));
-    };
-    const iv = window.setInterval(run, 30000);
-    const kick = window.setTimeout(run, 3500);
-    timers.current.push(kick);
-    return () => {
-      clearInterval(iv);
-      timers.current.forEach(clearTimeout);
-      timers.current = [];
-    };
-  }, [reduced]);
-
-  const surgeOn = phase !== 0;
-  const surge = "var(--surge)";
+  const hot = "var(--machine-crimson-hot)";
 
   return (
     <section id="core" className="relative py-20 lg:py-28 scroll-mt-20">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8">
         <SectionHead
+          huge
           label="02 — WHAT I DO"
-          title="CREATIVE CORE"
-          desc="Nine disciplines, one practice — direction, generation and story held together by structured workflows."
-          meta="09 NODES · ONE REACTOR"
+          title="CORE"
+          desc="Nine disciplines, one practice — direction, generation and story held together by structured workflows. One machine powers all of them."
+          meta="09 MODULES · ONE ENGINE"
         />
 
         <div onMouseMove={onMove} onMouseLeave={onLeave}
           className="mt-12 grid lg:grid-cols-[1.04fr_0.96fr] gap-12 lg:gap-16 items-center">
-          {/* ---------- ARC REACTOR — living mechanical system ---------- */}
+          {/* ================= MECHANICAL CREATIVE ENGINE ================= */}
           <Reveal>
             <div ref={discRef} className="relative mx-auto w-full max-w-[660px] aspect-square select-none">
               <svg viewBox="0 0 600 600" className="absolute inset-0 w-full h-full">
-                {/* outer structural ring — slow orbital motion */}
-                <g className={reduced ? undefined : "react-spin"}>
-                  <circle cx="300" cy="300" r="286" fill="none" stroke="var(--line)" strokeWidth="1.5" strokeDasharray="2 7" />
-                  <circle cx="300" cy="300" r="262" fill="none" stroke="var(--line)" strokeWidth="1" />
-                  {Array.from({ length: 36 }).map((_, i) => {
-                    const [x1, y1] = polar(300, 300, 268, i * 10);
-                    const [x2, y2] = polar(300, 300, i % 3 === 0 ? 256 : 262, i * 10);
-                    return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--ink2)" strokeOpacity="0.5" strokeWidth={i % 3 === 0 ? 1.6 : 0.8} />;
-                  })}
-                  {[0, 90, 180, 270].map((a) => {
-                    const [x, y] = polar(300, 300, 274, a);
-                    return <rect key={a} x={x - 5} y={y - 5} width="10" height="10" fill="var(--sup1)" stroke="var(--line)" strokeWidth="1.2" />;
-                  })}
-                </g>
+                {/* baseplate + rivets + engraved grooves */}
+                <circle cx="300" cy="300" r="252" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="2" />
+                {Array.from({ length: 16 }).map((_, i) => {
+                  const [x, y] = polar(300, 300, 243, (i / 16) * 360);
+                  return <circle key={i} cx={x} cy={y} r="3.4" fill="var(--machine-line)" stroke="var(--machine-plate)" strokeWidth="1.2" />;
+                })}
+                <circle cx="300" cy="300" r="234" fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth="1.4" />
+                <circle cx="300" cy="300" r="222" fill="none" stroke="var(--machine-line)" strokeWidth="0.8" opacity="0.5" />
 
-                {/* orbital track — controlled directional flow */}
-                <g className={reduced ? undefined : "react-orbit"}>
-                  <circle cx="300" cy="300" r="178" fill="none" stroke="var(--ink2)" strokeOpacity="0.35" strokeWidth="1" strokeDasharray="1 11" />
-                  <rect x="295" y="116" width="10" height="12" fill="var(--ink)" opacity="0.75" />
-                  <rect x="295" y="472" width="10" height="12" fill="var(--ink)" opacity="0.35" />
-                </g>
+                {/* mounting arms — every discipline module bolts onto the machine */}
+                {disciplines.map((dis, i) => {
+                  const on = i === sel;
+                  const litOn = surgeOn && lit > i;
+                  const deg = (i / disciplines.length) * 360;
+                  const [x1, y1] = polar(300, 300, 118, deg);
+                  const [x2, y2] = polar(300, 300, 246, deg);
+                  const [bx, by] = polar(300, 300, 238, deg);
+                  return (
+                    <g key={dis.id}>
+                      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--machine-line)" strokeWidth="5" strokeLinecap="round" />
+                      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--machine-plate)" strokeWidth="2" />
+                      {(on || litOn) && !reduced && (
+                        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={hot} strokeWidth="2.6" className="channel-flow" />
+                      )}
+                      <rect x={bx - 7} y={by - 7} width="14" height="14" transform={`rotate(45 ${bx} ${by})`}
+                        fill={on ? hot : "var(--machine-line)"} stroke="var(--machine-plate)" strokeWidth="1.4"
+                        style={{ transition: "fill .3s ease" }} />
+                    </g>
+                  );
+                })}
 
-                {/* 8 interior wedges — slow rotation + rocking + thin-line energy */}
-                <g className={reduced ? undefined : "react-spin"} style={{ animationDuration: "84s" }}>
-                  {disciplines.slice(0, 8).map((_, i) => {
-                    const litOn = surgeOn && lit > i;
+                {/* outer tooth ring — slow counter rotation */}
+                <g className={reduced ? undefined : "gear-ccw-slow"}>
+                  {Array.from({ length: 48 }).map((_, i) => {
+                    const a = (i / 48) * Math.PI * 2;
+                    const x = 300 + 206 * Math.cos(a), y = 300 + 206 * Math.sin(a);
                     return (
-                      <g key={i} className={reduced ? undefined : "wedge-rock"} style={{ animationDelay: `${i * 0.65}s` }}>
-                        <path d={wedgePath(i)}
-                          fill={litOn ? "color-mix(in srgb, var(--surge) 16%, var(--wedge-fill))" : "var(--wedge-fill)"}
-                          stroke={litOn ? surge : "var(--wedge-line)"}
-                          strokeWidth={litOn ? 1.6 : 0.8}
-                          style={{ transition: "fill .25s ease, stroke .25s ease", filter: litOn ? "drop-shadow(0 0 6px rgba(88,200,238,0.5))" : undefined }} />
-                        <g opacity={litOn ? 1 : undefined} className={litOn ? undefined : reduced ? undefined : "wedge-hot"}
-                          style={litOn ? undefined : { animationDelay: `${i * 0.8}s` }}>
-                          {wedgeLines(i).map((l) => (
-                            <line key={l.k} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2}
-                              stroke={surge} strokeWidth={l.k === 1 ? 1.9 : 1.15} strokeLinecap="round" />
-                          ))}
-                        </g>
-                      </g>
+                      <rect key={i} x="-7" y="-9" width="14" height="18"
+                        transform={`translate(${x} ${y}) rotate(${(a * 180) / Math.PI})`}
+                        fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1" />
                     );
                   })}
+                  <circle cx="300" cy="300" r="196" fill="none" stroke="var(--machine-line)" strokeWidth="2.4"
+                    style={{ stroke: surgeOn ? hot : undefined, transition: "stroke .5s ease" }} />
                 </g>
 
-                {/* concentric rings — counter rotation + radial breathing */}
-                <circle cx="300" cy="300" r="88" fill="var(--wedge-fill)" stroke={surge} strokeOpacity="0.6" strokeWidth="1.6" />
-                <g className={reduced ? undefined : "react-spin-mid"}>
-                  <circle cx="300" cy="300" r="72" fill="none" stroke={surge} strokeOpacity="0.45" strokeWidth="1.2" strokeDasharray="10 6" />
-                  {[0, 120, 240].map((a) => {
-                    const [x, y] = polar(300, 300, 72, a);
-                    return <rect key={a} x={x - 4} y={y - 4} width="8" height="8" fill={surge} opacity="0.7" />;
+                {/* middle drive ring — clockwise, own speed */}
+                <g className={reduced ? undefined : "gear-cw"}>
+                  <circle cx="300" cy="300" r="168" fill="none" stroke="var(--machine-line)" strokeWidth="1.4" opacity="0.85" />
+                  {Array.from({ length: 6 }).map((_, i) => {
+                    const [x1, y1] = polar(300, 300, 96, i * 60);
+                    const [x2, y2] = polar(300, 300, 164, i * 60);
+                    return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--machine-line)" strokeWidth="7" strokeLinecap="round" />;
+                  })}
+                  {Array.from({ length: 12 }).map((_, i) => {
+                    const [x, y] = polar(300, 300, 146, i * 30);
+                    return <circle key={i} cx={x} cy={y} r="3" fill="var(--machine-line)" />;
                   })}
                 </g>
-                <g className={reduced ? undefined : "react-breath"}
-                  style={phase === 2 ? { filter: "drop-shadow(0 0 22px rgba(88,200,238,0.8))" } : undefined}>
-                  <circle cx="300" cy="300" r="52" fill="#191a1e" stroke="var(--wedge-line)" strokeWidth="1.5" />
-                  <circle cx="300" cy="300" r="34" fill="#141519" stroke={surge} strokeWidth="1.6" />
-                  <circle cx="300" cy="300" r="20" fill="#101116" stroke={surge} strokeWidth="2.2" />
-                  {/* techno sphere — layered counter-rotating micro geometry + signal blink */}
-                  <circle cx="300" cy="300" r="13.5" fill="none" stroke={surge} strokeOpacity="0.6" strokeWidth="1.1" strokeDasharray="5 4"
-                    className={reduced ? undefined : "react-spin-mid"} style={{ animationDuration: "18s" }} />
-                  <rect x="293" y="293" width="14" height="14" fill="none" stroke={surge} strokeOpacity="0.85" strokeWidth="1"
-                    className={reduced ? undefined : "react-spin"} style={{ animationDuration: "14s" }} />
-                  <circle cx="300" cy="300" r="3" fill="var(--crimson)" className={reduced ? undefined : "live-blink"} />
+
+                {/* satellite gears — meshed at different speeds */}
+                <Gear cx={452} cy={168} r={50} teeth={16} spin={reduced ? "" : "gear-ccw"} />
+                <Gear cx={148} cy={428} r={40} teeth={13} spin={reduced ? "" : "gear-cw-fast"} plate="var(--machine-deep)" bolts={4} />
+
+                {/* pistons — small mechanical pumping movement */}
+                {[-152, 188].map((deg, k) => {
+                  const [px, py] = polar(300, 300, 190, deg);
+                  return (
+                    <g key={k} transform={`translate(${px} ${py}) rotate(${deg + 90})`}>
+                      <rect x="-9" y="-26" width="18" height="30" rx="3" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.4" />
+                      <rect x="-3.5" y="2" width="7" height="18" fill="var(--machine-line)" className={reduced ? undefined : "piston"} style={{ animationDelay: `${k * 0.7}s` }} />
+                      <rect x="-7" y="18" width="14" height="6" rx="2" fill="var(--machine-warm)" stroke="var(--machine-line)" strokeWidth="1" />
+                    </g>
+                  );
+                })}
+
+                {/* pressure valves on the hub face */}
+                {[132, 228].map((deg, k) => {
+                  const [vx, vy] = polar(300, 300, 82, deg);
+                  return (
+                    <g key={k} className={reduced ? undefined : "valve-wiggle"} style={{ animationDelay: `${k * 1.3}s` }}>
+                      <circle cx={vx} cy={vy} r="11" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.4" />
+                      <path d={`M${vx - 7} ${vy} h14 M${vx} ${vy - 7} v14`} stroke="var(--machine-warm)" strokeWidth="2" strokeLinecap="round" />
+                      <circle cx={vx} cy={vy} r="2.6" fill="var(--machine-crimson)" />
+                    </g>
+                  );
+                })}
+
+                {/* central flywheel + power core */}
+                <Gear cx={300} cy={300} r={92} teeth={22} spin={reduced ? "" : "gear-cw-fast"} bolts={8} />
+                <circle cx="300" cy="300" r="58" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.6" />
+                <circle cx="300" cy="300" r="44" fill="var(--machine-plate)" stroke={surgeOn ? hot : "var(--machine-crimson)"} strokeWidth="2.4"
+                  style={{ transition: "stroke .4s ease" }} />
+                <g className={reduced ? undefined : "fly-pulse"}>
+                  <circle cx="300" cy="300" r="26" fill="var(--machine-crimson)" />
+                  <circle cx="300" cy="300" r="15" fill={surgeOn ? hot : "var(--machine-shadow)"} style={{ transition: "fill .4s ease" }} />
+                  <circle cx="300" cy="300" r="6" fill="#DDDDD8" opacity="0.9" />
                 </g>
 
-                {/* surge — thin-line holographic radial ignition + layered sweep */}
-                {surgeOn && (
+                {/* surge — channel flush rings */}
+                {phase >= 2 && phase < 3 && (
                   <>
-                    <circle cx="300" cy="300" r="60" fill="none" stroke={surge} strokeWidth={phase === 2 ? 1.6 : 1}
-                      opacity={phase === 3 ? 0 : 0.95}
-                      style={{
-                        transformBox: "fill-box", transformOrigin: "center",
-                        transform: phase >= 2 ? "scale(3.6)" : "scale(1)",
-                        transition: "transform 1.1s cubic-bezier(.25,.8,.3,1), opacity .6s ease",
-                      }} />
-                    <circle cx="300" cy="300" r="40" fill="none" stroke={surge} strokeWidth="0.8" strokeDasharray="4 5"
-                      opacity={phase === 3 ? 0 : 0.8}
-                      style={{
-                        transformBox: "fill-box", transformOrigin: "center",
-                        transform: phase >= 2 ? "scale(5.2)" : "scale(1)",
-                        transition: "transform 1.4s cubic-bezier(.25,.8,.3,1), opacity .8s ease",
-                      }} />
-                  </>
-                )}
-                {phase === 2 && (
-                  <>
-                    <circle cx="300" cy="300" r="150" fill="none" stroke={surge} strokeWidth="1.8"
-                      strokeDasharray="180 763" className={reduced ? undefined : "surge-arc"} opacity="0.95" />
-                    <circle cx="300" cy="300" r="205" fill="none" stroke={surge} strokeWidth="1"
-                      strokeDasharray="90 1197" className={reduced ? undefined : "surge-arc"} opacity="0.6" />
+                    <circle cx="300" cy="300" r="70" fill="none" stroke={hot} strokeWidth="1.6" strokeDasharray="10 8"
+                      className={reduced ? undefined : "gear-cw-fast"} opacity="0.9" />
+                    <circle cx="300" cy="300" r="180" fill="none" stroke={hot} strokeWidth="1" strokeDasharray="4 14"
+                      className={reduced ? undefined : "gear-ccw"} opacity="0.65" />
                   </>
                 )}
 
-                {/* ONE small crimson bloom triangle — tracks mouse direction, settles outward at top */}
+                {/* selector head — small crimson arrowhead, no tail */}
                 <g ref={headRef} transform="rotate(0 300 300)">
-                  <g className={reduced ? undefined : "head-pulse"} style={{ filter: "drop-shadow(0 0 9px rgba(227,34,64,0.65))" }}>
-                    <path d="M300 176 Q305 204 326 221 Q300 212 274 221 Q295 204 300 176 Z" fill="var(--crimson)" />
-                    <path d="M300 190 Q302.6 204 313 213 Q300 208.5 287 213 Q297.4 204 300 190 Z" fill="#f4f2ed" opacity="0.26" />
-                  </g>
+                  <path d="M300 176 Q305 204 326 221 Q300 212 274 221 Q295 204 300 176 Z" fill="var(--crimson)"
+                    style={{ filter: "drop-shadow(0 0 7px rgba(231,34,65,0.5))" }} />
                 </g>
               </svg>
 
-              {/* 9 discipline nodes around the reactor */}
+              {/* 9 discipline modules — physically bolted to the ring */}
               {disciplines.map((dis, i) => {
                 const Icon = disciplineIcons[dis.icon] ?? disciplineIcons.direction;
                 const isActive = i === sel;
                 const isHover = i === hoverIdx;
-                /* medium matte nodes riding the outer circular guide — no bloom */
                 const [x, y] = polar(50, 50, 42, (i / disciplines.length) * 360);
-                const fill = isActive ? "var(--crimson)" : isHover ? "var(--hero-crimson)" : "var(--outer-bg)";
+                const fill = isActive ? "var(--crimson)" : isHover ? "var(--machine-crimson)" : "var(--outer-bg)";
                 return (
                   <button key={dis.id}
                     onMouseEnter={() => setHoverIdx(i)}
@@ -231,19 +239,19 @@ export default function CreativeCore() {
                     className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 group"
                     style={{ left: `${x}%`, top: `${y}%` }}
                     aria-label={dis.name}>
-                    <span className="relative grid place-items-center rounded-lg transition-all duration-400 mat-texture"
+                    <span className="relative grid place-items-center transition-all duration-400 mat-texture dossier-clip-sm"
                       style={{
                         width: 74, height: 74,
                         backgroundColor: fill,
-                        color: isActive || isHover ? "#f4f2ed" : "var(--outer-ink)",
+                        color: "#f4f2ed",
                         boxShadow: isActive
-                          ? "inset 0 0 0 1.5px rgba(244,242,237,0.4), 0 12px 26px -14px rgba(227,34,64,0.55)"
+                          ? "inset 0 0 0 1.5px rgba(244,242,237,0.4), 0 12px 26px -14px rgba(231,34,65,0.55)"
                           : isHover
                             ? "inset 0 0 0 1.5px rgba(244,242,237,0.3)"
                             : "inset 0 0 0 1.5px color-mix(in srgb, var(--outer-ink) 22%, transparent)",
                       }}>
                       <Icon size={30} strokeWidth={1.8} />
-                      <span className={`absolute -top-2 -left-2 f-mono text-[9px] tracking-widest px-1.5 py-0.5 rounded-sm ${isActive || isHover ? "bg-[#f4f2ed] text-[var(--crimson)]" : "bg-[var(--outer-ink)] text-[var(--outer-bg)]"}`}>
+                      <span className={`absolute -top-2 -left-2 f-mono text-[9px] tracking-widest px-1.5 py-0.5 rounded-sm ${isActive || isHover ? "bg-[#DDDDD8] text-[var(--crimson)]" : "bg-[var(--outer-ink)] text-[var(--outer-bg)]"}`}>
                         {dis.num}
                       </span>
                     </span>
@@ -256,9 +264,8 @@ export default function CreativeCore() {
             </div>
           </Reveal>
 
-          {/* ---------- DETAIL CARD ---------- */}
+          {/* ================= DETAIL CARD — matte, machine-fed ================= */}
           <Reveal delay={0.1}>
-            {/* matte black on light / matte white on dark — content inverts with it */}
             <div className="mat-outer mat-texture rounded-xl p-6 sm:p-8 relative overflow-hidden"
               style={{ boxShadow: "inset 0 0 0 1.5px color-mix(in srgb, var(--outer-ink) 18%, transparent)" }}>
               <span className="absolute top-0 left-0 h-[3px] bg-[var(--crimson)] scan-pass" style={{ width: "42%" }} aria-hidden />
@@ -266,8 +273,8 @@ export default function CreativeCore() {
                 <div className="flex items-center justify-between">
                   <span className="f-mono text-[11px] tracking-[0.3em] text-[var(--crimson)]">{d.num} / 09</span>
                   <span className="f-mono text-[9px] tracking-[0.26em] flex items-center gap-2" style={{ color: "var(--m-sub)" }}>
-                    <span className={`w-1.5 h-1.5 ${surgeOn ? "bg-[var(--surge)]" : "bg-[var(--crimson)]"} live-blink`} />
-                    {hoverIdx !== null ? "SCANNING" : "LOCKED"}
+                    <span className={`w-1.5 h-1.5 ${surgeOn ? "bg-[var(--crimson)]" : "bg-[var(--crimson)]"} live-blink`} />
+                    {hoverIdx !== null ? "ENGAGED" : "LOCKED"}
                   </span>
                 </div>
                 <h3 className="f-display text-[clamp(1.6rem,2.6vw,2.3rem)] leading-tight mt-3" style={{ color: "var(--outer-ink)" }}>{d.name}</h3>
@@ -282,7 +289,7 @@ export default function CreativeCore() {
                 </div>
                 <div className="mt-6 pt-4 f-mono text-[9px] tracking-[0.24em] flex justify-between"
                   style={{ borderTop: "1px solid var(--m-line)", color: "var(--m-sub)" }}>
-                  <span>HOVER — SCAN · CLICK — LOCK</span>
+                  <span>HOVER — ENGAGE · CLICK — LOCK</span>
                   <span className="text-[var(--crimson)]">CORE/{d.num}</span>
                 </div>
               </div>

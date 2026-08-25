@@ -6,51 +6,69 @@
    palette: BLACK / WHITE / GRAPHITE / CRIMSON #E32240
    ============================================================ */
 
+/* ============================================================
+   LOCKED GLOBAL MATERIAL PALETTE
+   #222328 #DDDDD8 #59595B #A6A6A4 #C3C1BC #3C3D42
+   #59232F #9E2237 #E72241 #CEB1AB — nothing else
+   ============================================================ */
 :root {
-  --page: #e7e7e2;
-  --sup1: #ddddD8;
-  --sup2: #eeeeea;
-  --ink: #1b1c20;
-  --ink2: #5b5c62;
-  --line: rgba(27, 28, 32, 0.16);
-  --line-soft: rgba(27, 28, 32, 0.08);
-  --crimson: #e32240;
-  --crimson-strong: #e32240;
+  --page: #DDDDD8;      /* MAIN MATTE WHITE — light architectural page */
+  --sup1: #C3C1BC;      /* SOFT WARM GREY — structural surfaces */
+  --sup2: #CEB1AB;      /* MUTED WARM HIGHLIGHT */
+  --ink: #222328;       /* OUTER MATTE BLACK — typography */
+  --ink2: #59595B;      /* DARK GRAPHITE — secondary text */
+  --line: rgba(34, 35, 40, 0.18);
+  --line-soft: rgba(34, 35, 40, 0.08);
+  --crimson: #E72241;   /* PRIMARY CRIMSON */
+  --crimson-strong: #9E2237; /* MUTED CRIMSON — numbers on light-theme dark tiles */
 
-  /* matte materials — outer system vs inner card flip per theme */
-  --outer-bg: #1b1c20;
-  --outer-ink: #e7e6e1;
-  --m-line: rgba(231, 230, 225, 0.16);
-  --m-sub: rgba(231, 230, 225, 0.62);
+  /* matte outer sections — always the same matte black */
+  --outer-bg: #222328;
+  --outer-ink: #DDDDD8;
+  --m-line: rgba(221, 221, 216, 0.16);
+  --m-sub: rgba(221, 221, 216, 0.62);
 
-  --hero-ink: #1b1c20;
-  --hero-crimson: #b01e36; /* rough matte pigment crimson on light */
-  --hdr-edge: rgba(27, 28, 32, 0.3); /* faint graphite header outline */
-  --surge: #58c8ee; /* electric blue — Creative Core energy ONLY */
-  --wedge-fill: #232429; /* matte black reactor wedges — both themes */
-  --wedge-line: rgba(231, 230, 225, 0.16);
-  --clock-col: #141519; /* light clock = black */
+  --hero-ink: #222328;
+  --hero-crimson: #9E2237; /* rough matte pigment crimson on light */
+  --hdr-edge: rgba(34, 35, 40, 0.3);
+  --surge: #9E2237;     /* machine energy channels — palette-locked crimson family */
+  --wedge-fill: #222328;
+  --wedge-line: rgba(221, 221, 216, 0.16);
+  --clock-col: #222328; /* light clock = black */
+
+  /* CORE machine — constant matte hardware in both themes */
+  --machine-plate: #222328;
+  --machine-deep: #3C3D42;
+  --machine-line: #59595B;
+  --machine-hi: #A6A6A4;
+  --machine-warm: #CEB1AB;
+  --machine-crimson: #9E2237;
+  --machine-crimson-hot: #E72241;
+  --machine-shadow: #59232F;
 }
 
 .dark {
-  --page: #202126;
-  --sup1: #27282d;
-  --sup2: #2d2e34;
-  --ink: #e1e1dc;
-  --ink2: #9b9c96;
-  --line: rgba(225, 225, 220, 0.15);
-  --line-soft: rgba(225, 225, 220, 0.07);
-  --crimson-strong: #b41630; /* stronger crimson reads on matte-white tiles */
+  --page: #3C3D42;      /* DEEP GRAPHITE — matte graphite page */
+  --sup1: #222328;      /* recessed structural cards */
+  --sup2: #59595B;
+  --ink: #DDDDD8;       /* MAIN MATTE WHITE — typography */
+  --ink2: #A6A6A4;      /* LIGHT GREY — secondary text */
+  --line: rgba(221, 221, 216, 0.15);
+  --line-soft: rgba(221, 221, 216, 0.07);
+  --crimson: #E72241;
+  --crimson-strong: #59232F; /* DARK CRIMSON SHADOW — numbers on dark tiles */
 
-  --outer-bg: #e7e6e1;
-  --outer-ink: #1b1c20;
-  --m-line: rgba(27, 28, 32, 0.18);
-  --m-sub: rgba(27, 28, 32, 0.62);
+  /* same approved #222328 family for black sections — never flips white */
+  --outer-bg: #222328;
+  --outer-ink: #DDDDD8;
+  --m-line: rgba(221, 221, 216, 0.14);
+  --m-sub: rgba(221, 221, 216, 0.6);
 
-  --hero-ink: #e7e6e1;
-  --hero-crimson: #ee3a54; /* slightly brighter matte crimson on graphite */
-  --hdr-edge: rgba(227, 34, 64, 0.42); /* faint crimson header outline */
-  --clock-col: #ff7a1f; /* dark clock = neon orange */
+  --hero-ink: #DDDDD8;
+  --hero-crimson: #E72241;
+  --hdr-edge: rgba(231, 34, 65, 0.42);
+  --surge: #E72241;
+  --clock-col: #E72241; /* dark clock = sharp neon crimson, no bloom */
 }
 
 html { scroll-behavior: smooth; }
@@ -95,18 +113,42 @@ body {
 .dark .mat-inner { background-color: #1b1c20; color: #e7e6e1; }
 .mat-page-card { background-color: var(--sup1); color: var(--ink); }
 
-/* MY JOURNEY dossier material — rough matte black on light,
-   the SAME deep matte black on dark (never flips to white) */
+/* MY JOURNEY dossier material — rough matte black in BOTH themes (never flips) */
 .mat-journey {
-  background-color: #1b1c20;
-  color: #e7e6e1;
-  --outer-bg: #1b1c20;
-  --outer-ink: #e7e6e1;
-  --m-line: rgba(231, 230, 225, 0.16);
-  --m-sub: rgba(231, 230, 225, 0.62);
+  background-color: #222328;
+  color: #DDDDD8;
+  --outer-bg: #222328;
+  --outer-ink: #DDDDD8;
+  --m-line: rgba(221, 221, 216, 0.16);
+  --m-sub: rgba(221, 221, 216, 0.62);
 }
-.dark .mat-journey { background-color: #16171b; --outer-bg: #16171b; }
-.dark .mat-journey .mat-inner { background-color: #232429; color: #e7e6e1; }
+.dark .mat-journey { background-color: #222328; }
+.dark .mat-journey .mat-inner { background-color: #3C3D42; color: #DDDDD8; }
+
+/* ---------- CORE machine — mechanical motion ---------- */
+.gear-cw { animation: gearCW 46s linear infinite; transform-box: fill-box; transform-origin: center; }
+.gear-cw-fast { animation: gearCW 24s linear infinite; transform-box: fill-box; transform-origin: center; }
+.gear-ccw { animation: gearCCW 32s linear infinite; transform-box: fill-box; transform-origin: center; }
+.gear-ccw-slow { animation: gearCCW 60s linear infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes gearCW { to { transform: rotate(360deg); } }
+@keyframes gearCCW { to { transform: rotate(-360deg); } }
+.piston { animation: pistonPump 3.2s cubic-bezier(0.45, 0.05, 0.35, 0.95) infinite; }
+@keyframes pistonPump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
+.valve-wiggle { animation: valveWiggle 5.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes valveWiggle { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+.fly-pulse { animation: flyPulse 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes flyPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.12); opacity: 0.85; } }
+.channel-flow { stroke-dasharray: 6 10; animation: channelFlow 1.15s linear infinite; }
+@keyframes channelFlow { to { stroke-dashoffset: -16; } }
+
+/* ---------- pipeline phase 2 : plane flight + node reveal ---------- */
+.plane-cross { animation: planeCross 2.6s cubic-bezier(0.5, 0.05, 0.45, 0.95) both; }
+@keyframes planeCross { 0% { transform: translateX(0) rotate(0deg); opacity: 0; } 6% { opacity: 1; } 94% { opacity: 1; } 100% { transform: translateX(var(--flight, 80vw)) rotate(-4deg); opacity: 1; } }
+.node-pop { animation: nodePop 0.5s cubic-bezier(0.3, 0.9, 0.3, 1.2) both; }
+@keyframes nodePop { 0% { opacity: 0; transform: translateY(12px) scale(0.85); } 100% { opacity: 1; transform: none; } }
+
+/* ---------- comic speech bubble ---------- */
+.bubble-tail { filter: drop-shadow(3px 4px 0 rgba(34, 35, 40, 0.9)); }
 
 /* ---------- shapes ---------- */
 .chamfer { clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px); }

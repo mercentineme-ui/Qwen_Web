@@ -90,6 +90,8 @@ export interface BuildData {
   visibleNote: string;
   nodes: { num: string; title: string }[];
   nextLabel: string;
+  knowMore: string;
+  bubble: string;
   reveal: { image: MediaItem; heading: string; headingAccent: string; narrator: string };
 }
 
@@ -259,10 +261,12 @@ export const defaultData: PortfolioData = {
     nodes: [
       { num: "01", title: "IDEA" },
       { num: "02", title: "REFERENCE" },
-      { num: "03", title: "VISUAL DEVELOPMENT" },
-      { num: "04", title: "GENERATION" },
+      { num: "03", title: "CONCEPT" },
+      { num: "04", title: "DEVELOPMENT" },
     ],
     nextLabel: "NEXT",
+    knowMore: "KNOW MORE",
+    bubble: "Almost there… let's connect before this turns into a season finale cliffhanger",
     reveal: {
       image: slot("REVEAL FRAME", "image", ["ADD IMAGE", "BEYOND THE VISIBLE"]),
       heading: "AND A LOT MORE",
