@@ -292,6 +292,17 @@ body::before {
 .spring-stretch { animation: springStretch 3s ease-in-out infinite alternate; }
 @keyframes springStretch { from { transform: scaleX(1); } to { transform: scaleX(1.12); } }
 
+/* ---------- kinetic career archive ---------- */
+/* gentle suspension sway for a hanging nameplate */
+.ka-sway { animation: kaSway 4.6s ease-in-out infinite alternate; }
+@keyframes kaSway { from { transform: translateY(0); } to { transform: translateY(2.6px); } }
+/* counterweight idle bob on its guide rod */
+.ka-cw { animation: kaCw 5.4s ease-in-out infinite alternate; }
+@keyframes kaCw { from { transform: translateY(0); } to { transform: translateY(6px); } }
+/* spine pendulum / escapement swing */
+.ka-pendulum { animation: kaPend 2.3s ease-in-out infinite alternate; }
+@keyframes kaPend { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+
 .valve-wiggle { animation: valveWiggle 3.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes valveWiggle { 0%, 100% { transform: rotate(0deg); } 30% { transform: rotate(24deg); } 60% { transform: rotate(-8deg); } }
 
