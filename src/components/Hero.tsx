@@ -166,7 +166,7 @@ export default function Hero() {
         <div className="min-w-0">
           {/* greeting — HEY THERE! crimson block + readable sentence, daypart word crimson */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
-            <span className="f-tech font-bold text-[12px] tracking-[0.28em] px-3.5 py-2 w-fit rounded-[6px] bg-[var(--crimson)] text-[#DDDDD8] shadow-[0_8px_22px_-10px_rgba(231,34,65,0.8)]">
+            <span className="f-tech font-bold text-[12px] tracking-[0.28em] px-3.5 py-2 w-fit rounded-[6px] bg-[var(--crimson)] text-[#DDDDD8] shadow-[0_8px_22px_-14px_rgba(34,35,40,0.9)]">
               HEY THERE!
             </span>
             <p className="text-[18px] sm:text-[20px] lg:text-[21px] leading-snug font-semibold text-[var(--ink)]">

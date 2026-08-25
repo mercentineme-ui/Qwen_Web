@@ -34,16 +34,33 @@ function ModuleHeading({ tag, title, right }: { tag: string; title: string; righ
   );
 }
 
-/* ================= CAREER NODE MAP — VERTICAL CHAPTER LADDER =================
-   One strong vertical spine, four PRIMARY chapter stations (01 → 04), solid
-   structural sections + junction diamonds + skill satellites + a continuously
-   looping signal. COMPANY → CAREER CHAPTER → NEXT CHAPTER. */
+/* ================= CAREER INDEXING MACHINE =================
+   Four manufactured identification plates on the LEFT. Each docks through
+   its own arm → elbow joint → socket into a DIFFERENT zone of one large
+   industrial chassis on the right (flywheel, gears, pistons, rack).
+   Hover = subtle mechanical response ONLY · click = lock · again = unlock. */
 
-const SPINE_X = 168;
-const ROW_CY = [66, 172, 278, 384];
-const SPINE_TOP = 22;
-const SPINE_BOT = 448;
-const JUNCTION_MIDS = [119, 225, 331];
+const PLATE_CY = [62, 168, 274, 380];
+const SOCKETS_Y = [120, 196, 288, 356]; /* machine entry zones */
+const ELBOW_X = [262, 274, 250, 268];
+
+function MiniGear({ cx, cy, r, teeth, spin }: { cx: number; cy: number; r: number; teeth: number; spin: string }) {
+  return (
+    <g className={spin}>
+      {Array.from({ length: teeth }).map((_, i) => {
+        const a = (i / teeth) * Math.PI * 2;
+        const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+        return (
+          <rect key={i} x={-r * 0.14} y={-r * 0.17} width={r * 0.28} height={r * 0.34}
+            transform={`translate(${x} ${y}) rotate(${(a * 180) / Math.PI})`}
+            fill="#59595B" stroke="#A6A6A4" strokeWidth="1" />
+        );
+      })}
+      <circle cx={cx} cy={cy} r={r * 0.9} fill="#3C3D42" stroke="#A6A6A4" strokeWidth="1.4" />
+      <circle cx={cx} cy={cy} r={r * 0.34} fill="#222328" stroke="#A6A6A4" strokeWidth="1" />
+    </g>
+  );
+}
 
 function NodeMap({
   active, hoverIdx, locked, reduced, companies, onHover, onLeaveRow, onPick,
@@ -57,131 +74,181 @@ function NodeMap({
   onLeaveRow: () => void;
   onPick: (i: number) => void;
 }) {
-  const activeY = ROW_CY[Math.min(active, ROW_CY.length - 1)];
-  const category = (role: string) => role.split("·")[0].trim();
-
   return (
     <div className="relative border rounded-xl mat-texture corner-bracket overflow-hidden"
       style={{ borderColor: "var(--m-line)", backgroundColor: "color-mix(in srgb, var(--outer-ink) 5%, transparent)", aspectRatio: "560 / 470" }}
       onMouseLeave={onLeaveRow}>
 
       <svg viewBox="0 0 560 470" className="absolute inset-0 w-full h-full">
-        {/* depth strata */}
-        <rect x="0" y="0" width="560" height="150" fill="var(--outer-ink)" opacity="0.03" />
-        <rect x="0" y="150" width="560" height="160" fill="var(--outer-ink)" opacity="0.055" />
-        <rect x="0" y="310" width="560" height="160" fill="var(--outer-ink)" opacity="0.03" />
-        <line x1="0" y1="150" x2="560" y2="150" stroke="var(--m-line)" strokeWidth="0.6" />
-        <line x1="0" y1="310" x2="560" y2="310" stroke="var(--m-line)" strokeWidth="0.6" />
+        {/* shop-floor depth strata */}
+        <rect x="0" y="0" width="560" height="470" fill="var(--outer-ink)" opacity="0.03" />
+        <line x1="0" y1="452" x2="560" y2="452" stroke="var(--m-line)" strokeWidth="1" />
 
-        {/* ---------- SPINE — solid structural track ---------- */}
-        <rect x={SPINE_X - 7} y={SPINE_TOP} width="14" height={SPINE_BOT - SPINE_TOP} rx="2" fill="var(--m-line)" opacity="0.45" />
-        <rect x={SPINE_X - 2.5} y={SPINE_TOP} width="5" height={SPINE_BOT - SPINE_TOP} fill="color-mix(in srgb, var(--outer-ink) 12%, transparent)" />
-        {/* end housings */}
-        <rect x={SPINE_X - 12} y={SPINE_TOP - 8} width="24" height="10" rx="2" fill="var(--m-line)" />
-        <rect x={SPINE_X - 12} y={SPINE_BOT - 2} width="24" height="10" rx="2" fill="var(--m-line)" />
-        {/* looping signal travelling the whole spine */}
-        {!reduced && (
-          <line x1={SPINE_X} y1={SPINE_TOP} x2={SPINE_X} y2={SPINE_BOT}
-            stroke="var(--crimson)" strokeWidth="2" className="packet" opacity="0.85" />
-        )}
-        {/* lit route — top → active chapter */}
-        <line x1={SPINE_X} y1={SPINE_TOP} x2={SPINE_X} y2={activeY}
-          stroke="var(--crimson)" strokeWidth="4" strokeLinecap="round" opacity="0.9"
-          style={{ transition: "all .5s cubic-bezier(.3,.8,.3,1)" }} />
-        {!reduced && (
-          <line x1={SPINE_X} y1={SPINE_TOP} x2={SPINE_X} y2={activeY}
-            stroke="#DDDDD8" strokeWidth="1.4" strokeDasharray="3 9" className="packet-2" opacity="0.5" />
-        )}
-        {/* junction diamonds between chapters */}
-        {JUNCTION_MIDS.map((y, k) => {
-          const near = Math.abs(ROW_CY[active] - y) <= 53;
+        {/* ================= MAIN MACHINE — heavy industrial chassis (RIGHT) ================= */}
+        <g>
+          {/* central axle + bearing blocks */}
+          <line x1="437" y1="66" x2="437" y2="414" stroke="#3C3D42" strokeWidth="7" />
+          <rect x="425" y="58" width="24" height="12" rx="2" fill="#59595B" stroke="#A6A6A4" strokeWidth="1" />
+          <rect x="425" y="410" width="24" height="12" rx="2" fill="#59595B" stroke="#A6A6A4" strokeWidth="1" />
+
+          {/* housing — thick plates, seams, rivets */}
+          <rect x="330" y="60" width="214" height="360" rx="6" fill="#222328" stroke="#59595B" strokeWidth="2.2" />
+          <rect x="338" y="68" width="198" height="344" rx="4" fill="none" stroke="#3C3D42" strokeWidth="1.2" />
+          <line x1="338" y1="152" x2="536" y2="152" stroke="#3C3D42" strokeWidth="1.4" />
+          <line x1="338" y1="330" x2="536" y2="330" stroke="#3C3D42" strokeWidth="1.4" />
+          {[[340, 70], [526, 70], [340, 410], [526, 410], [340, 240], [526, 240]].map(([x, y], k) => (
+            <circle key={k} cx={x} cy={y} r="2.6" fill="#59595B" stroke="#A6A6A4" strokeWidth="0.9" />
+          ))}
+
+          {/* docking sockets on the machine face — one per arm, each at its own zone */}
+          {SOCKETS_Y.map((y, i) => {
+            const engaged = i === active;
+            return (
+              <g key={y}>
+                <rect x="322" y={y - 9} width="16" height="18" rx="2" fill="#3C3D42" stroke={engaged ? "#E72241" : "#59595B"} strokeWidth="1.4"
+                  style={{ transition: "stroke .35s ease" }} />
+                <rect x="326" y={y - 4} width="8" height="8" fill={engaged ? "#E72241" : "#222328"} style={{ transition: "fill .35s ease" }} />
+                {/* actuator lever — moves when its chapter is engaged */}
+                <g className={engaged && !reduced ? "valve-wiggle" : undefined} style={{ transformOrigin: "346px " + y + "px", animationDuration: "1.6s" }}>
+                  <line x1="346" y1={y} x2="362" y2={y - 8} stroke={engaged ? "#E72241" : "#59595B"} strokeWidth="2.6" strokeLinecap="round"
+                    style={{ transition: "stroke .35s ease" }} />
+                  <circle cx="362" cy={y - 8} r="3" fill={engaged ? "#E72241" : "#A6A6A4"} style={{ transition: "fill .35s ease" }} />
+                </g>
+              </g>
+            );
+          })}
+
+          {/* large flywheel — rim, rotating spokes + bolts, hub */}
+          <circle cx="437" cy="235" r="78" fill="#3C3D42" stroke="#A6A6A4" strokeWidth="5" />
+          <circle cx="437" cy="235" r="64" fill="none" stroke="#222328" strokeWidth="2" />
+          <g className={reduced ? undefined : "gear-cw"} style={{ animationDuration: "18s" }}>
+            {Array.from({ length: 6 }).map((_, i) => {
+              const a = (i / 6) * Math.PI * 2;
+              return (
+                <line key={i} x1={437 + 14 * Math.cos(a)} y1={235 + 14 * Math.sin(a)}
+                  x2={437 + 62 * Math.cos(a)} y2={235 + 62 * Math.sin(a)}
+                  stroke="#59595B" strokeWidth="6" strokeLinecap="round" />
+              );
+            })}
+            {Array.from({ length: 8 }).map((_, i) => {
+              const a = (i / 8) * Math.PI * 2;
+              return <circle key={i} cx={437 + 70 * Math.cos(a)} cy={235 + 70 * Math.sin(a)} r="2.8" fill="#222328" stroke="#A6A6A4" strokeWidth="1" />;
+            })}
+          </g>
+          <circle cx="437" cy="235" r="17" fill="#222328" stroke="#A6A6A4" strokeWidth="2" />
+          <circle cx="437" cy="235" r="6" fill={companies[active] ? "#E72241" : "#59595B"} style={{ transition: "fill .35s ease" }} />
+
+          {/* upper zone — small gear + twin pistons */}
+          <MiniGear cx={378} cy={108} r={26} teeth={10} spin={reduced ? "" : "gear-ccw"} />
+          {[470, 502].map((x, k) => (
+            <g key={x}>
+              <rect x={x} y="84" width="20" height="40" rx="3" fill="#3C3D42" stroke="#A6A6A4" strokeWidth="1.4" />
+              <rect x={x + 7} y="122" width="6" height="18" fill="#A6A6A4" className={reduced ? undefined : "piston"} style={{ animationDelay: `${k * 0.9}s` }} />
+              <rect x={x + 3} y="138" width="14" height="6" rx="2" fill="#59595B" stroke="#A6A6A4" strokeWidth="1" />
+            </g>
+          ))}
+
+          {/* lower zone — rack rail + drive gear + pressure dial */}
+          <rect x="346" y="344" width="120" height="12" rx="2" fill="#3C3D42" stroke="#59595B" strokeWidth="1.2" />
+          {Array.from({ length: 10 }).map((_, i) => (
+            <line key={i} x1={352 + i * 12} y1="346" x2={352 + i * 12} y2="354" stroke="#222328" strokeWidth="2" />
+          ))}
+          <rect x="352" y="341" width="26" height="18" rx="2" fill="#59595B" stroke="#A6A6A4" strokeWidth="1.2"
+            className={reduced ? undefined : "gear-cw"} style={{ animationDuration: "7s", transformOrigin: "365px 350px" }} />
+          <MiniGear cx={500} cy={382} r={22} teeth={9} spin={reduced ? "" : "gear-cw-fast"} />
+          <g>
+            <circle cx="378" cy="392" r="16" fill="#222328" stroke="#A6A6A4" strokeWidth="1.6" />
+            <path d="M366 392 a12 12 0 0 1 24 0" fill="none" stroke="#59595B" strokeWidth="1.2" />
+            <line x1="378" y1="392" x2="386" y2="383" stroke="#E72241" strokeWidth="2" strokeLinecap="round"
+              className={reduced ? undefined : "valve-wiggle"} style={{ transformOrigin: "378px 392px", animationDuration: "4s" }} />
+            <circle cx="378" cy="392" r="2.4" fill="#A6A6A4" />
+          </g>
+        </g>
+
+        {/* ================= DOCKING ARMS — NODE → DOCK → ARM → JOINT → MACHINE ================= */}
+        {companies.map((co, i) => {
+          const cy = PLATE_CY[i];
+          const sy = SOCKETS_Y[i];
+          const ex = ELBOW_X[i];
+          const engaged = i === active;
+          const path = `M216 ${cy} L${ex} ${cy} L${ex + 26} ${sy} L322 ${sy}`;
           return (
-            <rect key={y} x={SPINE_X - 6.5} y={y - 6.5} width="13" height="13"
-              transform={`rotate(45 ${SPINE_X} ${y})`}
-              fill={near ? "var(--crimson)" : "var(--m-line)"}
-              stroke="color-mix(in srgb, var(--outer-ink) 30%, transparent)" strokeWidth="1.2"
-              style={{ transition: "fill .4s ease" }} />
+            <g key={co.id + "-arm"}>
+              <path d={path} fill="none" stroke="#59595B" strokeWidth="9" strokeLinejoin="round" strokeLinecap="round" opacity="0.95" />
+              <path d={path} fill="none" stroke="#222328" strokeWidth="3.4" strokeLinejoin="round" strokeLinecap="round" />
+              {engaged && (
+                <path d={path} fill="none" stroke="#E72241" strokeWidth="2.4" strokeLinejoin="round" strokeLinecap="round"
+                  className={reduced ? undefined : "channel-flow"} />
+              )}
+              {/* joint housings */}
+              <circle cx={ex} cy={cy} r="5.4" fill="#3C3D42" stroke={engaged ? "#E72241" : "#A6A6A4"} strokeWidth="1.3" style={{ transition: "stroke .35s ease" }} />
+              <circle cx={ex + 26} cy={sy} r="4.4" fill="#3C3D42" stroke={engaged ? "#E72241" : "#A6A6A4"} strokeWidth="1.2" style={{ transition: "stroke .35s ease" }} />
+            </g>
           );
         })}
 
-        {/* ---------- CHAPTER STATIONS + SATELLITES ---------- */}
+        {/* ================= IDENTIFICATION PLATES — all four on the LEFT ================= */}
         {companies.map((co, i) => {
-          const cy = ROW_CY[i];
-          const isOn = i === active;
-          const isHover = i === hoverIdx;
+          const cy = PLATE_CY[i];
+          const engaged = i === active;
+          const hovered = i === hoverIdx;
           return (
             <g key={co.id}
               onMouseEnter={() => onHover(i)}
               onClick={() => onPick(i)}
-              className="cursor-pointer">
-              {/* connector module → spine */}
-              <line x1="152" y1={cy} x2={SPINE_X - 7} y2={cy} stroke="var(--m-line)" strokeWidth="3" />
-              <circle cx={SPINE_X} cy={cy} r="5.5" fill={isOn ? "var(--crimson)" : "var(--m-line)"}
-                stroke="color-mix(in srgb, var(--outer-ink) 35%, transparent)" strokeWidth="1.4"
-                style={{ transition: "fill .35s ease" }} />
-
-              {/* station block — chamfered */}
+              className="cursor-pointer"
+              style={{ transform: hovered && !engaged ? "translateX(3px)" : "translateX(0)", transition: "transform .3s cubic-bezier(.3,.8,.3,1)" }}>
+              {/* manufactured plate — chamfered body, inset panel, bolts, socket */}
               <polygon
-                points={`22,${cy - 32} 152,${cy - 32} 152,${cy + 24} 144,${cy + 32} 8,${cy + 32} 8,${cy - 24} 16,${cy - 32}`}
-                fill={isOn ? "var(--crimson)" : isHover ? "color-mix(in srgb, var(--crimson) 22%, transparent)" : "color-mix(in srgb, var(--outer-ink) 8%, transparent)"}
-                stroke={isOn ? "#DDDDD8" : "var(--m-line)"} strokeWidth="1.4"
+                points={`18,${cy - 42} 196,${cy - 42} 208,${cy - 30} 208,${cy + 30} 196,${cy + 42} 8,${cy + 42} 8,${cy - 32}`}
+                fill={engaged ? "#3C3D42" : "#59595B"}
+                stroke={engaged ? "#E72241" : hovered ? "#DDDDD8" : "#A6A6A4"}
+                strokeWidth={engaged ? 2 : 1.5}
                 style={{ transition: "fill .35s ease, stroke .35s ease" }} />
-              <polygon
-                points={`22,${cy - 32} 152,${cy - 32} 152,${cy + 24} 144,${cy + 32} 8,${cy + 32} 8,${cy - 24} 16,${cy - 32}`}
-                fill="none"
-                stroke={isOn ? "rgba(221,221,216,0.4)" : "transparent"} strokeWidth="1"
-                transform={`translate(3 3)`} style={{ transition: "stroke .35s ease" }} />
-              {/* station text */}
-              <text x="24" y={cy - 14} className="f-mono" fontSize="9" letterSpacing="2"
-                fill={isOn ? "#DDDDD8" : "var(--crimson)"} fontWeight="600">{co.num}</text>
-              <text x="24" y={cy + 3} className="f-tech" fontSize="14.5" fontWeight="700" letterSpacing="1"
-                fill={isOn ? "#DDDDD8" : "var(--outer-ink)"} style={{ transition: "fill .35s ease" }}>{co.name}</text>
-              <text x="24" y={cy + 18} className="f-mono" fontSize="7.5" letterSpacing="1.4"
-                fill={isOn ? "rgba(221,221,216,0.85)" : "var(--m-sub)"}>{co.date}</text>
-              <text x="24" y={cy + 27.5} className="f-tech" fontSize="7.5" fontWeight="700" letterSpacing="1.6"
-                fill={isOn ? "rgba(221,221,216,0.9)" : "var(--crimson)"} opacity={isOn ? 1 : 0.85}>{category(co.role)}</text>
-
-              {/* active chapter → skill satellite branch */}
-              {isOn && (
+              {/* top machining highlight */}
+              <line x1="20" y1={cy - 38} x2="194" y2={cy - 38} stroke="#A6A6A4" strokeWidth="1" opacity="0.5" />
+              {/* inset panel */}
+              <rect x="58" y={cy - 30} width="138" height="60" rx="2"
+                fill="#222328" stroke={engaged ? "#E72241" : "#3C3D42"} strokeWidth="1.4" style={{ transition: "stroke .35s ease" }} />
+              {engaged && <rect x="58" y={cy - 30} width="4" height="60" fill="#E72241" />}
+              {/* engraved number */}
+              <text x="16" y={cy + 12} className="f-display" fontSize="30" fill="#222328" opacity={engaged ? 1 : 0.8}>{co.num}</text>
+              <text x="17" y={cy + 13} className="f-display" fontSize="30" fill="none" stroke={engaged ? "#E72241" : "#A6A6A4"} strokeWidth="0.7" opacity="0.8">{co.num}</text>
+              {/* identification text — fully inside the plate, never over the machine */}
+              <text x="70" y={cy - 8} className="f-tech" fontSize="14" fontWeight="700" letterSpacing="1" fill="#DDDDD8">{co.name}</text>
+              <text x="70" y={cy + 8} className="f-mono" fontSize="7.5" letterSpacing="1.2" fill="#A6A6A4">{co.date}</text>
+              <text x="70" y={cy + 21} className="f-tech" fontSize="8" fontWeight="700" letterSpacing="1.6" fill={engaged ? "#E72241" : "#DDDDD8"} opacity="0.9">
+                {co.role.split("·")[0].trim()}
+              </text>
+              {/* corner bolts */}
+              {[[16, cy - 34], [190, cy - 34], [16, cy + 34], [190, cy + 34]].map(([bx, by], k) => (
+                <g key={k}>
+                  <circle cx={bx} cy={by} r="3" fill="#222328" stroke="#A6A6A4" strokeWidth="1" />
+                  <line x1={bx - 1.6} y1={by} x2={bx + 1.6} y2={by} stroke="#A6A6A4" strokeWidth="0.8" />
+                </g>
+              ))}
+              {/* connector socket + docking pin */}
+              <rect x="204" y={cy - 8} width="14" height="16" rx="2" fill="#222328" stroke="#A6A6A4" strokeWidth="1.2" />
+              <circle cx="211" cy={cy} r="3" fill={engaged ? "#E72241" : "#59595B"} style={{ transition: "fill .35s ease" }} />
+              {/* lock indicator */}
+              {engaged && (
                 <g>
-                  <line x1={SPINE_X + 7} y1={cy} x2="382" y2={cy} stroke="var(--m-line)" strokeWidth="2.4" />
-                  <line x1={SPINE_X + 7} y1={cy} x2="382" y2={cy} stroke="var(--crimson)" strokeWidth="1.4" opacity="0.9" />
-                  <circle cx="262" cy={cy} r="4" fill="var(--crimson)" />
-                  {!reduced && (
-                    <rect x={SPINE_X + 12} y={cy - 2.5} width="10" height="5" rx="1" fill="#DDDDD8" className="arm-packet" />
-                  )}
-                  {co.skills.slice(0, 3).map((s, k) => {
-                    const yy = cy + (k - 1) * 26;
-                    return (
-                      <g key={s}>
-                        <line x1="382" y1={cy} x2="382" y2={yy} stroke="var(--m-line)" strokeWidth="1.2" />
-                        <line x1="382" y1={yy} x2="392" y2={yy} stroke="var(--m-line)" strokeWidth="1.2" />
-                        <rect x="392" y={yy - 10} width="152" height="20" rx="3"
-                          fill={isHover ? "color-mix(in srgb, var(--crimson) 16%, transparent)" : "color-mix(in srgb, var(--outer-ink) 9%, transparent)"}
-                          stroke="var(--m-line)" strokeWidth="1" style={{ transition: "fill .3s ease" }} />
-                        <text x="400" y={yy + 3.5} className="f-tech" fontSize="8.5" fontWeight="700" letterSpacing="1.4"
-                          fill="var(--outer-ink)">{s}</text>
-                      </g>
-                    );
-                  })}
+                  <rect x="8" y={cy - 46} width="26" height="9" rx="1.5" fill="#E72241" />
+                  <text x="12" y={cy - 39} className="f-mono" fontSize="6.5" letterSpacing="1.5" fill="#DDDDD8" fontWeight="700">{locked ? "LOCK" : "RUN"}</text>
                 </g>
               )}
             </g>
           );
         })}
-
-        {/* origin / terminus marks */}
-        <text x={SPINE_X - 46} y={SPINE_TOP - 1} className="f-mono" fontSize="8" letterSpacing="2" fill="var(--m-sub)">2018</text>
-        <text x={SPINE_X - 46} y={SPINE_BOT + 16} className="f-mono" fontSize="8" letterSpacing="2" fill="var(--m-sub)">NOW</text>
       </svg>
 
       {/* status strip */}
       <div className="absolute bottom-2.5 inset-x-4 flex items-center justify-between f-mono text-[8px] tracking-[0.24em] pointer-events-none" style={{ color: "var(--m-sub)" }}>
         <span className="flex items-center gap-2">
           <span className={`w-1.5 h-1.5 bg-[var(--crimson)] ${locked ? "" : "live-blink"}`} />
-          {locked ? "CHAPTER LOCKED" : hoverIdx !== null ? "SCANNING" : reduced ? "STATIC" : "AUTO CYCLE"}
+          {locked ? "CHAPTER LOCKED — CLICK AGAIN TO RELEASE" : hoverIdx !== null ? "CYCLE PAUSED — HOVER ONLY" : reduced ? "STATIC" : "AUTO INDEX · 30S"}
         </span>
-        <span>COMPANY → CHAPTER → NEXT CHAPTER</span>
+        <span>NODE → DOCK → ARM → JOINT → MACHINE</span>
       </div>
     </div>
   );
@@ -198,11 +265,10 @@ export default function Expertise() {
   const [locked, setLocked] = useState(false);
   const elapsedRef = useRef(0);
 
-  /* 30s cycle — hover pauses at the exact position, leave resumes */
+  /* 30s automatic cycle — runs only while UNLOCKED · hover pauses the exact timer */
   useEffect(() => {
     if (reduced || locked || hover) return;
-    const last0 = performance.now();
-    let last = last0;
+    let last = performance.now();
     const iv = window.setInterval(() => {
       const now = performance.now();
       elapsedRef.current += now - last;
@@ -213,15 +279,14 @@ export default function Expertise() {
       }
     }, 120);
     return () => clearInterval(iv);
-  }, [active, locked, hover, n, reduced]);
+  }, [locked, hover, n, reduced]);
 
-  const onHover = (i: number) => {
-    setHoverIdx(i);
-    if (!locked) setActive(i);
-  };
+  /* hover = subtle mechanical response only · click = lock · second click unlocks */
+  const onHover = (i: number) => setHoverIdx(i);
   const onPick = (i: number) => {
-    if (i === active && locked) setLocked(false);
-    else { setActive(i); setLocked(true); }
+    if (locked && active === i) { setLocked(false); return; }
+    setActive(i);
+    setLocked(true);
   };
 
   const co = companies[active];
@@ -249,24 +314,24 @@ export default function Expertise() {
                 MY JOURNEY
               </h3>
               <span className="f-mono text-[10px] tracking-[0.28em]" style={{ color: "var(--m-sub)" }}>
-                PRODUCTION TIMELINE — SELECT A CHAPTER
+                CAREER INDEXING MACHINE — CLICK A PLATE TO LOCK
               </span>
               <span className="flex-1 h-px min-w-[60px]" style={{ background: "var(--m-line)" }} />
               <span className="f-mono text-[10px] tracking-[0.2em]" style={{ color: "var(--m-sub)" }}>
-                {locked ? "CHAPTER LOCKED" : hover ? "CYCLE PAUSED" : reduced ? "STATIC" : "AUTO CYCLE · 30S"}
+                {locked ? "LOCKED" : hover ? "CYCLE PAUSED" : reduced ? "STATIC" : "AUTO CYCLE · 30S"}
               </span>
             </div>
 
             {/* twin module headings — CAREER INFO (LEFT) · CAREER NODE MAP (RIGHT) */}
             <div className="grid lg:grid-cols-[1.02fr_0.98fr] gap-x-6 gap-y-8 lg:gap-x-10 mb-5">
-              <ModuleHeading tag="A" title="CAREER INFO" right="HOVER TO SCAN · CLICK TO LOCK" />
+              <ModuleHeading tag="A" title="CAREER INFO" right="CLICK PLATE — LOCK · AGAIN — RELEASE" />
               <ModuleHeading tag="B" title="CAREER NODE MAP" right={<span style={{ color: "var(--outer-ink)" }}>{co.num} — {co.name}</span>} />
             </div>
 
             <div className="grid lg:grid-cols-[1.02fr_0.98fr] gap-6 lg:gap-10 lg:items-start"
               onMouseEnter={() => setHover(true)} onMouseLeave={() => { setHover(false); setHoverIdx(null); }}>
 
-              {/* ================= CAREER INFO (LEFT) — adapts to the selected chapter ================= */}
+              {/* ================= CAREER INFO (LEFT) ================= */}
               <div className="mat-inner mat-texture dossier-clip corner-bracket relative p-5 sm:p-7 flex flex-col min-h-0 overflow-hidden lg:min-h-[640px] order-1">
                 <span key={`edge-${co.id}`} className="absolute top-0 left-0 h-[3px] bg-[var(--crimson)] scan-pass" style={{ width: "46%" }} aria-hidden />
 
@@ -331,12 +396,16 @@ export default function Expertise() {
                 <div className="mt-4 flex items-center gap-4 f-mono text-[9px] tracking-[0.22em]" style={{ color: "var(--m-sub)" }}>
                   {!reduced && (
                     <span className="w-32 h-[3px] rounded overflow-hidden" style={{ background: "var(--m-line)" }}>
-                      <span key={active} className="block h-full bg-[var(--crimson)] origin-left"
-                        style={{ animation: `progFill ${CYCLE_MS}ms linear both`, animationPlayState: hover || locked ? "paused" : "running" }} />
+                      <span key={`${active}-${locked}`} className="block h-full bg-[var(--crimson)] origin-left"
+                        style={{
+                          animation: `progFill ${CYCLE_MS}ms linear both`,
+                          animationPlayState: hover || locked ? "paused" : "running",
+                          transform: locked ? "scaleX(1)" : undefined,
+                        }} />
                     </span>
                   )}
                   <span className="flex items-center gap-2"><span className="w-3 h-[3px] bg-[var(--crimson)]" />SIGNAL</span>
-                  <span className="hidden sm:flex items-center gap-2"><span className="w-2.5 h-2.5 border-[1.5px]" style={{ borderColor: "var(--m-sub)" }} />JUNCTION</span>
+                  <span className="hidden sm:flex items-center gap-2"><span className="w-2.5 h-2.5 border-[1.5px]" style={{ borderColor: "var(--m-sub)" }} />JOINT</span>
                   <span className="ml-auto tabular-nums">{String(active + 1).padStart(2, "0")} / {String(n).padStart(2, "0")}</span>
                 </div>
               </div>

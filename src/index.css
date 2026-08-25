@@ -41,7 +41,7 @@
 }
 
 .dark {
-  --page: #3C3D42;      /* DEEP GRAPHITE page */
+  --page: #222328;      /* PRIMARY BLACK page — one industrial material */
   --sup1: #222328;      /* recessed structural cards */
   --sup2: #59595B;
   --ink: #DDDDD8;       /* matte white typography */
@@ -75,6 +75,14 @@ body {
   font-family: "Archivo", "Segoe UI", sans-serif;
   transition: background-color 0.5s ease, color 0.5s ease;
   overflow-x: hidden;
+}
+/* one consistent industrial material — subtle rough grain over the whole page */
+body::before {
+  content: "";
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.016) 0 2px, transparent 2px 6px),
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.024) 0 1px, transparent 1px 7px);
 }
 ::selection { background: var(--crimson); color: #DDDDD8; }
 
@@ -150,7 +158,7 @@ body {
 }
 .btn:hover { transform: translateY(-2px); }
 .btn:active { transform: translateY(0) scale(0.98); }
-.btn-crimson { background: var(--crimson); color: #DDDDD8; box-shadow: 0 14px 30px -14px rgba(231, 34, 65, 0.75); }
+.btn-crimson { background: var(--crimson); color: #DDDDD8; box-shadow: 0 14px 26px -16px rgba(34, 35, 40, 0.9); }
 .btn-crimson:hover { background: #C81D38; }
 .btn-ghost { background: transparent; }
 .btn-ghost:hover { border-color: var(--crimson) !important; color: var(--crimson) !important; }

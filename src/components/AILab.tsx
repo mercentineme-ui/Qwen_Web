@@ -287,7 +287,7 @@ export default function AILab() {
               <span className="f-mono text-[10px] tracking-[0.28em]" style={{ color: "var(--m-sub)" }}>FEATURED VIDEO — 16:9 · HOVER FOR VIEW</span>
               <span className="f-mono text-[10px] tracking-[0.2em] text-[var(--crimson)]">FULL CUT</span>
             </div>
-            <div className={`relative rounded-lg overflow-hidden transition-shadow duration-500 ${armed ? "shadow-[0_0_0_2px_var(--crimson),0_18px_50px_-20px_rgba(231,34,65,0.8)]" : ""}`}>
+            <div className={`relative rounded-lg overflow-hidden transition-shadow duration-500 ${armed ? "shadow-[0_0_0_2px_var(--crimson),0_18px_40px_-24px_rgba(34,35,40,0.9)]" : ""}`}>
               <MediaSlot item={lab.video} ratio="16/9" className="mat-inner" showLabel={false} onClick={() => setVideoOpen(true)} />
               {armed && (
                 <span className="absolute top-3 left-3 z-10 f-tech font-bold text-[9px] tracking-[0.26em] px-2.5 py-1.5 rounded-lg bg-[var(--crimson)] text-[#DDDDD8] live-blink">

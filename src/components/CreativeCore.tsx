@@ -46,7 +46,9 @@ export default function CreativeCore() {
   const disciplines = data.core;
   const reduced = useReducedMotion();
   const [lockedIdx, setLockedIdx] = useState(3);
+  const [locked, setLocked] = useState(true);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  /* hover = preview only · click = lock · second click on the same node unlocks */
   const sel = hoverIdx ?? lockedIdx;
   const d = disciplines[sel] ?? disciplines[0];
 
@@ -105,14 +107,29 @@ export default function CreativeCore() {
     angleRef.current.raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(angleRef.current.raf);
   }, [reduced]);
-  const onMove = (e: React.MouseEvent) => {
+  /* pointer tracks the cursor ONLY while it is inside a discipline node area */
+  const onNodeMove = (e: React.MouseEvent) => {
     const el = discRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     angleRef.current.target = (Math.atan2(e.clientY - cy, e.clientX - cx) * 180) / Math.PI + 90;
   };
-  const onLeave = () => { angleRef.current.target = 0; };
+  const onNodeLeave = () => {
+    /* leaving the node area — pointer returns to the reactor center */
+    angleRef.current.target = locked ? lockedIdx * (360 / disciplines.length) : 0;
+  };
+  /* click = lock · click same again = unlock (movement never locks) */
+  const pick = (i: number) => {
+    if (locked && lockedIdx === i) {
+      setLocked(false);
+      angleRef.current.target = 0;
+    } else {
+      setLockedIdx(i);
+      setLocked(true);
+      angleRef.current.target = i * (360 / disciplines.length);
+    }
+  };
 
   const hot = "var(--machine-crimson-hot)";
 
@@ -127,8 +144,7 @@ export default function CreativeCore() {
           meta="09 MODULES · ONE ENGINE"
         />
 
-        <div onMouseMove={onMove} onMouseLeave={onLeave}
-          className="mt-12 grid lg:grid-cols-[1.04fr_0.96fr] gap-12 lg:gap-16 items-center">
+        <div className="mt-12 grid lg:grid-cols-[1.04fr_0.96fr] gap-12 lg:gap-16 items-center">
           {/* ================= MECHANICAL CREATIVE ENGINE ================= */}
           <Reveal>
             <div ref={discRef} className="relative mx-auto w-full max-w-[660px] aspect-square select-none">
@@ -288,36 +304,45 @@ export default function CreativeCore() {
                     <circle cx={polar(300, 300, 210, 226)[0]} cy={polar(300, 300, 210, 226)[1]} r="2.6" fill="#59595B" />
                   </g>
 
-                  {/* selector head — small crimson arrowhead, no tail */}
-                  <g ref={headRef} transform="rotate(0 300 300)">
-                    <path d="M300 176 Q305 204 326 221 Q300 212 274 221 Q295 204 300 176 Z" fill="var(--crimson)"
-                      style={{ filter: "drop-shadow(0 0 7px rgba(231,34,65,0.5))" }} />
+                  {/* selector head — machined crimson arrowhead, no tail, no bloom.
+                      Rides the rb-e rebuild group so it participates in the theme reconstruction. */}
+                  <g className={rebuilding ? "rb-e" : undefined} ref={headRef} transform="rotate(0 300 300)">
+                    <path d="M300 176 Q305 204 326 221 Q300 212 274 221 Q295 204 300 176 Z" fill="var(--crimson)" />
+                    <path d="M300 186 Q302 202 311 212 Q300 208 289 212 Q298 202 300 186 Z" fill="#DDDDD8" opacity="0.28" />
+                    <circle cx="300" cy="215" r="2.4" fill="#DDDDD8" opacity="0.55" />
+                    <line x1="291" y1="219" x2="309" y2="219" stroke="#DDDDD8" strokeWidth="1.1" opacity="0.4" />
                   </g>
                 </svg>
               </div>
 
-              {/* 9 discipline modules — physically bolted to the ring, clear orbit */}
+              {/* 9 discipline modules — bolted to the ring; each name owns a reserved,
+                  collision-safe text zone (top node → above, right arc → right, bottom arc →
+                  below, left arc → left). Hover previews; only a click locks. */}
               {disciplines.map((dis, i) => {
                 const Icon = disciplineIcons[dis.icon] ?? disciplineIcons.direction;
                 const isActive = i === sel;
+                const isLockedOn = locked && i === lockedIdx;
                 const isHover = i === hoverIdx;
-                const [x, y] = polar(50, 50, 44.5, (i / disciplines.length) * 360);
+                const deg = (i / disciplines.length) * 360;
+                const [x, y] = polar(50, 50, 44.5, deg);
                 const fill = isActive ? "var(--crimson)" : isHover ? "var(--machine-crimson)" : "var(--machine-plate)";
+                const zone = deg < 30 || deg > 330 ? "above" : deg <= 120 ? "right" : deg <= 240 ? "below" : "left";
                 return (
                   <button key={dis.id}
                     onMouseEnter={() => setHoverIdx(i)}
-                    onMouseLeave={() => setHoverIdx(null)}
-                    onClick={() => setLockedIdx(i)}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 group"
+                    onMouseLeave={() => { setHoverIdx(null); onNodeLeave(); }}
+                    onMouseMove={onNodeMove}
+                    onClick={() => pick(i)}
+                    className="absolute -translate-x-1/2 -translate-y-1/2 group"
                     style={{ left: `${x}%`, top: `${y}%` }}
-                    aria-label={dis.name}>
+                    aria-label={dis.name} aria-pressed={isLockedOn}>
                     <span className="relative grid place-items-center transition-all duration-400 mat-texture dossier-clip-sm"
                       style={{
                         width: 74, height: 74,
                         backgroundColor: fill,
                         color: isActive || isHover ? "#DDDDD8" : "var(--machine-inv)",
                         boxShadow: isActive
-                          ? "inset 0 0 0 1.5px rgba(221,221,216,0.4), 0 12px 26px -14px rgba(231,34,65,0.55)"
+                          ? "inset 0 0 0 2px rgba(221,221,216,0.55)"
                           : isHover
                             ? "inset 0 0 0 1.5px rgba(221,221,216,0.3)"
                             : "inset 0 0 0 1.5px color-mix(in srgb, var(--machine-inv) 22%, transparent)",
@@ -328,8 +353,14 @@ export default function CreativeCore() {
                         style={isActive || isHover ? undefined : { backgroundColor: "var(--machine-inv)", color: "var(--machine-plate)" }}>
                         {dis.num}
                       </span>
+                      {isLockedOn && <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-5 h-[3px] rounded-sm bg-[var(--crimson)]" />}
                     </span>
-                    <span className={`f-tech font-bold text-[12px] tracking-[0.1em] text-center leading-tight max-w-[104px] transition-colors duration-300 ${
+                    {/* reserved name zone — never crosses the machine */}
+                    <span className={`pointer-events-none absolute f-tech font-bold text-[12px] tracking-[0.1em] leading-tight w-[112px] transition-colors duration-300 ${
+                      zone === "above" ? "bottom-full left-1/2 -translate-x-1/2 mb-2 text-center"
+                      : zone === "below" ? "top-full left-1/2 -translate-x-1/2 mt-2 text-center"
+                      : zone === "right" ? "left-full top-1/2 -translate-y-1/2 ml-3 text-left"
+                      : "right-full top-1/2 -translate-y-1/2 mr-3 text-right"} ${
                       isActive ? "text-[var(--crimson)]" : "text-[var(--ink2)] group-hover:text-[var(--crimson)]"}`}>
                       {dis.name}
                     </span>
@@ -349,7 +380,7 @@ export default function CreativeCore() {
                   <span className="f-mono text-[11px] tracking-[0.3em] text-[var(--crimson)]">{d.num} / 09</span>
                   <span className="f-mono text-[9px] tracking-[0.26em] flex items-center gap-2" style={{ color: "var(--m-sub)" }}>
                     <span className="w-1.5 h-1.5 bg-[var(--crimson)] live-blink" />
-                    {hoverIdx !== null ? "ENGAGED" : "LOCKED"}
+                    {hoverIdx !== null ? "PREVIEW" : locked ? "LOCKED" : "UNLOCKED"}
                   </span>
                 </div>
                 <h3 className="f-display text-[clamp(1.6rem,2.6vw,2.3rem)] leading-tight mt-3" style={{ color: "var(--outer-ink)" }}>{d.name}</h3>
@@ -364,7 +395,7 @@ export default function CreativeCore() {
                 </div>
                 <div className="mt-6 pt-4 f-mono text-[9px] tracking-[0.24em] flex justify-between"
                   style={{ borderTop: "1px solid var(--m-line)", color: "var(--m-sub)" }}>
-                  <span>HOVER — ENGAGE · CLICK — LOCK</span>
+                  <span>HOVER — PREVIEW · CLICK — LOCK · AGAIN — RELEASE</span>
                   <span className="text-[var(--crimson)]">CORE/{d.num}</span>
                 </div>
               </div>
