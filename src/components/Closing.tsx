@@ -8,11 +8,14 @@ import { MediaSlot, Reveal, SectionHead, useInView } from "./ui";
    01 mailbox (OPEN ME) → 02 paper flight reveals the four nodes → KNOW MORE
    → comic-glitch → 03 comic panel                                        */
 
-function Mailbox({ open, onClick, small }: { open: boolean; onClick?: () => void; small?: boolean }) {
+/* ONE persistent mailbox — door: CLOSED → HALF (hover) → OPEN (phase 2) */
+function Mailbox({ door, onClick }: { door: "closed" | "half" | "open"; onClick?: () => void }) {
+  const open = door === "open";
+  const doorDeg = door === "open" ? 74 : door === "half" ? 36 : 0;
   return (
     <button type="button" onClick={onClick} disabled={!onClick} aria-label={open ? "Mailbox — open" : "Open the mailbox"}
-      className={`relative select-none ${onClick ? "cursor-pointer group" : "cursor-default"}`}
-      style={{ width: small ? 120 : 190 }}>
+      className={`relative select-none shrink-0 ${onClick ? "cursor-pointer group" : "cursor-default"}`}
+      style={{ width: 190 }}>
       <svg viewBox="0 0 200 190" className="w-full" fill="none">
         {/* shadow */}
         <ellipse cx="100" cy="176" rx="70" ry="9" fill="#222328" opacity="0.22" />
@@ -25,8 +28,10 @@ function Mailbox({ open, onClick, small }: { open: boolean; onClick?: () => void
         <path d="M142 62 L162 48 L162 104 L142 118 Z" fill="#222328" stroke="#59595B" strokeWidth="1.6" />
         {/* ribs */}
         <path d="M52 62 V118 M128 62 V118" stroke="#222328" strokeWidth="2" opacity="0.6" />
-        {/* door — flips down from the right hinge on open */}
-        <g style={{ transformOrigin: "128px 78px", transform: open ? "rotate(74deg)" : "rotate(0deg)", transition: "transform .55s cubic-bezier(.4,.8,.3,1)" }}>
+        {/* dark mouth revealed behind the door */}
+        <rect x="58" y="76" width="66" height="30" rx="2" fill="#222328" />
+        {/* door — flips down from the right hinge; HALF on hover, fully OPEN in phase 2 */}
+        <g style={{ transformOrigin: "128px 78px", transform: `rotate(${doorDeg}deg)`, transition: "transform .55s cubic-bezier(.4,.8,.3,1)" }}>
           <rect x="54" y="72" width="74" height="38" rx="3" fill="#222328" stroke="#A6A6A4" strokeWidth="1.6" />
           <rect x="60" y="78" width="62" height="26" rx="2" fill="none" stroke="#59595B" strokeWidth="1.2" />
           <circle cx="120" cy="91" r="4" fill="#CEB1AB" stroke="#A6A6A4" strokeWidth="1.2" />
@@ -57,6 +62,7 @@ export function HowIBuild() {
   const [phase, setPhase] = useState<1 | 2 | 3>(1);
   const [glitching, setGlitching] = useState(false);
   const [planeDone, setPlaneDone] = useState(false);
+  const [mbHover, setMbHover] = useState(false);
   const [flight, setFlight] = useState(600);
   const lineRef = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
@@ -96,38 +102,40 @@ export function HowIBuild() {
         />
         <p className="mt-4 -mt-2 f-mono text-[11px] sm:text-[12px] tracking-[0.18em] text-[var(--ink2)]">{b.visibleNote}</p>
 
-        {/* ================= PHASE 01 — THE MAILBOX ================= */}
-        {phase === 1 && (
-          <Reveal className="mt-12">
-            <div className="mat-outer mat-texture rounded-xl p-8 sm:p-12 flex flex-col md:flex-row items-center gap-10 md:gap-16 relative overflow-hidden">
-              <span className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-[var(--crimson)]" />
-              <span className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-[var(--crimson)]" />
-              <Mailbox open={false} onClick={openMailbox} />
-              <div className="min-w-0 text-center md:text-left">
-                <span className="f-mono text-[10px] tracking-[0.3em] text-[var(--crimson)]">PHASE 01 — THE DROP</span>
-                <h3 className="f-display text-[clamp(1.6rem,3.2vw,2.6rem)] mt-3 leading-tight" style={{ color: "var(--outer-ink)" }}>
-                  EVERY PROJECT STARTS IN A MAILBOX.
-                </h3>
-                <p className="mt-4 max-w-[52ch] text-[14px] leading-relaxed" style={{ color: "var(--m-sub)" }}>
-                  A blind briefing lands. Nothing else is visible yet — the workflow stays sealed until you open it.
-                </p>
-                <span className="mt-6 inline-flex items-center gap-3 f-tech font-bold text-[12px] tracking-[0.22em] text-[var(--crimson)] live-blink">
-                  <span className="w-2 h-2 rotate-45 bg-[var(--crimson)]" /> CLICK THE MAILBOX
-                </span>
-              </div>
-            </div>
-          </Reveal>
-        )}
+        {/* ============ ONE PIPELINE PANEL — all three phases live inside this single rectangle ============ */}
+        <Reveal className="mt-12">
+          <div className={`mat-outer mat-texture rounded-xl p-8 sm:p-12 relative overflow-hidden ${glitching ? "shake-hard" : ""}`}>
+            <span className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-[var(--crimson)]" />
+            <span className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-[var(--crimson)]" />
 
-        {/* ================= PHASE 02 — PAPER FLIGHT ================= */}
-        {phase === 2 && (
-          <div className={`mt-12 mat-outer mat-texture rounded-xl p-8 sm:p-12 relative overflow-hidden ${glitching ? "shake-hard" : ""}`}>
-            <span className="f-mono text-[10px] tracking-[0.3em] text-[var(--crimson)]">PHASE 02 — THE FLIGHT</span>
-            <div className="mt-8 flex items-center gap-6 sm:gap-10">
-              <div className="shrink-0"><Mailbox open small /></div>
+            {/* ---------- PHASE 01 + 02 — the SAME mailbox persists ---------- */}
+            {phase !== 3 && (
+              <div className="flex flex-col md:flex-row items-center gap-10 md:gap-14">
+                <div onMouseEnter={() => setMbHover(true)} onMouseLeave={() => setMbHover(false)}>
+                  <Mailbox door={phase === 1 ? (mbHover ? "half" : "closed") : "open"} onClick={openMailbox} />
+                </div>
 
-              {/* one continuous process line */}
-              <div ref={lineRef} className="relative flex-1 h-24">
+                <div className="min-w-0 flex-1 w-full text-center md:text-left">
+                  {phase === 1 && (
+                    <>
+                      <span className="f-mono text-[10px] tracking-[0.3em] text-[var(--crimson)]">PHASE 01 — THE DROP</span>
+                      <h3 className="f-display text-[clamp(1.6rem,3.2vw,2.6rem)] mt-3 leading-tight" style={{ color: "var(--outer-ink)" }}>
+                        EVERY PROJECT STARTS IN A MAILBOX.
+                      </h3>
+                      <p className="mt-4 max-w-[52ch] text-[14px] leading-relaxed md:mx-0 mx-auto" style={{ color: "var(--m-sub)" }}>
+                        A blind briefing lands. Nothing else is visible yet — the workflow stays sealed until you open it.
+                      </p>
+                      <span className="mt-6 inline-flex items-center gap-3 f-tech font-bold text-[12px] tracking-[0.22em] text-[var(--crimson)] live-blink">
+                        <span className="w-2 h-2 rotate-45 bg-[var(--crimson)]" /> HOVER — PEEK · CLICK — OPEN
+                      </span>
+                    </>
+                  )}
+
+                  {phase === 2 && (
+                    <>
+                      <span className="f-mono text-[10px] tracking-[0.3em] text-[var(--crimson)]">PHASE 02 — THE FLIGHT</span>
+                      {/* one continuous process line — plane exits the SAME mailbox */}
+                      <div ref={lineRef} className="relative mt-10 h-24">
                 <span className="absolute left-0 right-0 top-1/2 h-[3px] rounded" style={{ background: "var(--m-line)" }} />
                 <span className={`absolute left-0 top-1/2 h-[3px] rounded bg-[var(--crimson)] ${reduced ? "w-full" : ""}`}
                   style={reduced ? undefined : { width: planeDone ? "100%" : "0%", transition: "width 2.6s cubic-bezier(.5,.05,.45,.95)" }} />
@@ -168,25 +176,27 @@ export function HowIBuild() {
                   </button>
                 )}
               </div>
-            </div>
-            <p className="mt-6 f-mono text-[9px] tracking-[0.26em]" style={{ color: "var(--m-sub)" }}>
-              {planeDone ? "THE PLANE LANDED — TAKE THE NEXT STEP" : "THE PLANE IS IN THE AIR…"}
-            </p>
-          </div>
-        )}
+                      <p className="mt-6 f-mono text-[9px] tracking-[0.26em] text-left" style={{ color: "var(--m-sub)" }}>
+                        {planeDone ? "THE PLANE LANDED — TAKE THE NEXT STEP" : "THE PLANE IS IN THE AIR…"}
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
 
-        {/* ================= PHASE 03 — COMIC PANEL ================= */}
-        {phase === 3 && (
-          <div className="mt-12 reveal-in relative rounded-xl border-4 p-6 sm:p-10 overflow-hidden"
-            style={{
-              borderColor: "#222328",
-              background: "#DDDDD8",
-              backgroundImage: "radial-gradient(rgba(34,35,40,0.16) 1px, transparent 1.4px)",
-              backgroundSize: "12px 12px",
-              boxShadow: "10px 10px 0 #222328",
-              color: "#222328",
-            }}>
-            <span className="absolute top-3 left-4 f-mono text-[9px] tracking-[0.3em] text-[#9E2237]">PHASE 03 — BEYOND</span>
+            {/* ================= PHASE 03 — COMIC PANEL — replaces the interior of the SAME panel ================= */}
+            {phase === 3 && (
+              <div className="reveal-in relative rounded-xl border-4 p-6 sm:p-10 overflow-hidden"
+                style={{
+                  borderColor: "#222328",
+                  background: "#DDDDD8",
+                  backgroundImage: "radial-gradient(rgba(34,35,40,0.16) 1px, transparent 1.4px)",
+                  backgroundSize: "12px 12px",
+                  boxShadow: "inset 0 0 0 1px rgba(34,35,40,0.28)",
+                  color: "#222328",
+                }}>
+                <span className="absolute top-3 left-4 f-mono text-[9px] tracking-[0.3em] text-[#9E2237]">PHASE 03 — BEYOND</span>
             <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-10 lg:gap-14 items-start mt-4">
               {/* LEFT — speech bubble + empty upload frame */}
               <div className="relative min-w-0">
@@ -227,8 +237,10 @@ export function HowIBuild() {
                 </span>
               </div>
             </div>
+              </div>
+            )}
           </div>
-        )}
+        </Reveal>
 
         {/* the one rune lives here — neutral, crimson on hover */}
         <div className="mt-8 flex justify-center">

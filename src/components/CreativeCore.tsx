@@ -115,7 +115,7 @@ export default function CreativeCore() {
                   className={reduced ? undefined : "gear-ccw-slow"} style={{ transformOrigin: "300px 300px" }} />
 
                 {/* ---------- MID machine layer (scaled in, leaves a clean outer orbit) ---------- */}
-                <g transform="translate(300 300) scale(0.9) translate(-300 -300)">
+                <g transform="translate(300 300) scale(0.72) translate(-300 -300)">
                 {/* baseplate + rivets + engraved grooves */}
                 <circle cx="300" cy="300" r="252" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="2" style={{ filter: "drop-shadow(0 10px 18px rgba(34,35,40,0.35))" }} />
                 {Array.from({ length: 16 }).map((_, i) => {
@@ -124,28 +124,6 @@ export default function CreativeCore() {
                 })}
                 <circle cx="300" cy="300" r="234" fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth="1.4" />
                 <circle cx="300" cy="300" r="222" fill="none" stroke="var(--machine-line)" strokeWidth="0.8" opacity="0.5" />
-
-                {/* mounting arms — every discipline module bolts onto the machine */}
-                {disciplines.map((dis, i) => {
-                  const on = i === sel;
-                  const litOn = surgeOn && lit > i;
-                  const deg = (i / disciplines.length) * 360;
-                  const [x1, y1] = polar(300, 300, 118, deg);
-                  const [x2, y2] = polar(300, 300, 246, deg);
-                  const [bx, by] = polar(300, 300, 238, deg);
-                  return (
-                    <g key={dis.id}>
-                      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--machine-line)" strokeWidth="5" strokeLinecap="round" />
-                      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--machine-plate)" strokeWidth="2" />
-                      {(on || litOn) && !reduced && (
-                        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={hot} strokeWidth="2.6" className="channel-flow" />
-                      )}
-                      <rect x={bx - 7} y={by - 7} width="14" height="14" transform={`rotate(45 ${bx} ${by})`}
-                        fill={on ? hot : "var(--machine-line)"} stroke="var(--machine-plate)" strokeWidth="1.4"
-                        style={{ transition: "fill .3s ease" }} />
-                    </g>
-                  );
-                })}
 
                 {/* outer tooth ring — slow counter rotation */}
                 <g className={reduced ? undefined : "gear-ccw-slow"}>
@@ -168,7 +146,7 @@ export default function CreativeCore() {
                   {Array.from({ length: 6 }).map((_, i) => {
                     const [x1, y1] = polar(300, 300, 96, i * 60);
                     const [x2, y2] = polar(300, 300, 164, i * 60);
-                    return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--machine-line)" strokeWidth="7" strokeLinecap="round" />;
+                    return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={i % 2 ? "var(--machine-line)" : "#A6A6A4"} strokeWidth="7" strokeLinecap="round" />;
                   })}
                   {Array.from({ length: 12 }).map((_, i) => {
                     const [x, y] = polar(300, 300, 146, i * 30);
@@ -186,7 +164,7 @@ export default function CreativeCore() {
                   return (
                     <g key={k} transform={`translate(${px} ${py}) rotate(${deg + 90})`}>
                       <rect x="-9" y="-26" width="18" height="30" rx="3" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.4" />
-                      <rect x="-3.5" y="2" width="7" height="18" fill="var(--machine-line)" className={reduced ? undefined : "piston"} style={{ animationDelay: `${k * 0.7}s` }} />
+                      <rect x="-3.5" y="2" width="7" height="18" fill="#DDDDD8" stroke="#59595B" strokeWidth="0.8" className={reduced ? undefined : "piston"} style={{ animationDelay: `${k * 0.7}s` }} />
                       <rect x="-7" y="18" width="14" height="6" rx="2" fill="var(--machine-warm)" stroke="var(--machine-line)" strokeWidth="1" />
                     </g>
                   );
@@ -232,25 +210,54 @@ export default function CreativeCore() {
                     <circle cx="300" cy="448" r="3" fill="#59595B" stroke="#A6A6A4" strokeWidth="1" />
                   </g>
                 )}
+
+                {/* recessed channel groove around the rim — dark recess + light upper lip */}
+                <circle cx="300" cy="300" r="168" fill="none" stroke="var(--machine-deep)" strokeWidth="13" opacity="0.9" />
+                <path d={`M${polar(300, 300, 168, 210)[0]} ${polar(300, 300, 168, 210)[1]} A168 168 0 0 1 ${polar(300, 300, 168, 330)[0]} ${polar(300, 300, 168, 330)[1]}`}
+                  fill="none" stroke="#DDDDD8" strokeWidth="1.4" opacity="0.22" />
                 </g>
 
-                {/* ---------- FOREGROUND mechanical hardware — rests in front of the machine ---------- */}
+                {/* mounting arms — full size, bridging machine rim to the node orbit */}
+                {disciplines.map((dis, i) => {
+                  const on = i === sel;
+                  const litOn = surgeOn && lit > i;
+                  const deg = (i / disciplines.length) * 360;
+                  const [x1, y1] = polar(300, 300, 184, deg);
+                  const [x2, y2] = polar(300, 300, 228, deg);
+                  const [bx, by] = polar(300, 300, 206, deg);
+                  return (
+                    <g key={dis.id}>
+                      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--machine-line)" strokeWidth="5" strokeLinecap="round" />
+                      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--machine-plate)" strokeWidth="2" />
+                      {(on || litOn) && !reduced && (
+                        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={hot} strokeWidth="2.6" className="channel-flow" />
+                      )}
+                      <rect x={bx - 7} y={by - 7} width="14" height="14" transform={`rotate(45 ${bx} ${by})`}
+                        fill={on ? hot : "var(--machine-line)"} stroke="var(--machine-plate)" strokeWidth="1.4"
+                        style={{ transition: "fill .3s ease" }} />
+                    </g>
+                  );
+                })}
+
+                {/* ---------- FOREGROUND mechanical hardware — clamp bands riding the orbit lane,
+                      parked between node arms so the routing stays readable ---------- */}
                 <g className={reduced ? undefined : "wedge-rock"} style={{ animationDuration: "12s" }}>
-                  {/* lower-right graphite service band */}
-                  <path d={`M${polar(300, 300, 262, 30)[0]} ${polar(300, 300, 262, 30)[1]} A262 262 0 0 1 ${polar(300, 300, 262, 104)[0]} ${polar(300, 300, 262, 104)[1]} L${polar(300, 300, 236, 104)[0]} ${polar(300, 300, 236, 104)[1]} A236 236 0 0 0 ${polar(300, 300, 236, 30)[0]} ${polar(300, 300, 236, 30)[1]} Z`}
+                  {/* graphite service band — upper-right gap sector */}
+                  <path d={`M${polar(300, 300, 222, 8)[0]} ${polar(300, 300, 222, 8)[1]} A222 222 0 0 1 ${polar(300, 300, 222, 32)[0]} ${polar(300, 300, 222, 32)[1]} L${polar(300, 300, 200, 32)[0]} ${polar(300, 300, 200, 32)[1]} A200 200 0 0 0 ${polar(300, 300, 200, 8)[0]} ${polar(300, 300, 200, 8)[1]} Z`}
                     fill="#59595B" stroke="#A6A6A4" strokeWidth="1.4" opacity="0.95"
                     style={{ filter: "drop-shadow(0 6px 10px rgba(34,35,40,0.4))" }} />
-                  {[42, 60, 78, 93].map((deg) => {
-                    const [x, y] = polar(300, 300, 249, deg);
+                  {[14, 20, 26].map((deg) => {
+                    const [x, y] = polar(300, 300, 211, deg);
                     return <circle key={deg} cx={x} cy={y} r="3" fill="#222328" stroke="#DDDDD8" strokeWidth="1" />;
                   })}
-                  <path d={`M${polar(300, 300, 249, 34)[0]} ${polar(300, 300, 249, 34)[1]} A249 249 0 0 1 ${polar(300, 300, 249, 100)[0]} ${polar(300, 300, 249, 100)[1]}`}
-                    fill="none" stroke="#A6A6A4" strokeWidth="1.6" strokeDasharray="2 8" opacity="0.8" />
-                  {/* upper-left pale actuator band */}
-                  <path d={`M${polar(300, 300, 258, 206)[0]} ${polar(300, 300, 258, 206)[1]} A258 258 0 0 1 ${polar(300, 300, 258, 244)[0]} ${polar(300, 300, 258, 244)[1]} L${polar(300, 300, 240, 244)[0]} ${polar(300, 300, 240, 244)[1]} A240 240 0 0 0 ${polar(300, 300, 240, 206)[0]} ${polar(300, 300, 240, 206)[1]} Z`}
+                  {/* pale actuator band — left gap sector */}
+                  <path d={`M${polar(300, 300, 222, 128)[0]} ${polar(300, 300, 222, 128)[1]} A222 222 0 0 1 ${polar(300, 300, 222, 152)[0]} ${polar(300, 300, 222, 152)[1]} L${polar(300, 300, 204, 152)[0]} ${polar(300, 300, 204, 152)[1]} A204 204 0 0 0 ${polar(300, 300, 204, 128)[0]} ${polar(300, 300, 204, 128)[1]} Z`}
                     fill="#DDDDD8" stroke="#A6A6A4" strokeWidth="1.2" opacity="0.92" />
-                  <circle cx={polar(300, 300, 249, 216)[0]} cy={polar(300, 300, 249, 216)[1]} r="2.6" fill="#59595B" />
-                  <circle cx={polar(300, 300, 249, 234)[0]} cy={polar(300, 300, 249, 234)[1]} r="2.6" fill="#59595B" />
+                  <circle cx={polar(300, 300, 213, 134)[0]} cy={polar(300, 300, 213, 134)[1]} r="2.6" fill="#59595B" />
+                  <circle cx={polar(300, 300, 213, 146)[0]} cy={polar(300, 300, 213, 146)[1]} r="2.6" fill="#59595B" />
+                  {/* engraved orbit guide under the arms */}
+                  <circle cx="300" cy="300" r="206" fill="none" stroke="#A6A6A4" strokeWidth="1" strokeDasharray="2 10" opacity="0.55"
+                    className={reduced ? undefined : "gear-ccw-slow"} style={{ transformOrigin: "300px 300px" }} />
                 </g>
 
                 {/* selector head — small crimson arrowhead, no tail */}
