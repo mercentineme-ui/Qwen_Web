@@ -110,7 +110,7 @@ body {
 }
 .mat-outer { background-color: var(--outer-bg); color: var(--outer-ink); }
 .mat-inner { background-color: var(--page); color: var(--ink); }
-.dark .mat-inner { background-color: #1b1c20; color: #e7e6e1; }
+.dark .mat-inner { background-color: #222328; color: #DDDDD8; }
 .mat-page-card { background-color: var(--sup1); color: var(--ink); }
 
 /* MY JOURNEY dossier material — rough matte black in BOTH themes (never flips) */
