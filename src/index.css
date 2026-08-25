@@ -306,6 +306,28 @@ body::before {
 @keyframes rbD { 0%, 100% { transform: none; opacity: 1; } 45%, 55% { transform: translate(52px, 40px) rotate(-22deg); opacity: 0.82; } }
 @keyframes rbE { 0%, 100% { transform: none; opacity: 1; } 45%, 55% { transform: scale(0.5) rotate(140deg); opacity: 0.6; } }
 
+/* ---------- career transmission machine materials ----------
+   LIGHT: machine = matte #222328 family · DARK: machine inverts to
+   rough matte white — scoped so nothing outside the map is affected. */
+.map-scope {
+  --mb: #222328; /* machine body */
+  --md: #3C3D42; /* deep recess */
+  --ml: #59595B; /* mid graphite */
+  --mh: #A6A6A4; /* machined highlight */
+  --mt: #DDDDD8; /* text on machine */
+  --mp: #59595B; /* module plate */
+  --ma: #3C3D42; /* active plate */
+}
+.dark .map-scope {
+  --mb: #DDDDD8;
+  --md: #C3C1BC;
+  --ml: #59595B;
+  --mh: #A6A6A4;
+  --mt: #222328;
+  --mp: #C3C1BC;
+  --ma: #A6A6A4;
+}
+
 /* ---------- career node map ---------- */
 .packet { stroke-dasharray: 12 340; animation: packetMove 2.8s linear infinite; }
 .packet-2 { stroke-dasharray: 8 344; animation: packetMove 3.6s linear infinite reverse; }

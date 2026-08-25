@@ -71,7 +71,7 @@ export function HowIBuild() {
     setPhase(2);
     requestAnimationFrame(() => {
       const w = lineRef.current?.getBoundingClientRect().width;
-      if (w) setFlight(w - 150); /* the plane lands at the KNOW MORE dock */
+      if (w) setFlight(w - 168); /* the plane lands at the KNOW MORE dock, clear of DEVELOPMENT */
     });
     if (reduced) { setPlaneDone(true); setLitN(4); return; }
     [550, 1080, 1480, 1920].forEach((t, k) =>
@@ -126,21 +126,44 @@ export function HowIBuild() {
                       </span>
                     </div>
                   ) : (
-                    /* ---- PHASE 2 — flight along the mechanical track: mailbox → tiny growing
-                       plane → checkpoint modules → KNOW MORE at the far-right destination ---- */
-                    <div ref={lineRef} className="relative flex-1 h-32 w-full min-w-0">
-                      {/* mechanical rail — track + guide + hatched sleepers (no red timeline) */}
-                      <span className="absolute left-0 right-0 top-1/2 h-[3px]" style={{ background: "#59595B" }} />
-                      <span className="absolute left-0 right-0 top-1/2 h-px opacity-60" style={{ background: "#A6A6A4", transform: "translateY(-4px)" }} />
-                      <span className="absolute left-0 right-0 top-1/2 h-[3px] opacity-40"
-                        style={{ background: "repeating-linear-gradient(90deg, #A6A6A4 0 2px, transparent 2px 14px)", transform: "translateY(5px)" }} />
+                    /* ---- PHASE 2 — ONE continuous journey: mailbox → paper plane →
+                       01 IDEA → 02 REFERENCE → 03 CONCEPT → 04 DEVELOPMENT → KNOW MORE.
+                       Segmented rail with joints + directional marks, no red timeline. ---- */
+                    <div ref={lineRef} className="relative flex-1 h-44 w-full min-w-0">
+                      {/* segmented mechanical rail — dashed travel path, joints at every checkpoint,
+                         the crimson overlay extends segment-by-segment as the plane passes */}
+                      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 176" preserveAspectRatio="none" aria-hidden>
+                        <polyline points="0,88 140,62 330,112 520,66 680,108 1000,88" fill="none"
+                          stroke="#59595B" strokeWidth="3" strokeDasharray="16 10" strokeLinecap="round" />
+                        <polyline points="0,88 140,62 330,112 520,66 680,108 1000,88" fill="none"
+                          stroke="#A6A6A4" strokeWidth="1" strokeDasharray="3 9" opacity="0.5" transform="translate(0 -6)" />
+                        {/* restrained crimson active segments — only what the plane has covered */}
+                        <polyline points="0,88 140,62 330,112 520,66 680,108 1000,88" fill="none"
+                          stroke="#E72241" strokeWidth="3" strokeLinecap="round" pathLength={100}
+                          strokeDasharray={`${((planeDone || reduced ? 5 : litN) / 5) * 100} 100`}
+                          style={{ transition: reduced ? "none" : "stroke-dasharray .7s cubic-bezier(.4,.4,.4,1)" }} />
+                        {/* mechanical joints at each checkpoint + directional chevrons */}
+                        {[[140, 62], [330, 112], [520, 66], [680, 108]].map(([jx, jy], k) => (
+                          <g key={k}>
+                            <rect x={jx - 5} y={jy - 5} width="10" height="10" transform={`rotate(45 ${jx} ${jy})`}
+                              fill={(planeDone || reduced ? 5 : litN) > k ? "#E72241" : "#3C3D42"} stroke="#A6A6A4" strokeWidth="1"
+                              style={{ transition: "fill .5s ease" }} />
+                            <circle cx={jx} cy={jy} r="1.8" fill="#DDDDD8" opacity="0.8" />
+                          </g>
+                        ))}
+                        {[[70, 76], [425, 90], [600, 88], [840, 98]].map(([cxp, cyp], k) => (
+                          <path key={k} d={`M${cxp} ${cyp - 6} L${cxp + 9} ${cyp} L${cxp} ${cyp + 6}`} fill="none"
+                            stroke={(planeDone || reduced ? 5 : litN) * 20 > cxp / 10 ? "#E72241" : "#A6A6A4"} strokeWidth="2"
+                            strokeLinecap="round" strokeLinejoin="round" opacity="0.8" style={{ transition: "stroke .5s ease" }} />
+                        ))}
+                      </svg>
 
-                      {/* checkpoints — compact mechanical modules on docking struts, varied height */}
+                      {/* checkpoints — compact mechanical modules hanging off the rail joints */}
                       {b.nodes.map((nd, i) => {
                         const stage = planeDone || reduced ? 5 : litN; /* stages passed so far */
                         const isCurrent = i === stage - 1;             /* ONLY the current checkpoint is active */
                         const isPassed = i < stage - 1;
-                        const topPct = [24, 76, 26, 74][i % 4];
+                        const topPct = [35, 64, 37, 61][i % 4];
                         const above = topPct < 50;
                         const moduleBox = (
                           <div className="relative px-3.5 py-2 text-center mat-texture dossier-clip-sm"
@@ -168,7 +191,7 @@ export function HowIBuild() {
                         return (
                           <div key={nd.num}
                             className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center node-pop"
-                            style={{ left: `${12 + i * 19}%`, top: `${topPct}%`, animationDelay: reduced ? "0s" : `${0.3 + i * 0.55}s` }}>
+                            style={{ left: `${[14, 33, 52, 68][i % 4]}%`, top: `${topPct}%`, animationDelay: reduced ? "0s" : `${0.3 + i * 0.55}s` }}>
                             {above ? (<>{moduleBox}{strut}{foot}</>) : (<>{foot}{strut}{moduleBox}</>)}
                           </div>
                         );
@@ -229,7 +252,7 @@ export function HowIBuild() {
                       </svg>
                     </div>
                     <div className="relative border-4 border-[#222328] bg-[#C3C1BC] shadow-[8px_8px_0_#E72241,14px_14px_0_#59232F]">
-                      <MediaSlot item={b.reveal.image} ratio="3/4.4" className="!rounded-none !border-0" showLabel={false} />
+                      <MediaSlot item={b.reveal.image} ratio="3/5.4" className="!rounded-none !border-0" showLabel={false} />
                       <span className="absolute top-2 left-2 f-mono text-[8px] tracking-[0.26em] px-2 py-1 bg-[#222328] text-[#DDDDD8]">UPLOAD SPACE</span>
                       <span className="absolute bottom-2 right-2 f-mono text-[8px] tracking-[0.26em] px-2 py-1 bg-[#E72241] text-[#DDDDD8]">VERTICAL FRAME</span>
                     </div>
@@ -314,8 +337,8 @@ export function Contact() {
           <h2 className="f-display leading-[0.95] tracking-wide mt-4 text-[clamp(2.4rem,6vw,4.8rem)]">CONTACT</h2>
         </Reveal>
 
-        {/* main composition — identity column + center content + negative space */}
-        <div className="mt-12 grid lg:grid-cols-[360px_1fr_150px] gap-10 lg:gap-14 items-start">
+        {/* main composition — identity column (larger portrait) + center content + negative space */}
+        <div className="mt-12 grid lg:grid-cols-[minmax(0,430px)_minmax(0,1fr)_120px] gap-10 lg:gap-14 items-start">
           {/* ---------- LEFT — identity + portrait + resume ---------- */}
           <Reveal>
             {/* technical outlined identity frame */}
@@ -323,7 +346,7 @@ export function Contact() {
               <span className="absolute -top-[5px] -left-[5px] w-3 h-3 border-t-2 border-l-2" style={{ borderColor: "#E72241" }} />
               <span className="absolute -bottom-[5px] -right-[5px] w-3 h-3 border-b-2 border-r-2" style={{ borderColor: "#E72241" }} />
               <span className="f-mono text-[9px] tracking-[0.3em] block" style={{ color: "#A6A6A4" }}>IDENTITY</span>
-              <h3 className="f-display text-[clamp(2.2rem,3.4vw,3rem)] leading-[0.98] mt-2">
+              <h3 className="f-display text-[clamp(3.1rem,5vw,4.4rem)] leading-[0.98] mt-2 whitespace-nowrap">
                 <span style={{ color: "#DDDDD8" }}>{c.identityA}</span>{" "}
                 <span style={{ color: "#E72241" }}>{c.identityB}</span>
               </h3>

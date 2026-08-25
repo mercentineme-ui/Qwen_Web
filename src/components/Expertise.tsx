@@ -47,7 +47,7 @@ const SHAFT_X = 430;
 const FW_Y = 240;
 
 function MiniGear({ cx, cy, r, teeth, spin, hot }: { cx: number; cy: number; r: number; teeth: number; spin: string; hot?: boolean }) {
-  const edge = hot ? "#E72241" : "#A6A6A4";
+  const edge = hot ? "#E72241" : "var(--mh)";
   return (
     <g className={spin}>
       {Array.from({ length: teeth }).map((_, i) => {
@@ -56,12 +56,12 @@ function MiniGear({ cx, cy, r, teeth, spin, hot }: { cx: number; cy: number; r: 
         return (
           <rect key={i} x={-r * 0.14} y={-r * 0.17} width={r * 0.28} height={r * 0.34}
             transform={`translate(${x} ${y}) rotate(${(a * 180) / Math.PI})`}
-            fill="#59595B" stroke={edge} strokeWidth="1" style={{ transition: "stroke .35s ease" }} />
+            fill="var(--ml)" stroke={edge} strokeWidth="1" style={{ transition: "stroke .35s ease" }} />
         );
       })}
-      <circle cx={cx} cy={cy} r={r * 0.9} fill="#3C3D42" stroke={edge} strokeWidth="1.4" style={{ transition: "stroke .35s ease" }} />
-      <circle cx={cx} cy={cy} r={r * 0.34} fill="#222328" stroke={edge} strokeWidth="1" style={{ transition: "stroke .35s ease" }} />
-      <circle cx={cx} cy={cy} r={r * 0.1} fill={hot ? "#E72241" : "#59595B"} style={{ transition: "fill .35s ease" }} />
+      <circle cx={cx} cy={cy} r={r * 0.9} fill="var(--md)" stroke={edge} strokeWidth="1.4" style={{ transition: "stroke .35s ease" }} />
+      <circle cx={cx} cy={cy} r={r * 0.34} fill="var(--mb)" stroke={edge} strokeWidth="1" style={{ transition: "stroke .35s ease" }} />
+      <circle cx={cx} cy={cy} r={r * 0.1} fill={hot ? "#E72241" : "var(--ml)"} style={{ transition: "fill .35s ease" }} />
     </g>
   );
 }
@@ -80,7 +80,7 @@ function NodeMap({
 }) {
   const releasing = hoverIdx !== null && hoverIdx !== active;
   return (
-    <div className="relative border rounded-xl mat-texture corner-bracket overflow-hidden"
+    <div className="map-scope relative border rounded-xl mat-texture corner-bracket overflow-hidden"
       style={{ borderColor: "var(--m-line)", backgroundColor: "color-mix(in srgb, var(--outer-ink) 5%, transparent)", aspectRatio: "560 / 470" }}
       onMouseLeave={onLeaveRow}>
 
@@ -92,28 +92,28 @@ function NodeMap({
         {/* ================= VERTICAL TRANSMISSION — one large machine (RIGHT / CENTER) ================= */}
         <g>
           {/* machined chassis plate — seams + rivets */}
-          <rect x="318" y="44" width="224" height="396" rx="6" fill="#222328" stroke="#59595B" strokeWidth="2.2" />
-          <rect x="326" y="52" width="208" height="380" rx="4" fill="none" stroke="#3C3D42" strokeWidth="1.2" />
-          <line x1="326" y1="132" x2="534" y2="132" stroke="#3C3D42" strokeWidth="1.4" />
-          <line x1="326" y1="348" x2="534" y2="348" stroke="#3C3D42" strokeWidth="1.4" />
+          <rect x="318" y="44" width="224" height="396" rx="6" fill="var(--mb)" stroke="var(--ml)" strokeWidth="2.2" />
+          <rect x="326" y="52" width="208" height="380" rx="4" fill="none" stroke="var(--md)" strokeWidth="1.2" />
+          <line x1="326" y1="132" x2="534" y2="132" stroke="var(--md)" strokeWidth="1.4" />
+          <line x1="326" y1="348" x2="534" y2="348" stroke="var(--md)" strokeWidth="1.4" />
           {[[330, 56], [530, 56], [330, 428], [530, 428], [330, 240], [530, 240]].map(([x, y], k) => (
-            <circle key={k} cx={x} cy={y} r="2.6" fill="#59595B" stroke="#A6A6A4" strokeWidth="0.9" />
+            <circle key={k} cx={x} cy={y} r="2.6" fill="var(--ml)" stroke="var(--mh)" strokeWidth="0.9" />
           ))}
 
           {/* mechanical rails with hatched guides */}
-          <rect x="512" y="60" width="5" height="364" fill="#3C3D42" />
-          <rect x="521" y="60" width="2.5" height="364" fill="#59595B" opacity="0.7" />
+          <rect x="512" y="60" width="5" height="364" fill="var(--md)" />
+          <rect x="521" y="60" width="2.5" height="364" fill="var(--ml)" opacity="0.7" />
           {Array.from({ length: 16 }).map((_, k) => (
-            <line key={k} x1="512" y1={70 + k * 23} x2="523.5" y2={70 + k * 23} stroke="#A6A6A4" strokeWidth="0.8" opacity="0.5" />
+            <line key={k} x1="512" y1={70 + k * 23} x2="523.5" y2={70 + k * 23} stroke="var(--mh)" strokeWidth="0.8" opacity="0.5" />
           ))}
 
           {/* rotating vertical shaft + bearings */}
-          <rect x={SHAFT_X - 4} y="56" width="8" height="372" fill="#3C3D42" stroke="#59595B" strokeWidth="1" />
+          <rect x={SHAFT_X - 4} y="56" width="8" height="372" fill="var(--md)" stroke="var(--ml)" strokeWidth="1" />
           {!reduced && (
-            <line x1={SHAFT_X} y1="58" x2={SHAFT_X} y2="426" stroke="#A6A6A4" strokeWidth="1.6" strokeDasharray="5 9" opacity="0.5" className="channel-flow" />
+            <line x1={SHAFT_X} y1="58" x2={SHAFT_X} y2="426" stroke="var(--mh)" strokeWidth="1.6" strokeDasharray="5 9" opacity="0.5" className="channel-flow" />
           )}
-          <rect x={SHAFT_X - 13} y="48" width="26" height="12" rx="2" fill="#59595B" stroke="#A6A6A4" strokeWidth="1.1" />
-          <rect x={SHAFT_X - 13} y="424" width="26" height="12" rx="2" fill="#59595B" stroke="#A6A6A4" strokeWidth="1.1" />
+          <rect x={SHAFT_X - 13} y="48" width="26" height="12" rx="2" fill="var(--ml)" stroke="var(--mh)" strokeWidth="1.1" />
+          <rect x={SHAFT_X - 13} y="424" width="26" height="12" rx="2" fill="var(--ml)" stroke="var(--mh)" strokeWidth="1.1" />
 
           {/* primary drive gear train (top) */}
           <MiniGear cx={SHAFT_X} cy={96} r={30} teeth={11} spin={reduced ? "" : "gear-cw"} />
@@ -121,15 +121,15 @@ function NodeMap({
           <MiniGear cx={SHAFT_X - 50} cy={120} r={15} teeth={7} spin={reduced ? "" : "gear-ccw"} />
 
           {/* large central flywheel — rim, locking teeth, rotating spokes, hub */}
-          <circle cx={SHAFT_X} cy={FW_Y} r="80" fill="#3C3D42" stroke="#A6A6A4" strokeWidth="5" />
-          <circle cx={SHAFT_X} cy={FW_Y} r="64" fill="none" stroke="#222328" strokeWidth="2" />
+          <circle cx={SHAFT_X} cy={FW_Y} r="80" fill="var(--md)" stroke="var(--mh)" strokeWidth="5" />
+          <circle cx={SHAFT_X} cy={FW_Y} r="64" fill="none" stroke="var(--mb)" strokeWidth="2" />
           <g className={reduced ? undefined : "gear-cw"} style={{ animationDuration: "26s" }}>
             {Array.from({ length: 24 }).map((_, k) => {
               const a = (k / 24) * Math.PI * 2;
               return (
                 <rect key={k} x="-3" y="-84" width="6" height="10"
                   transform={`translate(${SHAFT_X} ${FW_Y}) rotate(${(a * 180) / Math.PI})`}
-                  fill="#59595B" stroke="#A6A6A4" strokeWidth="0.8" />
+                  fill="var(--ml)" stroke="var(--mh)" strokeWidth="0.8" />
               );
             })}
             {Array.from({ length: 6 }).map((_, k) => {
@@ -137,15 +137,15 @@ function NodeMap({
               return (
                 <line key={k} x1={SHAFT_X + 14 * Math.cos(a)} y1={FW_Y + 14 * Math.sin(a)}
                   x2={SHAFT_X + 60 * Math.cos(a)} y2={FW_Y + 60 * Math.sin(a)}
-                  stroke="#59595B" strokeWidth="6" strokeLinecap="round" />
+                  stroke="var(--ml)" strokeWidth="6" strokeLinecap="round" />
               );
             })}
             {Array.from({ length: 8 }).map((_, k) => {
               const a = (k / 8) * Math.PI * 2;
-              return <circle key={k} cx={SHAFT_X + 70 * Math.cos(a)} cy={FW_Y + 70 * Math.sin(a)} r="2.8" fill="#222328" stroke="#A6A6A4" strokeWidth="1" />;
+              return <circle key={k} cx={SHAFT_X + 70 * Math.cos(a)} cy={FW_Y + 70 * Math.sin(a)} r="2.8" fill="var(--mb)" stroke="var(--mh)" strokeWidth="1" />;
             })}
           </g>
-          <circle cx={SHAFT_X} cy={FW_Y} r="16" fill="#222328" stroke="#A6A6A4" strokeWidth="2" />
+          <circle cx={SHAFT_X} cy={FW_Y} r="16" fill="var(--mb)" stroke="var(--mh)" strokeWidth="2" />
           <circle cx={SHAFT_X} cy={FW_Y} r="6" fill="#E72241" style={{ transition: "fill .4s ease" }} />
           <circle cx={SHAFT_X} cy={FW_Y} r="26" fill="none" stroke="#E72241" strokeWidth="1.4" strokeDasharray="4 7"
             className={reduced ? undefined : "gear-ccw"} style={{ animationDuration: "14s", opacity: 0.5 }} />
@@ -153,34 +153,34 @@ function NodeMap({
           {/* crank wheels + pumping pistons (lower zone) */}
           {[{ x: 358, d: "4s" }, { x: 500, d: "5.2s" }].map((p) => (
             <g key={p.x}>
-              <line x1={p.x} y1="322" x2={p.x} y2="340" stroke="#59595B" strokeWidth="3" />
-              <circle cx={p.x} cy="322" r="15" fill="#222328" stroke="#A6A6A4" strokeWidth="1.6" />
+              <line x1={p.x} y1="322" x2={p.x} y2="340" stroke="var(--ml)" strokeWidth="3" />
+              <circle cx={p.x} cy="322" r="15" fill="var(--mb)" stroke="var(--mh)" strokeWidth="1.6" />
               <g className={reduced ? undefined : "gear-cw"} style={{ animationDuration: p.d, transformOrigin: `${p.x}px 322px` }}>
-                <line x1={p.x} y1="322" x2={p.x} y2="310" stroke="#A6A6A4" strokeWidth="2.4" />
+                <line x1={p.x} y1="322" x2={p.x} y2="310" stroke="var(--mh)" strokeWidth="2.4" />
                 <circle cx={p.x} cy="310" r="2.6" fill="#E72241" opacity="0.85" />
               </g>
-              <rect x={p.x - 9} y="338" width="18" height="34" rx="3" fill="#3C3D42" stroke="#A6A6A4" strokeWidth="1.3" />
-              <rect x={p.x - 3} y="336" width="6" height="20" fill="#A6A6A4" className={reduced ? undefined : "piston"} style={{ animationDuration: p.d }} />
-              <rect x={p.x - 6.5} y="370" width="13" height="5" rx="2" fill="#59595B" stroke="#A6A6A4" strokeWidth="0.9" />
+              <rect x={p.x - 9} y="338" width="18" height="34" rx="3" fill="var(--md)" stroke="var(--mh)" strokeWidth="1.3" />
+              <rect x={p.x - 3} y="336" width="6" height="20" fill="var(--mh)" className={reduced ? undefined : "piston"} style={{ animationDuration: p.d }} />
+              <rect x={p.x - 6.5} y="370" width="13" height="5" rx="2" fill="var(--ml)" stroke="var(--mh)" strokeWidth="0.9" />
             </g>
           ))}
 
           {/* rack + pinion + pressure valve */}
-          <rect x="346" y="398" width="98" height="11" rx="2" fill="#3C3D42" stroke="#59595B" strokeWidth="1.1" />
+          <rect x="346" y="398" width="98" height="11" rx="2" fill="var(--md)" stroke="var(--ml)" strokeWidth="1.1" />
           {Array.from({ length: 9 }).map((_, k) => (
-            <line key={k} x1={352 + k * 11} y1="400" x2={352 + k * 11} y2="407" stroke="#222328" strokeWidth="2" />
+            <line key={k} x1={352 + k * 11} y1="400" x2={352 + k * 11} y2="407" stroke="var(--mb)" strokeWidth="2" />
           ))}
           <MiniGear cx={368} cy={392} r={13} teeth={7} spin={reduced ? "" : "gear-cw-fast"} />
-          <circle cx="494" cy="400" r="15" fill="#222328" stroke="#A6A6A4" strokeWidth="1.5" />
-          <path d="M483 400 a11 11 0 0 1 22 0" fill="none" stroke="#59595B" strokeWidth="1.1" />
+          <circle cx="494" cy="400" r="15" fill="var(--mb)" stroke="var(--mh)" strokeWidth="1.5" />
+          <path d="M483 400 a11 11 0 0 1 22 0" fill="none" stroke="var(--ml)" strokeWidth="1.1" />
           <line x1="494" y1="400" x2="502" y2="391" stroke="#E72241" strokeWidth="2" strokeLinecap="round"
             className={reduced ? undefined : "valve-wiggle"} style={{ transformOrigin: "494px 400px", animationDuration: "4.5s" }} />
-          <circle cx="494" cy="400" r="2.2" fill="#A6A6A4" />
+          <circle cx="494" cy="400" r="2.2" fill="var(--mh)" />
 
           {/* restrained cyberpunk signal rail */}
-          <line x1="529" y1="64" x2="529" y2="420" stroke="#59595B" strokeWidth="1" />
+          <line x1="529" y1="64" x2="529" y2="420" stroke="var(--ml)" strokeWidth="1" />
           {PLATE_CY.map((y) => (
-            <rect key={y} x="525" y={y - 3} width="8" height="6" fill="#3C3D42" stroke="#59595B" strokeWidth="0.8" />
+            <rect key={y} x="525" y={y - 3} width="8" height="6" fill="var(--md)" stroke="var(--ml)" strokeWidth="0.8" />
           ))}
           {!reduced && (
             <line x1="529" y1="64" x2="529" y2="420" stroke="#E72241" strokeWidth="1.6" className="packet" opacity="0.45" />
@@ -194,42 +194,44 @@ function NodeMap({
           const sy = PLATE_CY[i];
           const engaged = i === active;
           const hovered = i === hoverIdx;
-          const dogShift = engaged ? (releasing ? 7 : 14) : 0;
-          const sigOpacity = engaged ? (releasing ? 0.4 : 1) : 0;
+          /* hover = preview only: dog teeth creep part-way in, signal ghosts,
+             output gear spins up — nothing locks until a click */
+          const dogShift = engaged ? (releasing ? 7 : 14) : hovered ? 6 : 0;
+          const sigOpacity = engaged ? (releasing ? 0.4 : 1) : hovered ? 0.3 : 0;
           const armPath = `M210 ${sy} L318 ${sy}`;
           return (
             <g key={co.id + "-link"}>
               {/* articulated arm with joint housings */}
               <g style={{ transform: hovered && !engaged ? "translateX(3px)" : "none", transition: "transform .45s cubic-bezier(.3,.8,.3,1)" }}>
-                <path d={armPath} fill="none" stroke="#59595B" strokeWidth="8" strokeLinecap="round" opacity="0.95" />
-                <path d={armPath} fill="none" stroke="#222328" strokeWidth="3" strokeLinecap="round" />
+                <path d={armPath} fill="none" stroke="var(--ml)" strokeWidth="8" strokeLinecap="round" opacity="0.95" />
+                <path d={armPath} fill="none" stroke="var(--mb)" strokeWidth="3" strokeLinecap="round" />
                 {!reduced && (
                   <path d={armPath} fill="none" stroke="#E72241" strokeWidth="2" strokeLinecap="round" className="channel-flow"
                     style={{ opacity: sigOpacity, transition: "opacity .7s ease" }} />
                 )}
-                <circle cx="252" cy={sy} r="5.2" fill="#3C3D42" stroke={engaged ? "#E72241" : "#A6A6A4"} strokeWidth="1.3" style={{ transition: "stroke .4s ease" }} />
-                <circle cx="292" cy={sy} r="4.2" fill="#3C3D42" stroke={engaged ? "#E72241" : "#A6A6A4"} strokeWidth="1.2" style={{ transition: "stroke .4s ease" }} />
+                <circle cx="252" cy={sy} r="5.2" fill="var(--md)" stroke={engaged ? "#E72241" : "var(--mh)"} strokeWidth="1.3" style={{ transition: "stroke .4s ease" }} />
+                <circle cx="292" cy={sy} r="4.2" fill="var(--md)" stroke={engaged ? "#E72241" : "var(--mh)"} strokeWidth="1.2" style={{ transition: "stroke .4s ease" }} />
               </g>
               {/* clutch chamber on the machine face */}
-              <rect x="318" y={sy - 16} width="38" height="32" rx="3" fill="#3C3D42" stroke={engaged ? "#E72241" : "#59595B"}
+              <rect x="318" y={sy - 16} width="38" height="32" rx="3" fill="var(--md)" stroke={engaged ? "#E72241" : "var(--ml)"}
                 strokeWidth={engaged ? 2 : 1.4} style={{ transition: "stroke .5s ease" }} />
               {/* sliding dog teeth — the locking mechanism */}
               <g style={{ transform: `translateX(${dogShift}px)`, transition: "transform .9s cubic-bezier(.3,.7,.25,1)" }}>
-                <rect x="344" y={sy - 9} width="16" height="18" fill="#59595B" stroke="#A6A6A4" strokeWidth="1" />
+                <rect x="344" y={sy - 9} width="16" height="18" fill="var(--ml)" stroke="var(--mh)" strokeWidth="1" />
                 {[0, 1, 2].map((k) => (
                   <rect key={k} x="360" y={sy - 8 + k * 6.4} width="6" height="4"
-                    fill={engaged ? "#E72241" : "#A6A6A4"} style={{ transition: "fill .5s ease" }} />
+                    fill={engaged ? "#E72241" : "var(--mh)"} style={{ transition: "fill .5s ease" }} />
                 ))}
               </g>
               {/* chamber lever — wiggles while its chapter transmits */}
               <g className={engaged && !reduced ? "valve-wiggle" : undefined} style={{ transformOrigin: `330px ${sy}px`, animationDuration: "1.4s" }}>
-                <line x1="330" y1={sy} x2="330" y2={sy - 12} stroke={engaged ? "#E72241" : "#A6A6A4"} strokeWidth="2.2" strokeLinecap="round"
+                <line x1="330" y1={sy} x2="330" y2={sy - 12} stroke={engaged ? "#E72241" : "var(--mh)"} strokeWidth="2.2" strokeLinecap="round"
                   style={{ transition: "stroke .4s ease" }} />
-                <circle cx="330" cy={sy - 13} r="2.6" fill={engaged ? "#E72241" : "#59595B"} style={{ transition: "fill .4s ease" }} />
+                <circle cx="330" cy={sy - 13} r="2.6" fill={engaged ? "#E72241" : "var(--ml)"} style={{ transition: "fill .4s ease" }} />
               </g>
-              {/* output gear meshes the chamber into the shaft */}
-              <MiniGear cx={384} cy={sy} r={13} teeth={7} hot={engaged} spin={reduced ? "" : engaged ? "gear-cw-fast" : "gear-cw"} />
-              <line x1="397" y1={sy} x2={SHAFT_X - 4} y2={sy} stroke={engaged ? "#E72241" : "#59595B"} strokeWidth="2" style={{ transition: "stroke .5s ease" }} />
+              {/* output gear meshes the chamber into the shaft — spins up on hover, full drive when engaged */}
+              <MiniGear cx={384} cy={sy} r={13} teeth={7} hot={engaged} spin={reduced ? "" : engaged || hovered ? "gear-cw-fast" : "gear-cw"} />
+              <line x1="397" y1={sy} x2={SHAFT_X - 4} y2={sy} stroke={engaged ? "#E72241" : "var(--ml)"} strokeWidth="2" style={{ transition: "stroke .5s ease" }} />
               {/* crimson mechanical signal — chamber → shaft → flywheel hub */}
               {engaged && !reduced && (
                 <path d={`M397 ${sy} L${SHAFT_X} ${sy} L${SHAFT_X} ${FW_Y}`} fill="none" stroke="#E72241" strokeWidth="2.2"
@@ -254,27 +256,27 @@ function NodeMap({
               {/* machined module — chamfered body, engraved index, bolts, socket */}
               <polygon
                 points={`14,${cy - 28} 188,${cy - 28} 200,${cy - 16} 200,${cy + 16} 188,${cy + 28} 6,${cy + 28} 6,${cy - 20}`}
-                fill={engaged ? "#3C3D42" : "#59595B"}
-                stroke={engaged ? "#E72241" : hovered ? "#DDDDD8" : "#A6A6A4"}
+                fill={engaged ? "var(--ma)" : "var(--mp)"}
+                stroke={engaged ? "#E72241" : hovered ? "var(--mt)" : "var(--mh)"}
                 strokeWidth={engaged ? 2 : 1.4}
                 style={{ transition: "fill .4s ease, stroke .4s ease" }} />
-              <line x1="16" y1={cy - 24} x2="186" y2={cy - 24} stroke="#A6A6A4" strokeWidth="0.9" opacity="0.45" />
+              <line x1="16" y1={cy - 24} x2="186" y2={cy - 24} stroke="var(--mh)" strokeWidth="0.9" opacity="0.45" />
               {/* engraved index */}
-              <text x="16" y={cy + 10} className="f-display" fontSize="24" fill="#222328" opacity="0.9">{co.num}</text>
-              <text x="17" y={cy + 11} className="f-display" fontSize="24" fill="none" stroke={engaged ? "#E72241" : "#DDDDD8"} strokeWidth="0.6" opacity="0.75">{co.num}</text>
+              <text x="16" y={cy + 10} className="f-display" fontSize="24" fill="var(--mb)" opacity="0.9">{co.num}</text>
+              <text x="17" y={cy + 11} className="f-display" fontSize="24" fill="none" stroke={engaged ? "#E72241" : "var(--mt)"} strokeWidth="0.6" opacity="0.75">{co.num}</text>
               {/* company name — its own clean text area, never over the machine */}
               <text x="52" y={cy + 5} className="f-tech" fontSize="13" fontWeight="700" letterSpacing="1.2"
-                fill={engaged ? "#E72241" : "#DDDDD8"} style={{ transition: "fill .35s ease" }}>{co.name}</text>
+                fill={engaged ? "#E72241" : "var(--mt)"} style={{ transition: "fill .35s ease" }}>{co.name}</text>
               {/* corner bolts */}
               {[[14, cy - 21], [189, cy - 21], [14, cy + 21], [189, cy + 21]].map(([bx, by], k) => (
                 <g key={k}>
-                  <circle cx={bx} cy={by} r="2.8" fill="#222328" stroke="#A6A6A4" strokeWidth="0.9" />
-                  <line x1={bx - 1.5} y1={by} x2={bx + 1.5} y2={by} stroke="#A6A6A4" strokeWidth="0.7" />
+                  <circle cx={bx} cy={by} r="2.8" fill="var(--mb)" stroke="var(--mh)" strokeWidth="0.9" />
+                  <line x1={bx - 1.5} y1={by} x2={bx + 1.5} y2={by} stroke="var(--mh)" strokeWidth="0.7" />
                 </g>
               ))}
               {/* socket stub + docking pin */}
-              <rect x="198" y={cy - 7} width="12" height="14" rx="2" fill="#222328" stroke="#A6A6A4" strokeWidth="1.1" />
-              <circle cx="204" cy={cy} r="2.6" fill={engaged ? "#E72241" : "#59595B"} style={{ transition: "fill .35s ease" }} />
+              <rect x="198" y={cy - 7} width="12" height="14" rx="2" fill="var(--mb)" stroke="var(--mh)" strokeWidth="1.1" />
+              <circle cx="204" cy={cy} r="2.6" fill={engaged ? "#E72241" : "var(--ml)"} style={{ transition: "fill .35s ease" }} />
               {/* lock indicator */}
               {engaged && (
                 <g>
@@ -334,7 +336,16 @@ export default function Expertise() {
     setLocked(true);
   };
 
-  const co = companies[active];
+  /* ONE system: the mechanical handoff begins FIRST — the dossier swaps
+     ~350ms into the clutch engagement, then the whole machine settles. */
+  const [shownIdx, setShownIdx] = useState(active);
+  useEffect(() => {
+    if (shownIdx === active) return;
+    const t = window.setTimeout(() => setShownIdx(active), reduced ? 0 : 350);
+    return () => clearTimeout(t);
+  }, [active, shownIdx, reduced]);
+
+  const co = companies[shownIdx];
 
   return (
     <section id="expertise" className="relative py-20 lg:py-28 scroll-mt-20">

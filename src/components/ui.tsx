@@ -71,7 +71,7 @@ export function SectionHead({
             </>
           )}
         </h2>
-        {desc && <p className="mt-4 max-w-[74ch] text-[13.5px] sm:text-[14.5px] leading-relaxed text-[var(--ink2)]">{desc}</p>}
+        {desc && <p className="mt-4 max-w-[74ch] text-[15px] sm:text-[16px] leading-relaxed text-[var(--ink2)]">{desc}</p>}
       </div>
     </Reveal>
   );
@@ -187,8 +187,11 @@ export function FullscreenViewer({
   const isVideo = item.kind === "video";
 
   return (
+    /* immersive cinematic overlay — the page behind is strongly blurred, the
+       veil stays dark enough to isolate the media. Only X closes. */
     <div className="fixed inset-0 z-[100] viewer-in" role="dialog" aria-modal="true"
-      style={{ background: "rgba(24,24,28,0.94)" }} onClick={onClose}>
+      style={{ background: "rgba(20,20,24,0.82)", backdropFilter: "blur(20px) saturate(0.75)", WebkitBackdropFilter: "blur(20px) saturate(0.75)" }}
+      onClick={onClose}>
       <div className="absolute inset-0 flex items-center justify-center p-6 sm:p-14" onClick={(e) => e.stopPropagation()}>
         <div className="relative max-h-full" style={{ aspectRatio: ratio, maxHeight: "86vh", maxWidth: "92vw" }}>
           {item.src ? (
@@ -213,25 +216,26 @@ export function FullscreenViewer({
         </div>
       </div>
 
-      {/* controls */}
-      <button onClick={onClose} aria-label="Close viewer"
-        className="absolute top-5 right-5 w-12 h-12 grid place-items-center rounded-lg border f-tech font-bold text-[15px] transition-all duration-300 hover:bg-[var(--crimson)] hover:border-[var(--crimson)]"
-        style={{ borderColor: "rgba(221,221,216,0.35)", color: "#DDDDD8" }}>
+      {/* controls — white boxes, black icons, visible in both themes.
+          ‹ › move the media WITHOUT closing; only ✕ closes. */}
+      <button onClick={(e) => { e.stopPropagation(); onClose(); }} aria-label="Close viewer"
+        className="absolute top-5 right-5 w-12 h-12 grid place-items-center rounded-lg f-tech font-bold text-[15px] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-12px_rgba(0,0,0,0.8)]"
+        style={{ background: "#DDDDD8", color: "#222328" }}>
         ✕
       </button>
       {n > 1 && (
         <>
-          <button onClick={() => setIndex((index - 1 + n) % n)} aria-label="Previous"
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 grid place-items-center rounded-lg border transition-all duration-300 hover:bg-[var(--crimson)] hover:border-[var(--crimson)]"
-            style={{ borderColor: "rgba(221,221,216,0.35)", color: "#DDDDD8" }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M15 5l-7 7 7 7" /></svg>
+          <button onClick={(e) => { e.stopPropagation(); setIndex((index - 1 + n) % n); }} aria-label="Previous media"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 grid place-items-center rounded-lg transition-all duration-300 hover:-translate-x-0.5 hover:shadow-[0_10px_24px_-12px_rgba(0,0,0,0.8)]"
+            style={{ background: "#DDDDD8", color: "#222328" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M15 5l-7 7 7 7" /></svg>
           </button>
-          <button onClick={() => setIndex((index + 1) % n)} aria-label="Next"
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 grid place-items-center rounded-lg border transition-all duration-300 hover:bg-[var(--crimson)] hover:border-[var(--crimson)]"
-            style={{ borderColor: "rgba(221,221,216,0.35)", color: "#DDDDD8" }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M9 5l7 7-7 7" /></svg>
+          <button onClick={(e) => { e.stopPropagation(); setIndex((index + 1) % n); }} aria-label="Next media"
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 grid place-items-center rounded-lg transition-all duration-300 hover:translate-x-0.5 hover:shadow-[0_10px_24px_-12px_rgba(0,0,0,0.8)]"
+            style={{ background: "#DDDDD8", color: "#222328" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M9 5l7 7-7 7" /></svg>
           </button>
-          <span className="absolute bottom-5 left-1/2 -translate-x-1/2 f-mono text-[10px] tracking-[0.3em]" style={{ color: "rgba(221,221,216,0.7)" }}>
+          <span className="absolute bottom-5 left-1/2 -translate-x-1/2 f-mono text-[10px] tracking-[0.3em]" style={{ color: "rgba(221,221,216,0.75)" }}>
             {String(index + 1).padStart(2, "0")} / {String(n).padStart(2, "0")}
           </span>
         </>
