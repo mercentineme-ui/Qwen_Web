@@ -281,6 +281,12 @@ body::before {
 @keyframes wedgeRock { 0%, 100% { transform: rotate(-1.4deg); } 50% { transform: rotate(1.4deg); } }
 .channel-flow { stroke-dasharray: 6 10; animation: channelFlow 0.9s linear infinite; }
 @keyframes channelFlow { to { stroke-dashoffset: -16; } }
+/* vertical transmission shaft — rotating surface expressed as flowing dashes */
+.shaft-flow { stroke-dasharray: 4 10; animation: shaftFlow 1.4s linear infinite; }
+@keyframes shaftFlow { to { stroke-dashoffset: -28; } }
+/* parked nameplates — barely perceptible suspension breathing */
+.plate-breathe { animation: plateBreathe 5s ease-in-out infinite alternate; }
+@keyframes plateBreathe { from { transform: translateY(0); } to { transform: translateY(-1.6px); } }
 .piston { animation: pistonPump 2.6s ease-in-out infinite; }
 @keyframes pistonPump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
 /* ---------- clockwork career engine ---------- */
