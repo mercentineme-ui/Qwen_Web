@@ -196,38 +196,61 @@ export default function Hero() {
             </p>
           </div>
 
-          {/* role strip — compact futuristic hardware modules */}
+          {/* role strip — steampunk × greek industrial modules: meander key strip,
+              stamped index plate, bolt slots, piston indicator, rack carriage */}
           <div className="mt-9 grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-3.5">
             {h.chips.map((c, i) => (
               <div key={c}
-                className="group mat-outer mat-texture dossier-clip-sm relative overflow-hidden px-4 pt-4 pb-4 transition-all duration-300 hover:-translate-y-1.5 hover:translate-x-0.5 hover:shadow-[0_18px_34px_-18px_rgba(0,0,0,0.6)] active:translate-y-0 active:scale-[0.985]"
-                style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--outer-ink) 20%, transparent)" }}>
+                className="group mat-outer mat-texture relative overflow-hidden px-4 pt-3.5 pb-4 transition-all duration-300 hover:-translate-y-1.5 hover:translate-x-0.5 hover:shadow-[0_18px_34px_-18px_rgba(34,35,40,0.65)] active:translate-y-0 active:scale-[0.985]"
+                style={{
+                  clipPath: "polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px)",
+                  boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--outer-ink) 20%, transparent)",
+                }}>
+                {/* greek meander key strip — engraved teeth along the top */}
+                <div className="flex items-center gap-[3px] mb-3" aria-hidden>
+                  {Array.from({ length: 7 }).map((_, k) => (
+                    <span key={k} className={`w-[7px] h-[7px] ${k % 2 ? "border-t-[1.5px] border-r-[1.5px]" : "border-b-[1.5px] border-l-[1.5px]"}`}
+                      style={{ borderColor: k === 0 ? "var(--crimson)" : "color-mix(in srgb, var(--outer-ink) 42%, transparent)" }} />
+                  ))}
+                  <span className="flex-1 h-px" style={{ background: "color-mix(in srgb, var(--outer-ink) 22%, transparent)" }} />
+                </div>
+
                 <div className="flex items-center justify-between">
-                  <span className="grid place-items-center w-7 h-7 f-mono font-semibold text-[11px]"
+                  {/* stamped index plate */}
+                  <span className="relative grid place-items-center w-8 h-8 f-mono font-semibold text-[11px]"
                     style={{ background: "var(--crimson)", color: "#DDDDD8" }}>
                     {String(i + 1).padStart(2, "0")}
+                    <span className="absolute inset-[3px] pointer-events-none" style={{ border: "1px solid rgba(221,221,216,0.45)" }} />
                   </span>
-                  <span className="flex items-center gap-1.5">
-                    {[0, 1, 2].map((k) => (
-                      <span key={k} className="w-1 h-3 rounded-[1px] transition-all duration-300"
-                        style={{
-                          background: k === 0 ? "var(--crimson)" : "color-mix(in srgb, var(--outer-ink) 30%, transparent)",
-                          opacity: k <= i % 3 ? 1 : 0.35,
-                          transform: `scaleY(${k === 2 ? 0.6 : k === 1 ? 0.8 : 1})`,
-                        }} />
+                  {/* bolt slots + piston micro-indicator */}
+                  <span className="flex items-center gap-2">
+                    {[-20, 45].map((rot, k) => (
+                      <span key={k} className="relative w-2 h-2 rounded-full" style={{ background: "color-mix(in srgb, var(--outer-ink) 24%, transparent)" }}>
+                        <span className="absolute left-1/2 top-1/2 w-[7px] h-[1.5px]"
+                          style={{ background: "var(--outer-bg)", transform: `translate(-50%,-50%) rotate(${rot}deg)` }} />
+                      </span>
                     ))}
+                    <span className="relative w-[7px] h-5 rounded-[2px] overflow-hidden" style={{ background: "color-mix(in srgb, var(--outer-ink) 18%, transparent)" }}>
+                      <span className="absolute left-1/2 -translate-x-1/2 top-0.5 w-[3px] h-2 rounded-[1px] bg-[var(--crimson)] transition-transform duration-300 group-hover:translate-y-[10px]" />
+                    </span>
                   </span>
                 </div>
-                <span className="mt-3.5 block f-striker text-[15px] sm:text-[16.5px] tracking-[0.08em] leading-[1.15]" style={{ color: "var(--outer-ink)" }}>
+
+                <span className="mt-3 block f-striker text-[15px] sm:text-[16.5px] tracking-[0.08em] leading-[1.15]" style={{ color: "var(--outer-ink)" }}>
                   {c}
                 </span>
+
                 <div className="mt-3 flex items-center gap-2 f-mono text-[8px] tracking-[0.22em]" style={{ color: "var(--m-sub)" }}>
                   <span className="w-1.5 h-1.5 rounded-full transition-colors duration-300 group-hover:bg-[var(--crimson)]" style={{ background: "color-mix(in srgb, var(--outer-ink) 35%, transparent)" }} />
                   MODULE/{String(i + 1).padStart(2, "0")}
-                  <span className="ml-auto w-6 h-[3px] overflow-hidden rounded-[1px]" style={{ background: "color-mix(in srgb, var(--outer-ink) 16%, transparent)" }}>
-                    <span className="block h-full w-full origin-left scale-x-0 bg-[var(--crimson)] group-hover:scale-x-100 transition-transform duration-400" />
+                  {/* rack rail + travelling carriage */}
+                  <span className="ml-auto w-9 h-[5px] relative overflow-hidden rounded-[1px]"
+                    style={{ background: "repeating-linear-gradient(90deg, color-mix(in srgb, var(--outer-ink) 26%, transparent) 0 2px, transparent 2px 5px)" }}>
+                    <span className="absolute top-0 bottom-0 left-0 w-2.5 bg-[var(--crimson)] transition-transform duration-300 group-hover:translate-x-[14px]" />
                   </span>
                 </div>
+
+                {/* corner cut response */}
                 <span className="absolute top-0 right-0 w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-300"
                   style={{ background: "linear-gradient(225deg, var(--crimson) 0 50%, transparent 50%)" }} />
               </div>

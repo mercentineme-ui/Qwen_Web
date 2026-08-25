@@ -126,47 +126,73 @@ export function HowIBuild() {
                       </span>
                     </div>
                   ) : (
-                    /* ---- PHASE 2 — the flight: tiny plane grows across one continuous crimson path ---- */
-                    <div ref={lineRef} className="relative flex-1 h-24 w-full min-w-0">
-                      <span className="absolute left-0 right-0 top-1/2 h-[2px] rounded" style={{ background: "var(--m-line)" }} />
-                      <span className={`absolute left-0 top-1/2 h-[2px] rounded bg-[var(--crimson)] ${reduced ? "w-full" : ""}`}
-                        style={reduced ? undefined : { width: planeDone ? "100%" : "0%", transition: "width 2.6s cubic-bezier(.5,.05,.45,.95)" }} />
+                    /* ---- PHASE 2 — flight along the mechanical track: mailbox → tiny growing
+                       plane → checkpoint modules → KNOW MORE at the far-right destination ---- */
+                    <div ref={lineRef} className="relative flex-1 h-32 w-full min-w-0">
+                      {/* mechanical rail — track + guide + hatched sleepers (no red timeline) */}
+                      <span className="absolute left-0 right-0 top-1/2 h-[3px]" style={{ background: "#59595B" }} />
+                      <span className="absolute left-0 right-0 top-1/2 h-px opacity-60" style={{ background: "#A6A6A4", transform: "translateY(-4px)" }} />
+                      <span className="absolute left-0 right-0 top-1/2 h-[3px] opacity-40"
+                        style={{ background: "repeating-linear-gradient(90deg, #A6A6A4 0 2px, transparent 2px 14px)", transform: "translateY(5px)" }} />
 
-                      {/* nodes reveal sequentially behind the plane */}
-                      {b.nodes.map((nd, i) => (
-                        <div key={nd.num}
-                          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center gap-2 node-pop"
-                          style={{ left: `${14 + i * 21}%`, animationDelay: reduced ? "0s" : `${0.3 + i * 0.55}s` }}>
-                          <span className="w-11 h-11 grid place-items-center rounded-full border-2 f-tech font-bold text-[13px]"
+                      {/* checkpoints — compact mechanical modules on docking struts, varied height */}
+                      {b.nodes.map((nd, i) => {
+                        const on = reduced || planeDone || litN > i;
+                        const topPct = [24, 76, 26, 74][i % 4];
+                        const above = topPct < 50;
+                        const moduleBox = (
+                          <div className="relative px-3.5 py-2 text-center mat-texture dossier-clip-sm"
                             style={{
-                              borderColor: planeDone || reduced ? "var(--crimson)" : "var(--m-line)",
-                              background: planeDone || reduced ? "color-mix(in srgb, var(--crimson) 18%, transparent)" : "var(--outer-bg)",
-                              color: planeDone || reduced ? "#DDDDD8" : "var(--m-sub)",
-                              transition: "all .4s ease",
+                              background: on ? "#3C3D42" : "var(--outer-bg)",
+                              boxShadow: `inset 0 0 0 1.5px ${on ? "#E72241" : "rgba(221,221,216,0.22)"}`,
+                              transition: "box-shadow .4s ease, background .4s ease",
                             }}>
-                            {nd.num}
-                          </span>
-                          <span className="f-tech font-bold text-[11px] sm:text-[12.5px] tracking-[0.18em] whitespace-nowrap" style={{ color: "var(--outer-ink)" }}>
-                            {nd.title}
-                          </span>
-                        </div>
-                      ))}
+                            <span className={`absolute top-1 right-1.5 w-1.5 h-1.5 rounded-full ${on ? "bg-[#E72241] live-blink" : ""}`}
+                              style={on ? undefined : { background: "rgba(221,221,216,0.25)" }} />
+                            <span className="f-mono text-[9px] tracking-[0.2em] block" style={{ color: on ? "#E72241" : "var(--m-sub)" }}>{nd.num}</span>
+                            <span className="f-tech font-bold text-[11px] sm:text-[12.5px] tracking-[0.16em] block mt-0.5 whitespace-nowrap" style={{ color: "var(--outer-ink)" }}>
+                              {nd.title}
+                            </span>
+                          </div>
+                        );
+                        const strut = (
+                          <span className="w-[3px] rounded" style={{ height: 10, background: on ? "#E72241" : "#59595B", transition: "background .4s ease" }} />
+                        );
+                        const foot = (
+                          <span className="w-4 h-[3px] rounded" style={{ background: on ? "#E72241" : "#59595B", transition: "background .4s ease" }} />
+                        );
+                        return (
+                          <div key={nd.num}
+                            className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center node-pop"
+                            style={{ left: `${12 + i * 19}%`, top: `${topPct}%`, animationDelay: reduced ? "0s" : `${0.35 + i * 0.6}s` }}>
+                            {above ? (<>{moduleBox}{strut}{foot}</>) : (<>{foot}{strut}{moduleBox}</>)}
+                          </div>
+                        );
+                      })}
 
-                      {/* red paper plane — starts tiny at the mailbox, GROWS to the destination */}
+                      {/* red paper plane — starts tiny at the mailbox, GROWS along the track */}
                       {!planeDone && !reduced && (
                         <span className="absolute top-1/2 left-0 plane-cross" style={{ "--flight": `${flight}px` } as React.CSSProperties}>
                           <PaperPlane size={34} className="text-[#E72241]" />
                         </span>
                       )}
 
-                      {/* KNOW MORE — the plane becomes the final directional element */}
-                      {planeDone && (
-                        <button onClick={knowMore}
-                          className="btn btn-crimson absolute right-0 top-1/2 -translate-y-1/2 node-pop !py-3"
-                          style={{ animationDelay: reduced ? "0s" : "0.15s" }}>
-                          <PaperPlane size={16} /> {b.knowMore}
-                        </button>
-                      )}
+                      {/* KNOW MORE — separate final destination at the far right */}
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col items-center node-pop"
+                        style={{ animationDelay: reduced ? "0s" : "0.2s" }}>
+                        {planeDone ? (
+                          <button onClick={knowMore} className="btn btn-crimson !py-3">
+                            <PaperPlane size={16} /> {b.knowMore}
+                          </button>
+                        ) : (
+                          <span className="px-3.5 py-2.5 f-tech font-bold text-[11px] tracking-[0.2em] whitespace-nowrap dossier-clip-sm"
+                            style={{ background: "var(--outer-bg)", color: "var(--m-sub)", boxShadow: "inset 0 0 0 1.5px rgba(221,221,216,0.16)" }}>
+                            {b.knowMore}
+                          </span>
+                        )}
+                        <span className="w-[3px] h-3 rounded" style={{ background: "#59595B" }} />
+                        <span className="w-4 h-[3px] rounded" style={{ background: "#59595B" }} />
+                      </div>
                     </div>
                   )}
                 </div>
