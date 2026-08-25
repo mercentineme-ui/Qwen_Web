@@ -14,8 +14,9 @@
   --ink2: #59595B;      /* DARK GRAPHITE — secondary text */
   --line: rgba(34, 35, 40, 0.16);
   --line-soft: rgba(34, 35, 40, 0.08);
-  --crimson: #E72241;   /* PRIMARY CRIMSON — every red accent */
-  --crimson-strong: #E72241;
+  --crimson: #9E2237;   /* ROUGH DARK CRIMSON on light — same pigment as KRISHNAN */
+  --crimson-strong: #9E2237;
+  --crimson-deep: #59232F; /* deep crimson shadow */
 
   /* matte panel system */
   --outer-bg: #222328;
@@ -24,7 +25,7 @@
   --m-sub: rgba(221, 221, 216, 0.62);
 
   --hero-ink: #222328;
-  --hero-crimson: #B01E36; /* rough matte pigment crimson on light */
+  --hero-crimson: #9E2237; /* rough matte pigment crimson on light — same as all light-theme reds */
   --hdr-edge: rgba(34, 35, 40, 0.3);
   --clock-col: #222328;
   --surge: #58C8EE;
@@ -48,7 +49,9 @@
   --ink2: #A6A6A4;      /* LIGHT GREY secondary */
   --line: rgba(221, 221, 216, 0.15);
   --line-soft: rgba(221, 221, 216, 0.07);
-  --crimson-strong: #9E2237;
+  --crimson: #E72241;   /* stronger active crimson on dark graphite */
+  --crimson-strong: #E72241;
+  --crimson-deep: #59232F;
 
   /* universal inversion — LIGHT BLACK → DARK MATTE WHITE */
   --outer-bg: #DDDDD8;
@@ -389,18 +392,46 @@ body::before {
 /* ---------- pipeline ---------- */
 /* the paper plane starts tiny at the mailbox, accelerates, banks mid-flight,
    decelerates into a controlled mechanical stop at the KNOW MORE dock */
-.plane-cross { animation: planeCross 2.75s cubic-bezier(0.42, 0.02, 0.32, 1) both; }
+.plane-cross { animation: planeCross 2.8s linear both; }
 @keyframes planeCross {
-  0% { transform: translate(0, -50%) scale(0.26) rotate(7deg); opacity: 0; }
-  6% { opacity: 1; }
-  26% { transform: translate(calc(var(--flight, 600px) * 0.24), -52%) scale(0.58) rotate(-4deg); }
-  50% { transform: translate(calc(var(--flight, 600px) * 0.5), -48%) scale(0.86) rotate(3.5deg); }
-  74% { transform: translate(calc(var(--flight, 600px) * 0.78), -51%) scale(1.12) rotate(-2.5deg); }
-  92% { transform: translate(calc(var(--flight, 600px) * 0.985), -50%) scale(1.3) rotate(0.5deg); }
-  100% { transform: translate(var(--flight, 600px), -50%) scale(1.32) rotate(0deg); opacity: 1; }
+  0% { transform: translate(0, -50%) scale(0.26) rotate(7deg); opacity: 0; animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19); }
+  6% { opacity: 1; transform: translate(calc(var(--flight, 600px) * 0.012), -50%) scale(0.3) rotate(6deg); animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19); }
+  44% { transform: translate(calc(var(--flight, 600px) * 0.38), -50%) scale(0.8) rotate(-3deg); animation-timing-function: cubic-bezier(0.33, 0.6, 0.5, 1); }
+  80% { transform: translate(calc(var(--flight, 600px) * 0.88), -50%) scale(1.24) rotate(2.5deg); animation-timing-function: cubic-bezier(0.2, 0.7, 0.35, 1); }
+  93% { transform: translate(calc(var(--flight, 600px) * 1.035), -50%) scale(1.34) rotate(-1.5deg); animation-timing-function: cubic-bezier(0.34, 1.25, 0.64, 1); }
+  100% { transform: translate(var(--flight, 600px), -50%) scale(1.3) rotate(0deg); opacity: 1; }
+}
+
+/* ---------- phase 03 — comic print mis-register entry ----------
+   panel displacement → misregistered layers → frame fragments shift →
+   rough crimson offset → square panel snaps → bubble settles */
+.comic-in { animation: comicIn 0.72s cubic-bezier(0.3, 0.7, 0.3, 1) both; }
+@keyframes comicIn {
+  0% { opacity: 0; transform: translateX(-22px) skewX(-2.4deg); clip-path: inset(0 12% 0 0); }
+  14% { opacity: 1; transform: translateX(12px) skewX(1.6deg); clip-path: inset(0 4% 0 0); animation-timing-function: steps(2, jump-none); }
+  30% { transform: translateX(-9px) skewX(-1deg) rotate(-0.5deg); clip-path: inset(0 0 0 0); }
+  46% { transform: translateX(6px) rotate(0.4deg); animation-timing-function: steps(2, jump-none); }
+  62% { transform: translateX(-3px) skewX(0.4deg); }
+  80% { transform: translateX(1.5px); }
+  100% { opacity: 1; transform: none; clip-path: inset(0 0 0 0); }
+}
+.comic-flash { animation: comicFlash 0.5s steps(3, jump-none) 0.05s both; }
+@keyframes comicFlash {
+  0% { opacity: 0.5; transform: translateX(-6px); }
+  34% { opacity: 0.3; transform: translateX(4px); }
+  67% { opacity: 0.14; transform: translateX(-2px); }
+  100% { opacity: 0; transform: none; }
+}
+.bubble-settle { animation: bubbleSettle 0.5s cubic-bezier(0.3, 1.35, 0.5, 1) 0.34s both; }
+@keyframes bubbleSettle {
+  0% { opacity: 0; transform: rotate(-4deg) translateY(9px) scale(0.92); }
+  100% { opacity: 1; transform: rotate(-1.2deg) translateY(0) scale(1); }
 }
 .node-pop { animation: nodePop 0.45s cubic-bezier(0.3, 0.9, 0.3, 1.2) both; }
 @keyframes nodePop { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+/* checkpoint pop with a caller-defined resting transform */
+.pop-in { transform: var(--pop-t, translate(-50%, -50%)); animation: popIn 0.45s cubic-bezier(0.3, 0.9, 0.3, 1.2) both; }
+@keyframes popIn { 0% { opacity: 0; transform: var(--pop-t, translate(-50%, -50%)) scale(0.4); } 100% { opacity: 1; transform: var(--pop-t, translate(-50%, -50%)) scale(1); } }
 .shake-hard { animation: shakeHard 0.5s steps(2, jump-none) both; }
 @keyframes shakeHard {
   0%, 100% { transform: none; filter: none; }

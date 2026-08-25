@@ -74,9 +74,10 @@ export function HowIBuild() {
       if (w) setFlight(w - 150); /* the plane lands at the KNOW MORE dock, clear of DEVELOPMENT */
     });
     if (reduced) { setPlaneDone(true); setLitN(4); return; }
-    [550, 1080, 1480, 1920].forEach((t, k) =>
+    /* timed to the straight-flight curve — the rail lights as the plane passes */
+    [450, 1000, 1550, 1900].forEach((t, k) =>
       timers.current.push(window.setTimeout(() => setLitN(k + 1), t)));
-    timers.current.push(window.setTimeout(() => { setPlaneDone(true); setLitN(4); }, 2680));
+    timers.current.push(window.setTimeout(() => { setPlaneDone(true); setLitN(4); }, 2850));
   };
   const knowMore = () => {
     if (reduced) { setPhase(3); return; }
@@ -131,41 +132,44 @@ export function HowIBuild() {
                        Segmented rail with joints + directional marks, no red timeline. ---- */
                     <>
                     <div ref={lineRef} className="relative flex-1 h-44 w-full min-w-0">
-                      {/* segmented mechanical rail — dashed travel path, joints at every checkpoint,
-                         the crimson overlay extends segment-by-segment as the plane passes */}
-                      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 176" preserveAspectRatio="none" aria-hidden>
-                        <polyline points="0,88 140,62 330,112 520,66 680,108 1000,88" fill="none"
-                          stroke="#59595B" strokeWidth="3" strokeDasharray="16 10" strokeLinecap="round" />
-                        <polyline points="0,88 140,62 330,112 520,66 680,108 1000,88" fill="none"
-                          stroke="#A6A6A4" strokeWidth="1" strokeDasharray="3 9" opacity="0.5" transform="translate(0 -6)" />
-                        {/* restrained crimson active segments — only what the plane has covered */}
-                        <polyline points="0,88 140,62 330,112 520,66 680,108 1000,88" fill="none"
-                          stroke="#E72241" strokeWidth="3" strokeLinecap="round" pathLength={100}
-                          strokeDasharray={`${((planeDone || reduced ? 5 : litN) / 5) * 100} 100`}
-                          style={{ transition: reduced ? "none" : "stroke-dasharray .7s cubic-bezier(.4,.4,.4,1)" }} />
-                        {/* mechanical joints at each checkpoint + directional chevrons */}
-                        {[[140, 62], [330, 112], [520, 66], [680, 108]].map(([jx, jy], k) => (
-                          <g key={k}>
-                            <rect x={jx - 5} y={jy - 5} width="10" height="10" transform={`rotate(45 ${jx} ${jy})`}
-                              fill={(planeDone || reduced ? 5 : litN) > k ? "#E72241" : "#3C3D42"} stroke="#A6A6A4" strokeWidth="1"
-                              style={{ transition: "fill .5s ease" }} />
-                            <circle cx={jx} cy={jy} r="1.8" fill="#DDDDD8" opacity="0.8" />
-                          </g>
+                      {/* ONE straight horizontal mechanical rail — begins at the plane origin,
+                         travels through all four stages and TERMINATES at the KNOW MORE dock.
+                         No line continues beyond it. */}
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 hidden sm:block" style={{ right: 150 }}>
+                        {/* sleeper ticks under the rail */}
+                        <span className="absolute inset-x-0 top-[8px] h-[3px] opacity-30"
+                          style={{ background: "repeating-linear-gradient(90deg, #A6A6A4 0 2px, transparent 2px 16px)" }} />
+                        {/* the rail itself */}
+                        <span className="absolute inset-x-0 top-0 h-[4px] rounded-[2px]" style={{ background: "#59595B" }} />
+                        {/* dashed guide hairline above */}
+                        <span className="absolute inset-x-0 -top-[7px] h-px opacity-50"
+                          style={{ background: "repeating-linear-gradient(90deg, #A6A6A4 0 10px, transparent 10px 24px)" }} />
+                        {/* crimson progress — extends exactly as far as the plane has flown */}
+                        <span className="absolute left-0 top-0 h-[4px] rounded-[2px]"
+                          style={{
+                            width: `${((planeDone || reduced ? 4 : litN) / 4) * 100}%`,
+                            background: "#E72241",
+                            transition: reduced ? "none" : "width .7s cubic-bezier(.4,.4,.4,1)",
+                          }} />
+                        {/* directional chevrons along the run */}
+                        {[19.5, 41, 58.5].map((cx, k) => (
+                          <svg key={k} className="absolute -top-[5px]" style={{ left: `${cx}%` }} width="10" height="14" viewBox="0 0 10 14" fill="none" aria-hidden>
+                            <path d="M2 2 L8 7 L2 12"
+                              stroke={(planeDone || reduced ? 4 : litN) * 25 > cx ? "#E72241" : "#A6A6A4"}
+                              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: "stroke .5s ease" }} />
+                          </svg>
                         ))}
-                        {[[70, 76], [425, 90], [600, 88], [840, 98]].map(([cxp, cyp], k) => (
-                          <path key={k} d={`M${cxp} ${cyp - 6} L${cxp + 9} ${cyp} L${cxp} ${cyp + 6}`} fill="none"
-                            stroke={(planeDone || reduced ? 5 : litN) * 20 > cxp / 10 ? "#E72241" : "#A6A6A4"} strokeWidth="2"
-                            strokeLinecap="round" strokeLinejoin="round" opacity="0.8" style={{ transition: "stroke .5s ease" }} />
-                        ))}
-                      </svg>
+                        {/* terminal stopper — the rail ENDS here, at the dock */}
+                        <span className={`absolute -right-[3px] top-1/2 -translate-y-1/2 w-[7px] h-7 rounded-[2px] ${planeDone && !reduced ? "live-blink" : ""}`}
+                          style={{ background: planeDone ? "#E72241" : "#59595B", transition: "background .5s ease" }} />
+                      </div>
 
-                      {/* checkpoints — compact mechanical modules hanging off the rail joints */}
+                      {/* checkpoints — compact mechanical modules hanging off the straight rail */}
                       {b.nodes.map((nd, i) => {
                         const stage = planeDone || reduced ? 5 : litN; /* stages passed so far */
                         const isCurrent = i === stage - 1;             /* ONLY the current checkpoint is active */
                         const isPassed = i < stage - 1;
-                        const topPct = [35, 64, 37, 61][i % 4];
-                        const above = topPct < 50;
+                        const above = i % 2 === 0;
                         const moduleBox = (
                           <div className="relative px-3.5 py-2 text-center mat-texture dossier-clip-sm"
                             style={{
@@ -186,13 +190,24 @@ export function HowIBuild() {
                         const strut = (
                           <span className="w-[3px] rounded" style={{ height: 10, background: isCurrent ? "#E72241" : isPassed ? "rgba(231,34,65,0.45)" : "#59595B", transition: "background .4s ease" }} />
                         );
+                        /* diamond foot doubles as the rail joint */
                         const foot = (
-                          <span className="w-4 h-[3px] rounded" style={{ background: isCurrent ? "#E72241" : isPassed ? "rgba(231,34,65,0.45)" : "#59595B", transition: "background .4s ease" }} />
+                          <span className="w-[11px] h-[11px] rotate-45"
+                            style={{
+                              background: isCurrent ? "#E72241" : isPassed ? "rgba(231,34,65,0.6)" : "#3C3D42",
+                              border: "1px solid #A6A6A4",
+                              transition: "background .5s ease",
+                            }} />
                         );
                         return (
                           <div key={nd.num}
-                            className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center node-pop"
-                            style={{ left: `${[12, 31, 51, 66][i % 4]}%`, top: `${topPct}%`, animationDelay: reduced ? "0s" : `${0.3 + i * 0.55}s` }}>
+                            className="absolute flex flex-col items-center pop-in"
+                            style={{
+                              left: `${[12, 31, 51, 66][i % 4]}%`,
+                              top: "50%",
+                              "--pop-t": above ? "translate(-50%, calc(-100% - 2px))" : "translate(-50%, 2px)",
+                              animationDelay: reduced ? "0s" : `${0.3 + i * 0.55}s`,
+                            } as React.CSSProperties}>
                             {above ? (<>{moduleBox}{strut}{foot}</>) : (<>{foot}{strut}{moduleBox}</>)}
                           </div>
                         );
@@ -247,50 +262,80 @@ export function HowIBuild() {
                 </p>
               </div>
             ) : (
-              /* ================= PHASE 03 — COMIC PRODUCTION ARCHIVE (same panel) ================= */
-              <div className="mt-6 reveal-in relative rounded-xl border-4 p-6 sm:p-10 overflow-hidden"
+              /* ================= PHASE 03 — COMIC PRODUCTION PAGE (same panel) =================
+                 Enters with a print mis-register: displacement → stepped jitter →
+                 rough crimson offset → square panel snaps → bubble settles. */
+              <div className="mt-6 comic-in relative rounded-xl border-4 p-6 sm:p-8 overflow-hidden"
                 style={{
                   borderColor: "#222328",
                   background: "#DDDDD8",
-                  backgroundImage: "radial-gradient(rgba(34,35,40,0.16) 1px, transparent 1.4px)",
-                  backgroundSize: "12px 12px",
-                  boxShadow: "10px 10px 0 #222328",
+                  backgroundImage: "radial-gradient(rgba(34,35,40,0.14) 1px, transparent 1.4px)",
+                  backgroundSize: "11px 11px",
+                  boxShadow: "10px 10px 0 #9E2237, 18px 18px 0 #59232F",
                   color: "#222328",
                 }}>
+                {/* halftone flash — misregistered print layers settling */}
+                {!reduced && (
+                  <span className="comic-flash absolute inset-0 pointer-events-none z-20"
+                    style={{ backgroundImage: "radial-gradient(rgba(158,34,55,0.5) 1.2px, transparent 1.6px)", backgroundSize: "7px 7px" }} />
+                )}
                 <span className="absolute top-3 left-4 f-mono text-[9px] tracking-[0.3em] text-[#9E2237]">PHASE 03 — BEYOND</span>
-                <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-10 lg:gap-14 items-start mt-4">
-                  {/* LEFT — speech bubble + VERTICAL empty upload frame */}
-                  <div className="relative min-w-0">
-                    <div className="relative z-10 mb-[-14px] ml-2 sm:ml-6 w-[88%] rounded-[18px] border-[3px] border-[#222328] bg-[#DDDDD8] px-5 py-4 -rotate-1 shadow-[5px_5px_0_#E72241,9px_9px_0_#222328]">
+                <span className="absolute top-3 right-4 f-mono text-[9px] tracking-[0.3em]" style={{ color: "rgba(34,35,40,0.5)" }}>PANEL 615-B</span>
+
+                <div className="grid lg:grid-cols-[minmax(0,430px)_minmax(0,1fr)] gap-10 lg:gap-14 items-start mt-5">
+                  {/* LEFT — speech bubble + TRUE SQUARE comic media frame */}
+                  <div className="relative min-w-0 mx-auto lg:mx-0 w-full max-w-[430px]">
+                    {/* comic speech bubble — irregular border, wobble, printed offset, tail */}
+                    <div className="bubble-settle relative z-10 mb-[-16px] ml-1 sm:ml-4 w-[92%] px-5 py-4 bg-[#DDDDD8]"
+                      style={{
+                        border: "3px solid #222328",
+                        borderRadius: "255px 18px 225px 18px / 18px 225px 18px 255px",
+                        boxShadow: "5px 5px 0 #9E2237, 9px 9px 0 rgba(89,35,47,0.55)",
+                      }}>
                       <p className="f-tech font-bold text-[14px] sm:text-[15.5px] leading-snug">{b.bubble}</p>
-                      <svg className="absolute -bottom-[17px] left-10" width="34" height="20" viewBox="0 0 34 20">
+                      <svg className="absolute -bottom-[18px] left-12" width="36" height="21" viewBox="0 0 36 21" aria-hidden>
+                        <path d="M1 0 H35 L13 20 Z" fill="#9E2237" transform="translate(3 3)" opacity="0.6" />
                         <path d="M0 0 H34 L12 20 Z" fill="#DDDDD8" stroke="#222328" strokeWidth="3" strokeLinejoin="round" />
-                        <path d="M3 0 H31 L12 16 Z" fill="#DDDDD8" />
+                        <path d="M4 0 H30 L12 15 Z" fill="#DDDDD8" />
                       </svg>
                     </div>
-                    <div className="relative border-4 border-[#222328] bg-[#C3C1BC] shadow-[8px_8px_0_#E72241,14px_14px_0_#59232F]">
-                      <MediaSlot item={b.reveal.image} ratio="4/6.8" className="!rounded-none !border-0" showLabel={false} />
+
+                    {/* SQUARE 1:1 frame — warm paper, dark structure, rough crimson offset,
+                        registration marks + halftone, imperfect print construction */}
+                    <div className="relative border-4 border-[#222328] bg-[#DDDDD8] shadow-[8px_8px_0_#9E2237,15px_15px_0_#59232F]"
+                      style={{ transform: "rotate(-0.6deg)" }}>
+                      <MediaSlot item={b.reveal.image} ratio="1/1" className="!rounded-none !border-0 !bg-[#C3C1BC]" showLabel={false} />
+                      {/* halftone wash over the paper */}
+                      <span className="absolute inset-0 pointer-events-none opacity-40"
+                        style={{ backgroundImage: "radial-gradient(rgba(34,35,40,0.22) 1px, transparent 1.3px)", backgroundSize: "6px 6px" }} />
+                      {/* misregistered duplicate edge */}
+                      <span className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 3px 3px 0 rgba(158,34,55,0.28)" }} />
+                      {/* registration crop marks */}
+                      <span className="absolute -top-2 -left-2 w-4 h-4 border-t-2 border-l-2 border-[#222328]" />
+                      <span className="absolute -top-2 -right-2 w-4 h-4 border-t-2 border-r-2 border-[#222328]" />
+                      <span className="absolute -bottom-2 -left-2 w-4 h-4 border-b-2 border-l-2 border-[#222328]" />
+                      <span className="absolute -bottom-2 -right-2 w-4 h-4 border-b-2 border-r-2 border-[#222328]" />
                       <span className="absolute top-2 left-2 f-mono text-[8px] tracking-[0.26em] px-2 py-1 bg-[#222328] text-[#DDDDD8]">UPLOAD SPACE</span>
-                      <span className="absolute bottom-2 right-2 f-mono text-[8px] tracking-[0.26em] px-2 py-1 bg-[#E72241] text-[#DDDDD8]">VERTICAL FRAME</span>
+                      <span className="absolute bottom-2 right-2 f-mono text-[8px] tracking-[0.26em] px-2 py-1 bg-[#9E2237] text-[#DDDDD8]">SQUARE · 1:1</span>
                     </div>
                   </div>
 
                   {/* RIGHT — continuation copy + narrator card */}
                   <div className="min-w-0">
                     <span className="block f-mono text-[9px] tracking-[0.3em]" style={{ color: "rgba(34,35,40,0.6)" }}>CONTINUED FROM PAGE 615</span>
-                    <span className="block f-mono text-[10px] tracking-[0.32em] text-[#E72241] mt-1.5">BEYOND THE FOUR NODES</span>
+                    <span className="block f-mono text-[10px] tracking-[0.32em] text-[#9E2237] mt-1.5">BEYOND THE FOUR NODES</span>
                     <h3 className="f-display leading-[0.98] mt-4 text-[clamp(2rem,4.4vw,3.4rem)]">
                       {b.reveal.heading}{" "}
-                      <span className="text-[#E72241]">{b.reveal.headingAccent}</span>
+                      <span className="text-[#9E2237]" style={{ textShadow: "2px 2px 0 rgba(89,35,47,0.4)" }}>{b.reveal.headingAccent}</span>
                     </h3>
                     {/* narrator card */}
-                    <div className="mt-6 relative border-2 border-[#222328] bg-[#CEB1AB] p-5 shadow-[6px_6px_0_#E72241]">
-                      <span className="absolute -top-2.5 left-4 f-mono text-[8px] tracking-[0.3em] px-2 py-0.5 bg-[#E72241] text-[#DDDDD8]">NARRATOR</span>
-                      <p className="text-[14.5px] sm:text-[16px] leading-relaxed font-medium text-[#222328]">{b.reveal.narrator}</p>
+                    <div className="mt-6 relative border-2 border-[#222328] bg-[#CEB1AB] p-5 shadow-[6px_6px_0_#9E2237]">
+                      <span className="absolute -top-2.5 left-4 f-mono text-[8px] tracking-[0.3em] px-2 py-0.5 bg-[#9E2237] text-[#DDDDD8]">NARRATOR</span>
+                      <p className="text-[15px] sm:text-[16px] leading-relaxed font-medium text-[#222328]">{b.reveal.narrator}</p>
                     </div>
                     <div className="mt-8 flex flex-wrap items-center gap-5">
                       <button onClick={replay}
-                        className="inline-flex items-center gap-3 f-tech font-bold text-[11px] tracking-[0.24em] px-4 py-3 rounded-lg border-2 border-[#222328] shadow-[4px_4px_0_#E72241] hover:bg-[#222328] hover:text-[#DDDDD8] hover:shadow-[2px_2px_0_#E72241] transition-all duration-300">
+                        className="inline-flex items-center gap-3 f-tech font-bold text-[11px] tracking-[0.24em] px-4 py-3 rounded-lg border-2 border-[#222328] shadow-[4px_4px_0_#9E2237] hover:bg-[#222328] hover:text-[#DDDDD8] hover:shadow-[2px_2px_0_#9E2237] transition-all duration-300">
                         ↻ RUN IT AGAIN
                       </button>
                       <span className="f-mono text-[8.5px] tracking-[0.3em]" style={{ color: "rgba(34,35,40,0.55)" }}>

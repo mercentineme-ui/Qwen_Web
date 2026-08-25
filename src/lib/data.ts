@@ -16,6 +16,13 @@ export interface MediaItem {
 
 export type Daypart = "MORNING" | "AFTERNOON" | "EVENING";
 
+export interface EducationEntry {
+  num: string;
+  title: string;
+  school: string;
+  year: string;
+}
+
 export interface HeroData {
   greetings: Record<Daypart, string>;
   nameA: string;
@@ -23,6 +30,8 @@ export interface HeroData {
   aboutLabel: string;
   chips: string[];
   description: string;
+  educationLabel: string;
+  education: EducationEntry[];
   ctaPrimary: string;
   ctaSecondary: string;
   images: MediaItem[];
@@ -149,6 +158,11 @@ export const defaultData: PortfolioData = {
     chips: ["CREATIVE DIRECTOR", "GEN AI ARTIST", "VISUAL DESIGNER", "AI PIPELINE ARCHITECT"],
     description:
       "I walk into unfamiliar projects with minimal starting information — figure out the problem, build the visual language, and carry the work from first idea to final delivery.",
+    educationLabel: "EDUCATION",
+    education: [
+      { num: "01", title: "B.Tech in CSE / Information Technology", school: "Vignan’s Institute of Technology & Science", year: "2024" },
+      { num: "02", title: "Diploma in Mechanical", school: "Anurag College of Engineering", year: "2020" },
+    ],
     ctaPrimary: "CREATIVES →",
     ctaSecondary: "CORE ↓",
     images: [

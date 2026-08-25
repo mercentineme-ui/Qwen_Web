@@ -227,55 +227,67 @@ export default function AILab() {
             </div>
           </div>
 
-          {/* GHOST.EXE — grouped project dossier */}
+          {/* GHOST.EXE — compact editorial project dossier (tools listed ONCE, right column) */}
           <Reveal className="mt-8">
-            <div className="mat-inner mat-texture chamfer p-6 sm:p-8 relative overflow-hidden">
+            <div className="mat-inner mat-texture chamfer p-6 sm:p-7 relative overflow-hidden">
               <span className="absolute -right-6 -top-10 f-display text-[9rem] leading-none opacity-[0.05] pointer-events-none select-none">GX</span>
-              <div className="grid lg:grid-cols-[1.25fr_0.75fr] gap-8">
-                {/* LEFT — project identity + description */}
+              <div className="grid lg:grid-cols-[1.35fr_0.65fr] gap-7 lg:gap-10">
+                {/* LEFT / MAIN — identity + description + structured metadata */}
                 <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="f-striker text-[11px] tracking-[0.16em] px-3 py-1.5 rounded-lg border" style={{ borderColor: "var(--crimson)", color: "var(--crimson)" }}>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <span className="f-mono text-[9px] tracking-[0.3em] px-2.5 py-1.5 rounded-[6px]" style={{ color: "var(--m-sub)", border: "1px solid var(--m-line)" }}>
+                      {lab.subLabel}
+                    </span>
+                    <span className="f-striker text-[10px] tracking-[0.16em] px-2.5 py-1.5 rounded-[6px] border" style={{ borderColor: "var(--crimson)", color: "var(--crimson)" }}>
                       {lab.projectType}
                     </span>
-                    <span className="f-tech font-bold text-[10px] tracking-[0.26em] px-3 py-1.5 rounded-lg bg-[var(--crimson)] text-[#DDDDD8]">
+                    <span className="f-tech font-bold text-[9px] tracking-[0.26em] px-2.5 py-1.5 rounded-[6px] bg-[var(--crimson)] text-[#DDDDD8]">
                       {lab.projectStatus}
                     </span>
                   </div>
-                  <span className="mt-5 block f-mono text-[9px] tracking-[0.3em]" style={{ color: "var(--m-sub)" }}>PROJECT</span>
-                  <h3 className="f-display text-[clamp(2.2rem,5vw,4rem)] leading-none mt-1.5 tracking-wide">
+                  <h3 className="f-display text-[clamp(2rem,4.4vw,3.4rem)] leading-none mt-4 tracking-wide">
                     {(() => {
                       const [a, b] = lab.projectName.split(".");
                       return b ? (<>{a}<span className="text-[var(--crimson)]">.{b}</span></>) : <span>{a}<span className="text-[var(--crimson)]">.</span></span>;
                     })()}
                   </h3>
-                  <span className="mt-5 block f-mono text-[9px] tracking-[0.3em]" style={{ color: "var(--m-sub)" }}>DESCRIPTION</span>
-                  <p className="mt-2 max-w-[64ch] text-[13px] sm:text-[14px] leading-relaxed opacity-85">{lab.projectDescription}</p>
-                  <span className="mt-5 block f-mono text-[9px] tracking-[0.3em]" style={{ color: "var(--m-sub)" }}>PRODUCTION APPROACH</span>
-                  <p className="mt-2 max-w-[64ch] text-[12.5px] sm:text-[13.5px] leading-relaxed opacity-75">
-                    Concept, world-building, character and sequence generated and directed through the same AI pipeline — {lab.tools.join(" / ")} — then cut and graded as one continuous trail.
-                  </p>
+                  <p className="mt-4 max-w-[62ch] text-[14px] sm:text-[15px] leading-relaxed opacity-90">{lab.projectDescription}</p>
+
+                  {/* compact structured metadata — one clean block, no repetition */}
+                  <dl className="mt-6 grid sm:grid-cols-3 border-t" style={{ borderColor: "var(--m-line)" }}>
+                    {[
+                      ["PROJECT", lab.projectName],
+                      ["TYPE", "AI / GENERATIVE FILM"],
+                      ["TOOLS", lab.tools.join(" / ")],
+                    ].map(([k, v], i) => (
+                      <div key={k} className={`py-3.5 sm:px-4 ${i > 0 ? "sm:border-l" : ""} ${i > 0 ? "border-t sm:border-t-0" : ""}`} style={{ borderColor: "var(--m-line)" }}>
+                        <dt className="f-mono text-[8.5px] tracking-[0.3em]" style={{ color: "var(--m-sub)" }}>{k}</dt>
+                        <dd className="f-tech font-bold text-[12px] sm:text-[12.5px] tracking-[0.1em] mt-1.5 leading-snug">
+                          {k === "PROJECT" ? (
+                            <>{lab.projectName.split(".")[0]}<span className="text-[var(--crimson)]">.{lab.projectName.split(".")[1]}</span></>
+                          ) : v}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
                 </div>
-                {/* RIGHT — tools + output */}
-                <div className="flex flex-col gap-6 lg:border-l lg:pl-8" style={{ borderColor: "var(--m-line)" }}>
-                  <div>
-                    <span className="f-mono text-[9px] tracking-[0.3em] block mb-3" style={{ color: "var(--m-sub)" }}>TOOLS</span>
-                    <ul className="flex flex-col gap-2">
-                      {lab.tools.map((t, i) => (
-                        <li key={t} className="f-tech font-bold text-[13px] tracking-[0.14em] flex items-center gap-2.5">
-                          <span className="f-mono text-[9px] text-[var(--crimson)]">{String(i + 1).padStart(2, "0")}</span>{t}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="pt-5" style={{ borderTop: "1px solid var(--m-line)" }}>
-                    <span className="f-mono text-[9px] tracking-[0.3em] block mb-3" style={{ color: "var(--m-sub)" }}>OUTPUT / MEDIA</span>
-                    <div className="flex flex-wrap gap-2">
-                      <span className="f-tech font-bold text-[10px] tracking-[0.18em] px-2.5 py-1.5 rounded-[6px]" style={{ background: "color-mix(in srgb, var(--ink) 8%, transparent)" }}>1 × FEATURED FILM</span>
-                      <span className="f-tech font-bold text-[10px] tracking-[0.18em] px-2.5 py-1.5 rounded-[6px]" style={{ background: "color-mix(in srgb, var(--ink) 8%, transparent)" }}>8 × STILLS</span>
-                      <span className="f-tech font-bold text-[10px] tracking-[0.18em] px-2.5 py-1.5 rounded-[6px]" style={{ background: "color-mix(in srgb, var(--ink) 8%, transparent)" }}>16:9</span>
-                    </div>
-                  </div>
+
+                {/* RIGHT — TOOLS IN PLAY (the single tool listing) */}
+                <div className="lg:border-l lg:pl-8" style={{ borderColor: "var(--m-line)" }}>
+                  <span className="f-mono text-[9px] tracking-[0.3em] block" style={{ color: "var(--m-sub)" }}>TOOLS IN PLAY</span>
+                  <ul className="mt-3.5 flex flex-col">
+                    {lab.tools.map((t, i) => (
+                      <li key={t} className="group flex items-center gap-3 py-2 border-b last:border-b-0 transition-colors duration-300"
+                        style={{ borderColor: "var(--m-line)" }}>
+                        <span className="f-mono text-[10px] font-semibold text-[var(--crimson)] tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+                        <span className="f-tech font-bold text-[13px] tracking-[0.14em] group-hover:text-[var(--crimson)] transition-colors duration-300">{t}</span>
+                        <span className="ml-auto w-3 h-[2px] origin-right scale-x-0 group-hover:scale-x-100 bg-[var(--crimson)] transition-transform duration-300" />
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-4 f-mono text-[8.5px] tracking-[0.22em] leading-relaxed" style={{ color: "var(--m-sub)" }}>
+                    CONCEPT → WORLD → CHARACTER → SEQUENCE — GENERATED, DIRECTED AND CUT IN-HOUSE
+                  </p>
                 </div>
               </div>
             </div>

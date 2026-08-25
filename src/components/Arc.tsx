@@ -87,12 +87,12 @@ function Carousel({ items, idx, setIdx, ratio, wide, onCenter }: {
 function ArcaneArrow({ onClick, label, dir }: { onClick: () => void; label: string; dir: "left" | "right" }) {
   return (
     <button onClick={onClick} aria-label={label}
-      className="group self-center justify-self-center transition-all duration-300 opacity-55 hover:opacity-100 focus:outline-none focus-visible:opacity-100"
+      className="group self-center justify-self-center transition-all duration-300 opacity-80 hover:opacity-100 focus:outline-none focus-visible:opacity-100"
       style={{ color: "var(--outer-ink)" }}>
-      <span className={`block relative transition-transform duration-300 ${dir === "left" ? "group-hover:-translate-x-1.5" : "group-hover:translate-x-1.5"}`}>
-        <NavArrowHead size={58} dir={dir} />
-        <span className="absolute left-1/2 top-1/2 -translate-y-1/2 h-[70%] w-[2px] opacity-0 group-hover:opacity-60 transition-opacity duration-300"
-          style={{ background: "var(--outer-ink)", marginLeft: dir === "left" ? "10px" : "-14px" }} />
+      <span className={`block relative transition-transform duration-300 group-hover:scale-[1.08] ${dir === "left" ? "group-hover:-translate-x-1.5" : "group-hover:translate-x-1.5"}`}>
+        <NavArrowHead size={64} dir={dir} />
+        <span className="absolute left-1/2 top-1/2 -translate-y-1/2 h-[72%] w-[2.5px] opacity-0 group-hover:opacity-75 transition-opacity duration-300"
+          style={{ background: "var(--crimson)", marginLeft: dir === "left" ? "12px" : "-16px" }} />
       </span>
     </button>
   );
@@ -165,13 +165,13 @@ export default function Arc() {
             {(["CHARACTERS", "WORLDS"] as const).map((m) => {
               const on = mode === m;
               return (
-                <button key={m} onClick={() => setMode(m)}
-                  className="f-tech font-bold text-[12px] sm:text-[13px] tracking-[0.22em] px-5 sm:px-7 py-3 rounded-lg transition-all duration-300"
+                <button key={m} onClick={() => setMode(m)} aria-pressed={on}
+                  className="f-tech font-bold text-[13px] sm:text-[14px] tracking-[0.22em] px-6 sm:px-8 py-3.5 dossier-clip-sm transition-all duration-300"
                   style={on
-                    ? { background: "var(--ink)", color: "var(--page)", boxShadow: "inset 0 0 0 1.5px var(--ink)" }
-                    : { color: "var(--ink2)", boxShadow: "inset 0 0 0 1.5px var(--line)" }}
-                  onMouseEnter={(e) => { if (!on) e.currentTarget.style.boxShadow = "inset 0 0 0 1.5px var(--ink2)"; }}
-                  onMouseLeave={(e) => { if (!on) e.currentTarget.style.boxShadow = "inset 0 0 0 1.5px var(--line)"; }}>
+                    ? { background: "var(--ink)", color: "var(--page)", boxShadow: "inset 0 0 0 1.5px var(--ink), 4px 4px 0 color-mix(in srgb, var(--ink) 22%, transparent)" }
+                    : { background: "var(--sup1)", color: "var(--ink2)", boxShadow: "inset 0 0 0 1.5px var(--line)" }}
+                  onMouseEnter={(e) => { if (!on) { e.currentTarget.style.boxShadow = "inset 0 0 0 1.5px var(--ink2)"; e.currentTarget.style.color = "var(--ink)"; } }}
+                  onMouseLeave={(e) => { if (!on) { e.currentTarget.style.boxShadow = "inset 0 0 0 1.5px var(--line)"; e.currentTarget.style.color = "var(--ink2)"; } }}>
                   {m}
                 </button>
               );
@@ -185,7 +185,7 @@ export default function Arc() {
         {/* selector system — matte black (light) / matte white (dark) panel */}
         <Reveal className="mt-8">
           <div key={mode} className="dossier-swap mat-outer mat-texture rounded-xl p-4 sm:p-7">
-            <div className="grid lg:grid-cols-[180px_58px_minmax(0,1fr)_58px_300px] gap-3 lg:gap-4 items-stretch">
+            <div className="grid lg:grid-cols-[180px_76px_minmax(0,1fr)_76px_300px] gap-3 lg:gap-4 items-stretch">
               {/* LEFT — slot list */}
               <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0 items-stretch">
                 {items.map((it, i) => {

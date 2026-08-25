@@ -7,7 +7,7 @@ const CYCLE_MS = 20000;
 function Description({ text }: { text: string }) {
   const parts = text.split(/\[\s*(.*?)\s*\]/g);
   return (
-    <p className="text-[13px] sm:text-[14px] leading-relaxed">
+    <p className="text-[14px] sm:text-[15px] leading-relaxed">
       {parts.map((p, i) =>
         i % 2 === 1 ? (
           <em key={i} className="not-italic font-bold text-[var(--crimson)] tracking-wide"> {p} </em>

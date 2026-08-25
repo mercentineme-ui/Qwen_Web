@@ -196,6 +196,27 @@ export default function Hero() {
             </p>
           </div>
 
+          {/* EDUCATION — compact technical record, same hierarchy as About */}
+          <div className="mt-7 max-w-[56ch]">
+            <span className="f-mono text-[10px] tracking-[0.34em] px-2.5 py-1.5 rounded-[5px] inline-flex items-center gap-2.5"
+              style={{ color: "var(--crimson)", background: "color-mix(in srgb, var(--crimson) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--crimson) 35%, transparent)" }}>
+              <span className="w-4 h-[2px] bg-[var(--crimson)]" />
+              {h.educationLabel}
+            </span>
+            <div className="mt-3.5 flex flex-col">
+              {h.education.map((e, i) => (
+                <div key={e.num} className={`group flex items-baseline gap-4 py-3 ${i > 0 ? "border-t" : ""}`} style={{ borderColor: "var(--line)" }}>
+                  <span className="f-mono text-[11px] font-semibold tracking-[0.14em] text-[var(--crimson)] w-6 shrink-0">{e.num}</span>
+                  <div className="min-w-0">
+                    <p className="f-tech font-bold text-[13.5px] sm:text-[14.5px] tracking-[0.04em] leading-snug text-[var(--ink)]">{e.title}</p>
+                    <p className="mt-0.5 text-[12.5px] sm:text-[13.5px] leading-snug text-[var(--ink2)]">{e.school}</p>
+                  </div>
+                  <span className="f-mono text-[10px] tracking-[0.22em] text-[var(--ink2)] ml-auto shrink-0 tabular-nums group-hover:text-[var(--crimson)] transition-colors duration-300">{e.year}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* role strip — steampunk × greek industrial modules: meander key strip,
               stamped index plate, bolt slots, piston indicator, rack carriage */}
           <div className="mt-9 grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-3.5">
