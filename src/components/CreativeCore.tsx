@@ -45,12 +45,12 @@ export default function CreativeCore() {
   const { data, theme } = useStore();
   const disciplines = data.core;
   const reduced = useReducedMotion();
-  const [lockedIdx, setLockedIdx] = useState(3);
-  const [locked, setLocked] = useState(true);
+  const [lockedIdx, setLockedIdx] = useState<number | null>(null);
+  const [locked, setLocked] = useState(false);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
-  /* hover = preview only · click = lock · second click on the same node unlocks */
-  const sel = hoverIdx ?? lockedIdx;
-  const d = disciplines[sel] ?? disciplines[0];
+  /* hover = preview only · click = lock · second click unlocks · nothing auto-selected */
+  const sel = hoverIdx ?? (locked ? lockedIdx : null);
+  const d = sel !== null ? disciplines[sel] ?? null : null;
 
   /* ---- 3D theme rebuild: disassemble → invert materials → reassemble ---- */
   const prevTheme = useRef(theme);
@@ -89,46 +89,65 @@ export default function CreativeCore() {
   }, [disciplines.length]);
   const surgeOn = phase !== 0;
 
-  /* ---- selector head: tracks mouse direction, settles outward at top ---- */
+  /* ---- MECHANICAL GEAR POINTER ----------------------------------------
+     Mouse position controls the pointer. Node clicks control locking.
+     These are completely separate systems.
+     · inside the Core circle  → gear assembles, pointer tracks the ACTUAL
+       cursor position continuously (smooth lerp — never jumps or snaps)
+     · leaving the circle      → position is retained briefly, then the
+       pointer travels back to the exact reactor center and folds into
+       its resting gear form
+     · re-entering             → gear reassembles and picks up the current
+       cursor position from wherever it is sitting                      */
   const discRef = useRef<HTMLDivElement>(null);
-  const headRef = useRef<SVGGElement>(null);
-  const angleRef = useRef({ cur: 0, target: 0, raf: 0 });
+  const ptrRef = useRef<SVGGElement>(null);
+  const ptr = useRef({ x: 300, y: 300, tx: 300, ty: 300, inside: false, returning: false, settled: true, raf: 0, holdTimer: 0 });
+  const [assembled, setAssembled] = useState(false);
   useEffect(() => {
     if (reduced) return;
     const loop = () => {
-      const a = angleRef.current;
-      const diff = ((a.target - a.cur + 180) % 360 + 360) % 360 - 180;
-      if (Math.abs(diff) > 0.1) {
-        a.cur += diff * 0.14;
-        if (headRef.current) headRef.current.setAttribute("transform", `rotate(${a.cur} 300 300)`);
+      const p = ptr.current;
+      if (p.inside) {
+        p.x += (p.tx - p.x) * 0.2;
+        p.y += (p.ty - p.y) * 0.2;
+        if (p.settled) { p.settled = false; setAssembled(true); }
+      } else if (p.returning) {
+        p.x += (300 - p.x) * 0.08;
+        p.y += (300 - p.y) * 0.08;
+        if (Math.hypot(300 - p.x, 300 - p.y) < 3.5) {
+          p.x = 300; p.y = 300;
+          p.returning = false;
+          if (!p.settled) { p.settled = true; setAssembled(false); }
+        }
       }
-      a.raf = requestAnimationFrame(loop);
+      if (ptrRef.current) ptrRef.current.setAttribute("transform", `translate(${p.x} ${p.y})`);
+      p.raf = requestAnimationFrame(loop);
     };
-    angleRef.current.raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(angleRef.current.raf);
+    ptr.current.raf = requestAnimationFrame(loop);
+    return () => { cancelAnimationFrame(ptr.current.raf); clearTimeout(ptr.current.holdTimer); };
   }, [reduced]);
-  /* pointer tracks the cursor ONLY while it is inside a discipline node area */
-  const onNodeMove = (e: React.MouseEvent) => {
+  const onDiscMove = (e: React.MouseEvent) => {
     const el = discRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
-    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-    angleRef.current.target = (Math.atan2(e.clientY - cy, e.clientX - cx) * 180) / Math.PI + 90;
+    const p = ptr.current;
+    /* re-entering: reassemble and track the CURRENT cursor position — no jump to an old spot */
+    clearTimeout(p.holdTimer);
+    p.inside = true;
+    p.returning = false;
+    p.tx = ((e.clientX - r.left) / r.width) * 600;
+    p.ty = ((e.clientY - r.top) / r.height) * 600;
   };
-  const onNodeLeave = () => {
-    /* leaving the node area — pointer returns to the reactor center */
-    angleRef.current.target = locked ? lockedIdx * (360 / disciplines.length) : 0;
+  const onDiscLeave = () => {
+    const p = ptr.current;
+    p.inside = false;
+    /* retain the current position briefly, then travel home and fold */
+    p.holdTimer = window.setTimeout(() => { if (!ptr.current.inside) ptr.current.returning = true; }, 240);
   };
   /* click = lock · click same again = unlock (movement never locks) */
   const pick = (i: number) => {
-    if (locked && lockedIdx === i) {
-      setLocked(false);
-      angleRef.current.target = 0;
-    } else {
-      setLockedIdx(i);
-      setLocked(true);
-      angleRef.current.target = i * (360 / disciplines.length);
-    }
+    if (locked && lockedIdx === i) setLocked(false);
+    else { setLockedIdx(i); setLocked(true); }
   };
 
   const hot = "var(--machine-crimson-hot)";
@@ -144,10 +163,12 @@ export default function CreativeCore() {
           meta="09 MODULES · ONE ENGINE"
         />
 
-        <div className="mt-12 grid lg:grid-cols-[1.04fr_0.96fr] gap-12 lg:gap-16 items-center">
+        {/* reactor left · reserved clear gap · dossier pushed to the far right */}
+        <div className="mt-12 grid lg:grid-cols-[minmax(0,1fr)_minmax(0,390px)] gap-12 lg:gap-20 xl:gap-28 items-center">
           {/* ================= MECHANICAL CREATIVE ENGINE ================= */}
           <Reveal>
-            <div ref={discRef} className="relative mx-auto w-full max-w-[660px] aspect-square select-none">
+            <div ref={discRef} className="relative mx-auto w-full max-w-[620px] aspect-square select-none"
+              onMouseMove={onDiscMove} onMouseLeave={onDiscLeave}>
               <div className="mech-stage">
                 <svg viewBox="0 0 600 600" className={`absolute inset-0 w-full h-full ${rebuilding ? "mech-tilt mech-rebuild" : ""}`}
                   style={machOverride ?? undefined}>
@@ -304,13 +325,33 @@ export default function CreativeCore() {
                     <circle cx={polar(300, 300, 210, 226)[0]} cy={polar(300, 300, 210, 226)[1]} r="2.6" fill="#59595B" />
                   </g>
 
-                  {/* selector head — machined crimson arrowhead, no tail, no bloom.
-                      Rides the rb-e rebuild group so it participates in the theme reconstruction. */}
-                  <g className={rebuilding ? "rb-e" : undefined} ref={headRef} transform="rotate(0 300 300)">
-                    <path d="M300 176 Q305 204 326 221 Q300 212 274 221 Q295 204 300 176 Z" fill="var(--crimson)" />
-                    <path d="M300 186 Q302 202 311 212 Q300 208 289 212 Q298 202 300 186 Z" fill="#DDDDD8" opacity="0.28" />
-                    <circle cx="300" cy="215" r="2.4" fill="#DDDDD8" opacity="0.55" />
-                    <line x1="291" y1="219" x2="309" y2="219" stroke="#DDDDD8" strokeWidth="1.1" opacity="0.4" />
+                  {/* MECHANICAL GEAR POINTER — position driven by the rAF loop (ptrRef).
+                      Assembled pointer form while tracking the cursor inside the Core;
+                      folds into its resting gear when settled at the reactor center. */}
+                  <g ref={ptrRef} transform="translate(300 300)" className={rebuilding ? "rb-e" : undefined}>
+                    <g className={assembled && !reduced ? "ptr-gear-spin" : undefined}
+                      style={{ opacity: assembled ? 0.92 : 1, transition: "opacity .4s ease" }}>
+                      {Array.from({ length: 8 }).map((_, i) => {
+                        const a = (i / 8) * Math.PI * 2;
+                        return <rect key={i} x={-2.4} y={-16} width="4.8" height="6" rx="1"
+                          transform={`rotate(${(a * 180) / Math.PI})`}
+                          fill="#59595B" stroke="#A6A6A4" strokeWidth="0.9" />;
+                      })}
+                      <circle r="12.5" fill="var(--machine-deep)" stroke="#A6A6A4" strokeWidth="1.4" />
+                      <circle r="6.5" fill="#222328" stroke="#A6A6A4" strokeWidth="1" />
+                    </g>
+                    <g style={{
+                      transform: assembled ? "scale(1)" : "scale(0.25)",
+                      opacity: assembled ? 1 : 0,
+                      transformOrigin: "0px 0px",
+                      transition: reduced ? "none" : "transform .45s cubic-bezier(.3,.9,.3,1.15), opacity .35s ease",
+                    }}>
+                      <line x1="0" y1="-13" x2="0" y2="-24" stroke="var(--crimson)" strokeWidth="3.4" strokeLinecap="round" />
+                      <path d="M0 -40 L8.5 -21 Q0 -26 -8.5 -21 Z" fill="var(--crimson)" />
+                      <path d="M0 -34 L4 -24.5 Q0 -27 -4 -24.5 Z" fill="#DDDDD8" opacity="0.3" />
+                      <rect x="-6" y="-12.5" width="12" height="2.4" rx="1.2" fill="var(--crimson)" opacity="0.85" />
+                    </g>
+                    <circle r="2.6" fill={assembled ? "var(--crimson)" : "#A6A6A4"} style={{ transition: "fill .35s ease" }} />
                   </g>
                 </svg>
               </div>
@@ -330,8 +371,7 @@ export default function CreativeCore() {
                 return (
                   <button key={dis.id}
                     onMouseEnter={() => setHoverIdx(i)}
-                    onMouseLeave={() => { setHoverIdx(null); onNodeLeave(); }}
-                    onMouseMove={onNodeMove}
+                    onMouseLeave={() => setHoverIdx(null)}
                     onClick={() => pick(i)}
                     className="absolute -translate-x-1/2 -translate-y-1/2 group"
                     style={{ left: `${x}%`, top: `${y}%` }}
@@ -375,30 +415,67 @@ export default function CreativeCore() {
             <div className="mat-outer mat-texture rounded-xl p-6 sm:p-8 relative overflow-hidden"
               style={{ boxShadow: "inset 0 0 0 1.5px color-mix(in srgb, var(--outer-ink) 18%, transparent)" }}>
               <span className="absolute top-0 left-0 h-[3px] bg-[var(--crimson)] scan-pass" style={{ width: "42%" }} aria-hidden />
-              <div key={d.id} className="dossier-swap">
-                <div className="flex items-center justify-between">
-                  <span className="f-mono text-[11px] tracking-[0.3em] text-[var(--crimson)]">{d.num} / 09</span>
-                  <span className="f-mono text-[9px] tracking-[0.26em] flex items-center gap-2" style={{ color: "var(--m-sub)" }}>
-                    <span className="w-1.5 h-1.5 bg-[var(--crimson)] live-blink" />
-                    {hoverIdx !== null ? "PREVIEW" : locked ? "LOCKED" : "UNLOCKED"}
-                  </span>
-                </div>
-                <h3 className="f-display text-[clamp(1.6rem,2.6vw,2.3rem)] leading-tight mt-3" style={{ color: "var(--outer-ink)" }}>{d.name}</h3>
-                <p className="mt-4 text-[13.5px] sm:text-[14px] leading-relaxed" style={{ color: "var(--outer-ink)", opacity: 0.92 }}>{d.blurb}</p>
-                <div className="mt-6 flex flex-wrap gap-2.5">
-                  {d.tags.map((t) => (
-                    <span key={t} className="inline-block rounded-[6px] px-3 py-1.5 f-tech font-bold text-[10.5px] tracking-[0.14em]"
-                      style={{ backgroundColor: "var(--outer-ink)", color: "var(--outer-bg)" }}>
-                      {t}
+              {d ? (
+                <div key={d.id} className="dossier-swap">
+                  <div className="flex items-center justify-between">
+                    <span className="f-mono text-[11px] tracking-[0.3em] text-[var(--crimson)]">{d.num} / 09</span>
+                    <span className="f-mono text-[9px] tracking-[0.26em] flex items-center gap-2" style={{ color: "var(--m-sub)" }}>
+                      <span className="w-1.5 h-1.5 bg-[var(--crimson)] live-blink" />
+                      {hoverIdx !== null ? "PREVIEW" : locked ? "LOCKED" : "UNLOCKED"}
                     </span>
-                  ))}
+                  </div>
+                  <h3 className="f-display text-[clamp(1.6rem,2.6vw,2.3rem)] leading-tight mt-3" style={{ color: "var(--outer-ink)" }}>{d.name}</h3>
+                  <p className="mt-4 text-[13.5px] sm:text-[14px] leading-relaxed" style={{ color: "var(--outer-ink)", opacity: 0.92 }}>{d.blurb}</p>
+                  <div className="mt-6 flex flex-wrap gap-2.5">
+                    {d.tags.map((t) => (
+                      <span key={t} className="inline-block rounded-[6px] px-3 py-1.5 f-tech font-bold text-[10.5px] tracking-[0.14em]"
+                        style={{ backgroundColor: "var(--outer-ink)", color: "var(--outer-bg)" }}>
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-6 pt-4 f-mono text-[9px] tracking-[0.24em] flex justify-between"
+                    style={{ borderTop: "1px solid var(--m-line)", color: "var(--m-sub)" }}>
+                    <span>HOVER — PREVIEW · CLICK — LOCK · AGAIN — RELEASE</span>
+                    <span className="text-[var(--crimson)]">CORE/{d.num}</span>
+                  </div>
                 </div>
-                <div className="mt-6 pt-4 f-mono text-[9px] tracking-[0.24em] flex justify-between"
-                  style={{ borderTop: "1px solid var(--m-line)", color: "var(--m-sub)" }}>
-                  <span>HOVER — PREVIEW · CLICK — LOCK · AGAIN — RELEASE</span>
-                  <span className="text-[var(--crimson)]">CORE/{d.num}</span>
+              ) : (
+                <div key="standby" className="dossier-swap">
+                  <div className="flex items-center justify-between">
+                    <span className="f-mono text-[11px] tracking-[0.3em]" style={{ color: "var(--m-sub)" }}>-- / 09</span>
+                    <span className="f-mono text-[9px] tracking-[0.26em] flex items-center gap-2" style={{ color: "var(--m-sub)" }}>
+                      <span className="w-1.5 h-1.5 rounded-full live-blink" style={{ background: "var(--m-sub)" }} />
+                      IDLE
+                    </span>
+                  </div>
+                  <h3 className="f-display text-[clamp(1.6rem,2.6vw,2.3rem)] leading-tight mt-3" style={{ color: "var(--outer-ink)", opacity: 0.92 }}>
+                    STANDING BY
+                  </h3>
+                  <p className="mt-4 text-[13.5px] sm:text-[14px] leading-relaxed" style={{ color: "var(--outer-ink)", opacity: 0.75 }}>
+                    Choose a node to explore. Hover previews a discipline; click locks it into the dossier. Click again to release.
+                  </p>
+                  <div className="mt-7 flex items-center gap-4" aria-hidden>
+                    {[14, 22, 16].map((s, k) => (
+                      <svg key={k} width={s + 10} height={s + 10} viewBox="0 0 24 24" fill="none"
+                        stroke="var(--m-sub)" strokeWidth="1.5"
+                        className={reduced ? undefined : "ptr-gear-spin"} style={{ animationDuration: `${9 + k * 5}s` }}>
+                        <circle cx="12" cy="12" r="5" />
+                        {Array.from({ length: 8 }).map((_, i) => {
+                          const a = (i / 8) * Math.PI * 2;
+                          return <line key={i} x1={12 + 7 * Math.cos(a)} y1={12 + 7 * Math.sin(a)} x2={12 + 9.5 * Math.cos(a)} y2={12 + 9.5 * Math.sin(a)} />;
+                        })}
+                      </svg>
+                    ))}
+                    <span className="f-mono text-[9px] tracking-[0.24em] ml-auto" style={{ color: "var(--m-sub)" }}>GEARBOX · IDLE</span>
+                  </div>
+                  <div className="mt-7 pt-4 f-mono text-[9px] tracking-[0.24em] flex justify-between"
+                    style={{ borderTop: "1px solid var(--m-line)", color: "var(--m-sub)" }}>
+                    <span>HOVER — PREVIEW · CLICK — LOCK · AGAIN — RELEASE</span>
+                    <span>CORE/--</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </Reveal>
         </div>

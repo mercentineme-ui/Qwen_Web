@@ -60,6 +60,7 @@ export function HowIBuild() {
   const [glitching, setGlitching] = useState(false);
   const [planeDone, setPlaneDone] = useState(false);
   const [flight, setFlight] = useState(600);
+  const [litN, setLitN] = useState(0); /* checkpoints lit as the plane passes */
   const lineRef = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
 
@@ -70,17 +71,19 @@ export function HowIBuild() {
     setPhase(2);
     requestAnimationFrame(() => {
       const w = lineRef.current?.getBoundingClientRect().width;
-      if (w) setFlight(w - 72);
+      if (w) setFlight(w - 150); /* the plane lands at the KNOW MORE dock */
     });
-    if (reduced) { setPlaneDone(true); return; }
-    timers.current.push(window.setTimeout(() => setPlaneDone(true), 2680));
+    if (reduced) { setPlaneDone(true); setLitN(4); return; }
+    [450, 980, 1500, 1950].forEach((t, k) =>
+      timers.current.push(window.setTimeout(() => setLitN(k + 1), t)));
+    timers.current.push(window.setTimeout(() => { setPlaneDone(true); setLitN(4); }, 2680));
   };
   const knowMore = () => {
     if (reduced) { setPhase(3); return; }
     setGlitching(true);
     timers.current.push(window.setTimeout(() => { setGlitching(false); setPhase(3); }, 640));
   };
-  const replay = () => { setPhase(1); setPlaneDone(false); setGlitching(false); };
+  const replay = () => { setPhase(1); setPlaneDone(false); setGlitching(false); setLitN(0); };
 
   return (
     <section id="pipeline" className="relative py-20 lg:py-28 scroll-mt-20">

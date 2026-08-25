@@ -139,6 +139,11 @@ body::before {
 /* ---------- shapes ---------- */
 .chamfer { clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px); }
 .dossier-clip { clip-path: polygon(22px 0, 100% 0, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%, 0 22px); }
+/* greek-inspired stepped corner cut — mechanical / classical plate construction */
+.greek-clip { clip-path: polygon(0 10px, 10px 10px, 10px 0, calc(100% - 10px) 0, calc(100% - 10px) 10px, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 10px calc(100% - 10px), 0 calc(100% - 10px)); }
+.ptr-gear-spin { animation: rotCW 9s linear infinite; transform-box: fill-box; transform-origin: center; }
+.led-on { animation: ledOn 0.45s ease both; }
+@keyframes ledOn { from { opacity: 0.25; } }
 .dossier-clip-sm { clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px); }
 .corner-bracket { position: relative; }
 .corner-bracket::before, .corner-bracket::after {
