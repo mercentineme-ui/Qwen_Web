@@ -71,7 +71,7 @@ export function HowIBuild() {
     setPhase(2);
     requestAnimationFrame(() => {
       const w = lineRef.current?.getBoundingClientRect().width;
-      if (w) setFlight(w - 168); /* the plane lands at the KNOW MORE dock, clear of DEVELOPMENT */
+      if (w) setFlight(w - 150); /* the plane lands at the KNOW MORE dock, clear of DEVELOPMENT */
     });
     if (reduced) { setPlaneDone(true); setLitN(4); return; }
     [550, 1080, 1480, 1920].forEach((t, k) =>
@@ -118,7 +118,7 @@ export function HowIBuild() {
                       <h3 className="f-display text-[clamp(1.5rem,3vw,2.4rem)] leading-tight" style={{ color: "var(--outer-ink)" }}>
                         EVERY PROJECT STARTS IN A MAILBOX.
                       </h3>
-                      <p className="mt-4 max-w-[52ch] text-[14px] leading-relaxed" style={{ color: "var(--m-sub)" }}>
+                      <p className="mt-4 max-w-[52ch] text-[15px] leading-relaxed" style={{ color: "var(--m-sub)" }}>
                         A blind briefing lands. Nothing else is visible yet — the workflow stays sealed until you open it.
                       </p>
                       <span className="mt-6 inline-flex items-center gap-3 f-tech font-bold text-[12px] tracking-[0.22em] text-[var(--crimson)] live-blink">
@@ -129,6 +129,7 @@ export function HowIBuild() {
                     /* ---- PHASE 2 — ONE continuous journey: mailbox → paper plane →
                        01 IDEA → 02 REFERENCE → 03 CONCEPT → 04 DEVELOPMENT → KNOW MORE.
                        Segmented rail with joints + directional marks, no red timeline. ---- */
+                    <>
                     <div ref={lineRef} className="relative flex-1 h-44 w-full min-w-0">
                       {/* segmented mechanical rail — dashed travel path, joints at every checkpoint,
                          the crimson overlay extends segment-by-segment as the plane passes */}
@@ -191,7 +192,7 @@ export function HowIBuild() {
                         return (
                           <div key={nd.num}
                             className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center node-pop"
-                            style={{ left: `${[14, 33, 52, 68][i % 4]}%`, top: `${topPct}%`, animationDelay: reduced ? "0s" : `${0.3 + i * 0.55}s` }}>
+                            style={{ left: `${[12, 31, 51, 66][i % 4]}%`, top: `${topPct}%`, animationDelay: reduced ? "0s" : `${0.3 + i * 0.55}s` }}>
                             {above ? (<>{moduleBox}{strut}{foot}</>) : (<>{foot}{strut}{moduleBox}</>)}
                           </div>
                         );
@@ -204,8 +205,8 @@ export function HowIBuild() {
                         </span>
                       )}
 
-                      {/* KNOW MORE — separate final destination at the far right */}
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col items-center node-pop"
+                      {/* KNOW MORE — separate final destination at the far right (desktop) */}
+                      <div className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 flex-col items-center node-pop"
                         style={{ animationDelay: reduced ? "0s" : "0.2s" }}>
                         {planeDone ? (
                           <button onClick={knowMore} className="btn btn-crimson !py-3">
@@ -221,6 +222,22 @@ export function HowIBuild() {
                         <span className="w-4 h-[3px] rounded" style={{ background: "#59595B" }} />
                       </div>
                     </div>
+
+                    {/* mobile dock — KNOW MORE ends the journey below the rail,
+                        never colliding with DEVELOPMENT on narrow widths */}
+                    <div className="sm:hidden mt-4 flex justify-end node-pop" style={{ animationDelay: reduced ? "0s" : "0.2s" }}>
+                      {planeDone ? (
+                        <button onClick={knowMore} className="btn btn-crimson !py-3">
+                          <PaperPlane size={16} /> {b.knowMore} <ArrowRight size={14} strokeWidth={2.4} />
+                        </button>
+                      ) : (
+                        <span className="px-3.5 py-2.5 f-tech font-bold text-[11px] tracking-[0.2em] whitespace-nowrap dossier-clip-sm"
+                          style={{ background: "var(--outer-bg)", color: "var(--m-sub)", boxShadow: "inset 0 0 0 1.5px rgba(221,221,216,0.16)" }}>
+                          {b.knowMore}
+                        </span>
+                      )}
+                    </div>
+                    </>
                   )}
                 </div>
                 <p className="mt-8 f-mono text-[9px] tracking-[0.26em]" style={{ color: "var(--m-sub)" }}>
@@ -252,7 +269,7 @@ export function HowIBuild() {
                       </svg>
                     </div>
                     <div className="relative border-4 border-[#222328] bg-[#C3C1BC] shadow-[8px_8px_0_#E72241,14px_14px_0_#59232F]">
-                      <MediaSlot item={b.reveal.image} ratio="3/5.4" className="!rounded-none !border-0" showLabel={false} />
+                      <MediaSlot item={b.reveal.image} ratio="4/6.8" className="!rounded-none !border-0" showLabel={false} />
                       <span className="absolute top-2 left-2 f-mono text-[8px] tracking-[0.26em] px-2 py-1 bg-[#222328] text-[#DDDDD8]">UPLOAD SPACE</span>
                       <span className="absolute bottom-2 right-2 f-mono text-[8px] tracking-[0.26em] px-2 py-1 bg-[#E72241] text-[#DDDDD8]">VERTICAL FRAME</span>
                     </div>
