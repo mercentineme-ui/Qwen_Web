@@ -44,7 +44,8 @@ const PLATE_CY = [62, 168, 274, 380];
 const SOCKETS_Y = [120, 196, 288, 356]; /* machine entry zones */
 const ELBOW_X = [262, 274, 250, 268];
 
-function MiniGear({ cx, cy, r, teeth, spin }: { cx: number; cy: number; r: number; teeth: number; spin: string }) {
+function MiniGear({ cx, cy, r, teeth, spin, hot }: { cx: number; cy: number; r: number; teeth: number; spin: string; hot?: boolean }) {
+  const edge = hot ? "#E72241" : "#A6A6A4";
   return (
     <g className={spin}>
       {Array.from({ length: teeth }).map((_, i) => {
@@ -53,11 +54,12 @@ function MiniGear({ cx, cy, r, teeth, spin }: { cx: number; cy: number; r: numbe
         return (
           <rect key={i} x={-r * 0.14} y={-r * 0.17} width={r * 0.28} height={r * 0.34}
             transform={`translate(${x} ${y}) rotate(${(a * 180) / Math.PI})`}
-            fill="#59595B" stroke="#A6A6A4" strokeWidth="1" />
+            fill="#59595B" stroke={edge} strokeWidth="1" style={{ transition: "stroke .35s ease" }} />
         );
       })}
-      <circle cx={cx} cy={cy} r={r * 0.9} fill="#3C3D42" stroke="#A6A6A4" strokeWidth="1.4" />
-      <circle cx={cx} cy={cy} r={r * 0.34} fill="#222328" stroke="#A6A6A4" strokeWidth="1" />
+      <circle cx={cx} cy={cy} r={r * 0.9} fill="#3C3D42" stroke={edge} strokeWidth="1.4" style={{ transition: "stroke .35s ease" }} />
+      <circle cx={cx} cy={cy} r={r * 0.34} fill="#222328" stroke={edge} strokeWidth="1" style={{ transition: "stroke .35s ease" }} />
+      <circle cx={cx} cy={cy} r={r * 0.1} fill={hot ? "#E72241" : "#59595B"} style={{ transition: "fill .35s ease" }} />
     </g>
   );
 }
@@ -136,10 +138,11 @@ function NodeMap({
             })}
           </g>
           <circle cx="437" cy="235" r="17" fill="#222328" stroke="#A6A6A4" strokeWidth="2" />
-          <circle cx="437" cy="235" r="6" fill={companies[active] ? "#E72241" : "#59595B"} style={{ transition: "fill .35s ease" }} />
+          <circle cx="437" cy="235" r="6" fill={active === 1 ? "#E72241" : "#59595B"} style={{ transition: "fill .35s ease" }} />
 
-          {/* upper zone — small gear + twin pistons */}
-          <MiniGear cx={378} cy={108} r={26} teeth={10} spin={reduced ? "" : "gear-ccw"} />
+          {/* upper zone — INTERLOCKING gear train (driven when chapter 01 docks) + twin pistons */}
+          <MiniGear cx={378} cy={108} r={26} teeth={10} hot={active === 0} spin={reduced ? "" : "gear-ccw"} />
+          <MiniGear cx={420} cy={130} r={17} teeth={8} hot={active === 0} spin={reduced ? "" : "gear-cw-fast"} />
           {[470, 502].map((x, k) => (
             <g key={x}>
               <rect x={x} y="84" width="20" height="40" rx="3" fill="#3C3D42" stroke="#A6A6A4" strokeWidth="1.4" />
@@ -155,13 +158,34 @@ function NodeMap({
           ))}
           <rect x="352" y="341" width="26" height="18" rx="2" fill="#59595B" stroke="#A6A6A4" strokeWidth="1.2"
             className={reduced ? undefined : "gear-cw"} style={{ animationDuration: "7s", transformOrigin: "365px 350px" }} />
-          <MiniGear cx={500} cy={382} r={22} teeth={9} spin={reduced ? "" : "gear-cw-fast"} />
+          <MiniGear cx={500} cy={382} r={22} teeth={9} hot={active === 3} spin={reduced ? "" : "gear-cw-fast"} />
+          <MiniGear cx={464} cy={366} r={14} teeth={7} hot={active === 3} spin={reduced ? "" : "gear-ccw"} />
           <g>
             <circle cx="378" cy="392" r="16" fill="#222328" stroke="#A6A6A4" strokeWidth="1.6" />
             <path d="M366 392 a12 12 0 0 1 24 0" fill="none" stroke="#59595B" strokeWidth="1.2" />
             <line x1="378" y1="392" x2="386" y2="383" stroke="#E72241" strokeWidth="2" strokeLinecap="round"
               className={reduced ? undefined : "valve-wiggle"} style={{ transformOrigin: "378px 392px", animationDuration: "4s" }} />
             <circle cx="378" cy="392" r="2.4" fill="#A6A6A4" />
+          </g>
+
+          {/* segmented mechanical channel — right column; each docking socket owns a
+             marker segment, and the engaged chapter's segment lights crimson */}
+          <g>
+            <rect x="520" y="104" width="16" height="268" rx="2" fill="#222328" stroke="#59595B" strokeWidth="1.2" />
+            {Array.from({ length: 13 }).map((_, k) => (
+              <line key={k} x1="523" y1={112 + k * 20} x2="533" y2={112 + k * 20} stroke="#3C3D42" strokeWidth="1" />
+            ))}
+            {SOCKETS_Y.map((sy, i) => (
+              <rect key={sy} x="522.5" y={sy - 7} width="11" height="14" rx="1"
+                fill={i === active ? "#E72241" : "#3C3D42"} stroke={i === active ? "#DDDDD8" : "#59595B"} strokeWidth="0.9"
+                style={{ transition: "fill .4s ease, stroke .4s ease" }} />
+            ))}
+          </g>
+          {/* segmented shaft between flywheel hub and rack drive */}
+          <g>
+            {Array.from({ length: 6 }).map((_, k) => (
+              <rect key={k} x={433} y={318 + k * 5} width="8" height="3" fill={k % 2 ? "#59595B" : "#A6A6A4"} opacity="0.8" />
+            ))}
           </g>
         </g>
 
@@ -180,9 +204,17 @@ function NodeMap({
                 <path d={path} fill="none" stroke="#E72241" strokeWidth="2.4" strokeLinejoin="round" strokeLinecap="round"
                   className={reduced ? undefined : "channel-flow"} />
               )}
-              {/* joint housings */}
+              {/* joint housings + locking clamps (engaged arm is physically clamped in) */}
               <circle cx={ex} cy={cy} r="5.4" fill="#3C3D42" stroke={engaged ? "#E72241" : "#A6A6A4"} strokeWidth="1.3" style={{ transition: "stroke .35s ease" }} />
               <circle cx={ex + 26} cy={sy} r="4.4" fill="#3C3D42" stroke={engaged ? "#E72241" : "#A6A6A4"} strokeWidth="1.2" style={{ transition: "stroke .35s ease" }} />
+              {engaged && (
+                <g>
+                  <path d={`M${ex - 9} ${cy - 4} A9.8 9.8 0 0 1 ${ex + 4} ${cy - 8.8}`} fill="none" stroke="#E72241" strokeWidth="2" strokeLinecap="round" />
+                  <path d={`M${ex + 9} ${cy + 4} A9.8 9.8 0 0 1 ${ex - 4} ${cy + 8.8}`} fill="none" stroke="#E72241" strokeWidth="2" strokeLinecap="round" />
+                  <circle cx={ex - 9} cy={cy - 4} r="1.6" fill="#DDDDD8" />
+                  <circle cx={ex + 9} cy={cy + 4} r="1.6" fill="#DDDDD8" />
+                </g>
+              )}
             </g>
           );
         })}
