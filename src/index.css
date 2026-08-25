@@ -1,1 +1,380 @@
 @import "tailwindcss";
+
+/* ============================================================
+   CBK DESIGNFOLIO — GLOBAL VISUAL SYSTEM
+   editorial + matte industrial + cyberpunk + technical dossier
+   ONE black #222328 · ONE crimson #E72241 · warm matte whites
+   ============================================================ */
+
+:root {
+  --page: #DDDDD8;      /* MAIN MATTE WHITE — architectural light page */
+  --sup1: #C3C1BC;      /* SOFT WARM GREY — cards */
+  --sup2: #CEB1AB;      /* MUTED WARM HIGHLIGHT */
+  --ink: #222328;       /* PRIMARY BLACK */
+  --ink2: #59595B;      /* DARK GRAPHITE — secondary text */
+  --line: rgba(34, 35, 40, 0.16);
+  --line-soft: rgba(34, 35, 40, 0.08);
+  --crimson: #E72241;   /* PRIMARY CRIMSON — every red accent */
+  --crimson-strong: #E72241;
+
+  /* matte panel system */
+  --outer-bg: #222328;
+  --outer-ink: #DDDDD8;
+  --m-line: rgba(221, 221, 216, 0.16);
+  --m-sub: rgba(221, 221, 216, 0.62);
+
+  --hero-ink: #222328;
+  --hero-crimson: #B01E36; /* rough matte pigment crimson on light */
+  --hdr-edge: rgba(34, 35, 40, 0.3);
+  --clock-col: #222328;
+  --surge: #58C8EE;
+
+  /* CORE machine materials — LIGHT: black reactor, light components */
+  --machine-plate: #222328;
+  --machine-deep: #3C3D42;
+  --machine-line: #59595B;
+  --machine-inv: #DDDDD8;
+  --machine-warm: #CEB1AB;
+  --machine-crimson: #9E2237;
+  --machine-crimson-hot: #E72241;
+  --machine-shadow: #59232F;
+}
+
+.dark {
+  --page: #3C3D42;      /* DEEP GRAPHITE page */
+  --sup1: #222328;      /* recessed structural cards */
+  --sup2: #59595B;
+  --ink: #DDDDD8;       /* matte white typography */
+  --ink2: #A6A6A4;      /* LIGHT GREY secondary */
+  --line: rgba(221, 221, 216, 0.15);
+  --line-soft: rgba(221, 221, 216, 0.07);
+  --crimson-strong: #9E2237;
+
+  /* universal inversion — LIGHT BLACK → DARK MATTE WHITE */
+  --outer-bg: #DDDDD8;
+  --outer-ink: #222328;
+  --m-line: rgba(34, 35, 40, 0.2);
+  --m-sub: rgba(34, 35, 40, 0.62);
+
+  --hero-ink: #DDDDD8;
+  --hero-crimson: #EE3A54; /* slightly brighter matte crimson on graphite */
+  --hdr-edge: rgba(231, 34, 65, 0.42);
+  --clock-col: #FF7A1F; /* neon orange — sharp, no bloom */
+
+  /* CORE machine materials — DARK: white reactor, dark components */
+  --machine-plate: #DDDDD8;
+  --machine-deep: #C3C1BC;
+  --machine-line: #222328;
+  --machine-inv: #222328;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--page);
+  color: var(--ink);
+  font-family: "Archivo", "Segoe UI", sans-serif;
+  transition: background-color 0.5s ease, color 0.5s ease;
+  overflow-x: hidden;
+}
+::selection { background: var(--crimson); color: #DDDDD8; }
+
+/* ---------- typography ---------- */
+.f-display { font-family: "Anton", "Archivo", sans-serif; font-weight: 400; }
+.f-striker { font-family: "Black Ops One", "Chakra Petch", sans-serif; font-weight: 400; }
+.f-tech { font-family: "Chakra Petch", sans-serif; }
+.f-mono { font-family: "IBM Plex Mono", monospace; }
+.f-automata { font-family: "Orbitron", "Chakra Petch", sans-serif; font-weight: 800; }
+.f-magola { font-family: "Oswald", "Archivo", sans-serif; font-weight: 600; }
+.f-clock { font-family: "Share Tech Mono", monospace; }
+
+/* ---------- matte materials (rough, low-sheen, industrial) ---------- */
+.mat-texture { position: relative; }
+.mat-texture::before {
+  content: "";
+  position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background-image:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 5px),
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.05) 0 1px, transparent 1px 6px);
+  mix-blend-mode: overlay;
+}
+.mat-texture::after {
+  content: "";
+  position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background:
+    radial-gradient(120% 90% at 18% 8%, rgba(255, 255, 255, 0.05), transparent 46%),
+    radial-gradient(120% 100% at 85% 95%, rgba(0, 0, 0, 0.14), transparent 52%);
+}
+.mat-outer { background-color: var(--outer-bg); color: var(--outer-ink); }
+.mat-inner { background-color: #DDDDD8; color: #222328; }
+.dark .mat-inner { background-color: #222328; color: #DDDDD8; }
+.mat-page-card { background-color: var(--sup1); color: var(--ink); }
+
+/* MY JOURNEY dossier — inverts with the theme like every matte panel */
+.mat-journey {
+  background-color: #222328;
+  color: #DDDDD8;
+  --outer-bg: #222328;
+  --outer-ink: #DDDDD8;
+  --m-line: rgba(221, 221, 216, 0.16);
+  --m-sub: rgba(221, 221, 216, 0.62);
+}
+.dark .mat-journey {
+  background-color: #DDDDD8;
+  color: #222328;
+  --outer-bg: #DDDDD8;
+  --outer-ink: #222328;
+  --m-line: rgba(34, 35, 40, 0.2);
+  --m-sub: rgba(34, 35, 40, 0.62);
+}
+.dark .mat-journey .mat-inner { background-color: #222328; color: #DDDDD8; }
+
+/* ---------- shapes ---------- */
+.chamfer { clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px); }
+.dossier-clip { clip-path: polygon(22px 0, 100% 0, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%, 0 22px); }
+.dossier-clip-sm { clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px); }
+.corner-bracket { position: relative; }
+.corner-bracket::before, .corner-bracket::after {
+  content: ""; position: absolute; width: 14px; height: 14px; pointer-events: none; z-index: 2;
+}
+.corner-bracket::before { top: 6px; left: 6px; border-top: 2px solid var(--crimson); border-left: 2px solid var(--crimson); }
+.corner-bracket::after { bottom: 6px; right: 6px; border-bottom: 2px solid var(--crimson); border-right: 2px solid var(--crimson); }
+
+/* ---------- buttons (8px radius, never pills) ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  font-family: "Chakra Petch", sans-serif; font-weight: 700;
+  font-size: 12px; letter-spacing: 0.22em;
+  padding: 14px 24px; border-radius: 8px; border: 1.5px solid transparent;
+  transition: transform 0.3s cubic-bezier(0.3, 0.8, 0.3, 1), background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer; text-decoration: none;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0) scale(0.98); }
+.btn-crimson { background: var(--crimson); color: #DDDDD8; box-shadow: 0 14px 30px -14px rgba(231, 34, 65, 0.75); }
+.btn-crimson:hover { background: #C81D38; }
+.btn-ghost { background: transparent; }
+.btn-ghost:hover { border-color: var(--crimson) !important; color: var(--crimson) !important; }
+
+/* ---------- header ---------- */
+.hdr-shell {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 52px) 100%, 52px 100%, 0 calc(100% - 12px));
+}
+.clock-num { color: var(--clock-col); } /* sharp neon in dark — no glow */
+
+/* DESIGNFOLIO fluid identity — thin→bold→mixed weight→color wave→micro glitch→hops→rest */
+.logo-letter { display: inline-block; animation: logoFlow 9s cubic-bezier(0.4, 0.2, 0.3, 1) infinite; will-change: transform, filter; }
+@keyframes logoFlow {
+  0%, 100% { transform: none; opacity: 0.82; filter: none; color: inherit; }
+  6% { transform: scaleY(1.22); opacity: 1; }
+  10% { transform: scaleY(0.82) scaleX(1.12); opacity: 0.72; }
+  14% { transform: none; color: var(--crimson); opacity: 1; }
+  18% { transform: translateX(1.4px); filter: blur(0.5px); color: inherit; }
+  21% { transform: translateX(-1.6px) skewX(-6deg); filter: blur(0.7px); }
+  24% { transform: translateY(-2.4px); filter: none; }
+  28% { transform: translateY(0) scaleY(1.14); }
+  34% { transform: none; opacity: 0.82; }
+}
+
+.moon-drift { animation: moonDrift 5s ease-in-out infinite; }
+@keyframes moonDrift { 0%, 100% { transform: translate(0, 0) rotate(0deg); } 50% { transform: translate(1px, -1.4px) rotate(-7deg); } }
+.sun-spin { animation: sunSpin 24s linear infinite; transform-origin: 12px 12px; }
+@keyframes sunSpin { to { transform: rotate(360deg); } }
+.sun-pulse { animation: sunPulse 4s ease-in-out infinite; transform-origin: 12px 12px; }
+@keyframes sunPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.09); } }
+
+/* ---------- reveal ---------- */
+.rv { opacity: 0; transform: translateY(26px); transition: opacity 0.9s cubic-bezier(0.25, 0.8, 0.3, 1), transform 0.9s cubic-bezier(0.25, 0.8, 0.3, 1); }
+.rv.is-in { opacity: 1; transform: none; }
+
+.live-blink { animation: liveBlink 1.6s steps(2, jump-none) infinite; }
+@keyframes liveBlink { 50% { opacity: 0.25; } }
+
+/* ---------- hero name : temporal resolve + interaction glitch ---------- */
+.print-matte { color: var(--hero-crimson); filter: url(#cbk-print-rough); }
+
+.name-resolve { animation: nameResolve 1.1s cubic-bezier(0.3, 0.8, 0.25, 1) both; }
+@keyframes nameResolve {
+  0% { opacity: 0; transform: translateY(12px) scaleY(1.22); filter: blur(7px); letter-spacing: 0.14em; }
+  45% { opacity: 1; transform: translateY(-2px) scaleY(0.98) skewX(-2deg); filter: blur(1.4px); letter-spacing: 0.02em; }
+  72% { transform: translateX(2px); filter: blur(0.4px); }
+  100% { opacity: 1; transform: none; filter: none; letter-spacing: normal; }
+}
+.name-glitch { animation: nameShake 0.7s steps(2, jump-none) both; }
+@keyframes nameShake {
+  0%, 100% { transform: none; }
+  16% { transform: translateX(-3px) skewX(-1.6deg); }
+  34% { transform: translateX(2.4px); }
+  52% { transform: translateX(-1.6px) skewX(1.2deg); }
+  72% { transform: translateX(1px); }
+}
+.name-glitch .glyph {
+  display: inline-block;
+  animation: glyphMorph 0.7s steps(1, end) both;
+  animation-delay: var(--gd, 0s);
+  will-change: transform, filter;
+}
+@keyframes glyphMorph {
+  0% { transform: none; filter: none; text-shadow: none; font-family: inherit; }
+  10% { transform: translateX(var(--gx, 2px)) scaleX(0.78); font-family: var(--gf, "Anton"); text-shadow: 2px 0 var(--crimson), -2px 0 var(--ink2); }
+  24% { transform: translateX(calc(var(--gx, 2px) * -1.4)) scaleX(1.28) skewX(-8deg); font-family: "IBM Plex Mono"; filter: blur(0.8px); text-shadow: -2.5px 0 var(--crimson); }
+  38% { transform: translateY(-0.14em) translateX(var(--gx, 2px)); font-family: var(--gf, "Anton"); text-shadow: 2.5px 1px var(--ink2), -2px -1px var(--crimson); filter: none; }
+  52% { transform: translateX(calc(var(--gx, 2px) * 0.8)) scaleY(1.16); font-family: "Black Ops One"; filter: blur(0.6px); text-shadow: 1.5px 0 var(--crimson); }
+  66% { transform: translateX(calc(var(--gx, 2px) * -0.5)) scaleX(0.92); font-family: inherit; text-shadow: -1.5px 0 var(--crimson); filter: none; }
+  80% { transform: translateX(calc(var(--gx, 2px) * 0.25)); font-family: inherit; text-shadow: 1px 0 rgba(231, 34, 65, 0.5); }
+  100% { transform: none; filter: none; text-shadow: none; font-family: inherit; }
+}
+
+/* ---------- hero profile ring ---------- */
+.ring-ripple { animation: ringRipple 1.25s cubic-bezier(0.25, 0.7, 0.3, 1) both; }
+@keyframes ringRipple {
+  0% { transform: scale(0.94); opacity: 0.85; }
+  100% { transform: scale(1.26); opacity: 0; }
+}
+.depth-breath { animation: depthBreath 8s ease-in-out infinite alternate; }
+@keyframes depthBreath { from { transform: scale(1); } to { transform: scale(1.035); } }
+
+/* spider-verse print transition (hero media) */
+.gv2-shake { animation: gv2Shake 0.72s steps(2, jump-none) both; }
+@keyframes gv2Shake {
+  0%, 100% { transform: none; } 20% { transform: translateX(-4px); } 40% { transform: translateX(3px) skewX(-1deg); }
+  60% { transform: translateX(-2px); } 80% { transform: translateX(1px); }
+}
+.gv2-sa { animation: gv2SliceA 0.72s steps(1, end) both; }
+.gv2-sb { animation: gv2SliceB 0.72s steps(1, end) both; }
+.gv2-sc { animation: gv2SliceC 0.72s steps(1, end) both; }
+@keyframes gv2SliceA { 0% { clip-path: inset(0 0 62% 0); transform: translateX(-7%); opacity: 1; } 30% { clip-path: inset(0 0 62% 0); transform: translateX(3%); } 55%, 100% { clip-path: inset(0 0 62% 0); transform: none; opacity: 0; } }
+@keyframes gv2SliceB { 0% { clip-path: inset(34% 0 34% 0); transform: translateX(6%); opacity: 1; } 35% { clip-path: inset(34% 0 34% 0); transform: translateX(-4%); } 60%, 100% { clip-path: inset(34% 0 34% 0); transform: none; opacity: 0; } }
+@keyframes gv2SliceC { 0% { clip-path: inset(66% 0 0 0); transform: translateX(-5%); opacity: 1; } 40% { clip-path: inset(66% 0 0 0); transform: translateX(4%); } 65%, 100% { clip-path: inset(66% 0 0 0); transform: none; opacity: 0; } }
+.gv2-ghost-l { animation: gv2GhostL 0.72s steps(1, end) both; }
+.gv2-ghost-r { animation: gv2GhostR 0.72s steps(1, end) both; }
+@keyframes gv2GhostL { 0% { transform: translateX(-3.5%); opacity: 0.5; } 30% { transform: translateX(-1.5%); opacity: 0.34; } 55%, 100% { opacity: 0; } }
+@keyframes gv2GhostR { 0% { transform: translateX(3.5%); opacity: 0.45; } 30% { transform: translateX(1.5%); opacity: 0.3; } 55%, 100% { opacity: 0; } }
+.gv2-smear { animation: gv2Smear 0.72s steps(1, end) both; }
+@keyframes gv2Smear { 0% { transform: translateX(-9%); opacity: 0.8; } 40% { transform: translateX(5%); opacity: 0.4; } 70%, 100% { transform: translateX(0); opacity: 0; } }
+.gv2-tear { animation: gv2Tear 0.72s steps(1, end) both; }
+@keyframes gv2Tear { 0% { transform: translateX(-6%) scaleY(1); opacity: 0.9; } 25% { transform: translateX(4%) scaleY(0.6); } 50% { transform: translateX(-2%) scaleY(1.4); opacity: 0.5; } 70%, 100% { opacity: 0; } }
+
+/* ---------- CORE machine ---------- */
+.gear-cw { animation: rotCW 90s linear infinite; transform-box: fill-box; transform-origin: center; }
+.gear-cw-fast { animation: rotCW 26s linear infinite; transform-box: fill-box; transform-origin: center; }
+.gear-ccw { animation: rotCCW 48s linear infinite; transform-box: fill-box; transform-origin: center; }
+.gear-ccw-slow { animation: rotCCW 120s linear infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes rotCW { to { transform: rotate(360deg); } }
+@keyframes rotCCW { to { transform: rotate(-360deg); } }
+.wedge-rock { animation: wedgeRock 9s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes wedgeRock { 0%, 100% { transform: rotate(-1.4deg); } 50% { transform: rotate(1.4deg); } }
+.channel-flow { stroke-dasharray: 6 10; animation: channelFlow 0.9s linear infinite; }
+@keyframes channelFlow { to { stroke-dashoffset: -16; } }
+.piston { animation: pistonPump 2.6s ease-in-out infinite; }
+@keyframes pistonPump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
+.valve-wiggle { animation: valveWiggle 3.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes valveWiggle { 0%, 100% { transform: rotate(0deg); } 30% { transform: rotate(24deg); } 60% { transform: rotate(-8deg); } }
+.fly-pulse { animation: flyPulse 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes flyPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+.head-pulse { transform-box: fill-box; transform-origin: center; animation: headPulse 2.4s ease-in-out infinite; }
+@keyframes headPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+
+/* CORE 3D theme rebuild — disassemble → invert → reassemble */
+.mech-stage { position: absolute; inset: 0; perspective: 1000px; }
+.mech-tilt { animation: mechTilt 1.56s cubic-bezier(0.35, 0.7, 0.3, 1) both; transform-origin: center; }
+@keyframes mechTilt {
+  0%, 100% { transform: rotateX(0deg) scale(1); }
+  45%, 55% { transform: rotateX(16deg) rotateZ(-2deg) scale(0.965); }
+}
+.rb-a, .rb-b, .rb-c, .rb-d, .rb-e { transform-box: fill-box; transform-origin: center; }
+.mech-rebuild .rb-a { animation: rbA 1.56s cubic-bezier(0.35, 0.7, 0.3, 1) both; }
+.mech-rebuild .rb-b { animation: rbB 1.56s cubic-bezier(0.35, 0.7, 0.3, 1) both; }
+.mech-rebuild .rb-c { animation: rbC 1.56s cubic-bezier(0.35, 0.7, 0.3, 1) both; }
+.mech-rebuild .rb-d { animation: rbD 1.56s cubic-bezier(0.35, 0.7, 0.3, 1) both; }
+.mech-rebuild .rb-e { animation: rbE 1.56s cubic-bezier(0.35, 0.7, 0.3, 1) both; }
+@keyframes rbA { 0%, 100% { transform: none; opacity: 1; } 45%, 55% { transform: translate(-54px, -36px) rotate(-26deg); opacity: 0.82; } }
+@keyframes rbB { 0%, 100% { transform: none; opacity: 1; } 45%, 55% { transform: translate(50px, -42px) rotate(20deg); opacity: 0.82; } }
+@keyframes rbC { 0%, 100% { transform: none; opacity: 1; } 45%, 55% { transform: translate(-42px, 46px) rotate(16deg); opacity: 0.82; } }
+@keyframes rbD { 0%, 100% { transform: none; opacity: 1; } 45%, 55% { transform: translate(52px, 40px) rotate(-22deg); opacity: 0.82; } }
+@keyframes rbE { 0%, 100% { transform: none; opacity: 1; } 45%, 55% { transform: scale(0.5) rotate(140deg); opacity: 0.6; } }
+
+/* ---------- career node map ---------- */
+.packet { stroke-dasharray: 12 340; animation: packetMove 2.8s linear infinite; }
+.packet-2 { stroke-dasharray: 8 344; animation: packetMove 3.6s linear infinite reverse; }
+@keyframes packetMove { to { stroke-dashoffset: -352; } }
+.arm-packet { animation: armPacket 1.5s cubic-bezier(0.4, 0.4, 0.4, 1) infinite; }
+@keyframes armPacket { 0% { transform: translateX(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(190px); opacity: 0; } }
+.progFill { animation: progFill linear both; transform-origin: left; }
+@keyframes progFill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.scan-pass { animation: scanPass 2.4s cubic-bezier(0.3, 0.6, 0.3, 1) both; }
+@keyframes scanPass { 0% { transform: translateX(-110%); } 100% { transform: translateX(240%); } }
+.dossier-swap { animation: dossierSwap 0.55s cubic-bezier(0.3, 0.8, 0.3, 1) both; }
+@keyframes dossierSwap {
+  0% { opacity: 0; transform: translateY(14px) skewX(-1.4deg); filter: blur(3px); }
+  45% { opacity: 0.7; transform: translateY(4px) skewX(0.6deg); filter: blur(0.6px); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+
+/* ---------- show reel / sea ---------- */
+.wave-drift { animation: waveDrift 7s linear infinite; }
+@keyframes waveDrift { to { transform: translateX(-120px); } }
+.ship-bob { animation: shipBob 3.2s ease-in-out infinite; }
+@keyframes shipBob { 0%, 100% { transform: translateY(0) rotate(-0.6deg); } 50% { transform: translateY(-3px) rotate(0.8deg); } }
+.ahoy-pop { animation: ahoyPop 0.5s cubic-bezier(0.3, 0.9, 0.3, 1.2) 0.55s both; }
+@keyframes ahoyPop { 0% { opacity: 0; transform: translate(-30%, 8px) scale(0.7); } 100% { opacity: 1; transform: translate(-30%, 0) scale(1); } }
+.track-drag { cursor: grab; touch-action: pan-y; }
+.track-drag:active { cursor: grabbing; }
+
+/* ---------- pipeline ---------- */
+/* the paper plane starts tiny at the mailbox and GROWS across the flight */
+.plane-cross { animation: planeCross 2.6s cubic-bezier(0.5, 0.05, 0.45, 0.95) both; }
+@keyframes planeCross {
+  0% { transform: translate(0, -50%) scale(0.3) rotate(4deg); opacity: 0; }
+  7% { opacity: 1; }
+  100% { transform: translate(var(--flight, 600px), -50%) scale(1.3) rotate(-2deg); opacity: 1; }
+}
+.node-pop { animation: nodePop 0.45s cubic-bezier(0.3, 0.9, 0.3, 1.2) both; }
+@keyframes nodePop { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+.shake-hard { animation: shakeHard 0.5s steps(2, jump-none) both; }
+@keyframes shakeHard {
+  0%, 100% { transform: none; filter: none; }
+  20% { transform: translateX(-5px) skewX(-2deg); filter: blur(1px) saturate(1.4); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px) skewX(1.6deg); filter: blur(0.6px); }
+  80% { transform: translateX(2px); }
+}
+.collapse-out { animation: collapseOut 0.5s cubic-bezier(0.5, 0, 0.7, 0.4) both; }
+@keyframes collapseOut { to { opacity: 0; transform: translateY(-16px) scaleY(0.9); filter: blur(4px); } }
+.reveal-in { animation: revealIn 0.9s cubic-bezier(0.25, 0.8, 0.3, 1) 0.15s both; }
+@keyframes revealIn { 0% { opacity: 0; transform: translateY(30px); clip-path: inset(0 100% 0 0); } 60% { clip-path: inset(0 0 0 0); } 100% { opacity: 1; transform: none; } }
+
+/* ---------- misc ---------- */
+.blueprint {
+  background-image:
+    linear-gradient(var(--line-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(85% 70% at 50% 30%, black 30%, transparent 78%);
+}
+.viewer-in { animation: viewerIn 0.45s cubic-bezier(0.25, 0.8, 0.3, 1) both; }
+@keyframes viewerIn { from { opacity: 0; transform: scale(0.965); } to { opacity: 1; transform: none; } }
+
+input, textarea, select { font-family: inherit; }
+.ed-field {
+  width: 100%;
+  background: var(--sup1);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--ink);
+  transition: border-color 0.25s ease, background-color 0.25s ease;
+}
+.ed-field:focus { outline: none; border-color: var(--crimson); }
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001s !important;
+  }
+  .rv { opacity: 1; transform: none; }
+  .name-resolve, .name-glitch, .name-glitch .glyph, .mech-tilt { animation: none !important; opacity: 1; }
+}
