@@ -103,11 +103,16 @@
   --ct-card-ink: #DDDDD8;
   --ct-card-sub: #A6A6A4;
 
-  /* dark-theme transmission: charcoal plates, black recesses, grey edges */
-  --tm-plate: #292A2F;
-  --tm-deep: #222328;
-  --tm-edge: #59595B;
-  --tm-mid: #3C3D42;
+  /* dark-theme transmission — INVERTED machine, same universe as the Creative
+     Core: off-white structure, light-grey components, graphite recesses +
+     linework, crimson activation */
+  --tm-plate: #E7E6E1;
+  --tm-deep: #292A2F;
+  --tm-edge: #222328;
+  --tm-mid: #D9D9D4;
+  --tm-inv: #222328;
+  --tm-detail: #59595B;
+  --tm-hot: #E72241;
 }
 
 html { scroll-behavior: smooth; }

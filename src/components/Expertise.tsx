@@ -19,9 +19,9 @@ function Description({ text }: { text: string }) {
   );
 }
 
-function ModuleHeading({ tag, title, right }: { tag: string; title: string; right: React.ReactNode }) {
+function ModuleHeading({ tag, title, right, className = "" }: { tag: string; title: string; right: React.ReactNode; className?: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b-2 pb-3" style={{ borderColor: "var(--m-line)" }}>
+    <div className={`flex items-center justify-between gap-4 border-b-2 pb-3 ${className}`} style={{ borderColor: "var(--m-line)" }}>
       <h3 className="f-tech font-bold text-[14px] sm:text-[16px] tracking-[0.24em] flex items-center gap-3 whitespace-nowrap" style={{ color: "var(--outer-ink)" }}>
         <span className="w-2.5 h-2.5 bg-[var(--crim-panel)] shrink-0" />
         {title}
@@ -89,12 +89,49 @@ function NodeMap({
   const spin = (s?: string) => (reduced || !s ? undefined : s);
   /* engaged machine runs hotter */
   const hot = !reduced;
-  const dFly = hot ? "16s" : "16s";
+  const dFly = "16s";
   const dDrive = featured >= 0 && hot ? "34s" : "48s";
 
+  /* mobile: stacked docking buttons above a machine-only view */
+  const [mobile, setMobile] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const on = () => setMobile(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+
   return (
-    <div className="relative" style={{ aspectRatio: "560 / 640" }} onMouseLeave={onLeaveRow}>
-      <svg viewBox="0 0 560 640" className="absolute inset-0 w-full h-full">
+    <div onMouseLeave={onLeaveRow}>
+      {mobile && (
+        <div className="grid grid-cols-2 gap-2.5 mb-3 lg:hidden">
+          {companies.map((co, i) => {
+            const label = co.name === "PREMA SAI DESIGNERS" ? "PSD" : co.name;
+            const isFeat = i === featured;
+            const isLock = i === active && locked;
+            return (
+              <button key={co.id} type="button" onMouseEnter={() => onHover(i)} onClick={() => onPick(i)}
+                className="relative flex items-center gap-2.5 px-3.5 py-3 rounded-md text-left transition-all duration-300"
+                style={{
+                  background: isFeat ? (theme === "light" ? "#DDDDD8" : "#292A2F") : "var(--tm-plate)",
+                  boxShadow: `inset 0 0 0 ${isFeat ? 1.5 : 1}px ${isFeat ? "var(--tm-hot)" : "var(--tm-edge)"}`,
+                }}>
+                <span className="f-mono text-[9px] tracking-[0.14em] font-semibold"
+                  style={{ color: isFeat ? "var(--tm-hot)" : "var(--tm-detail)" }}>{String(i + 1).padStart(2, "0")}</span>
+                <span className="f-tech font-bold text-[12px] sm:text-[13px] tracking-[0.08em] whitespace-nowrap"
+                  style={{ color: isFeat ? (theme === "light" ? "#222328" : "#DDDDD8") : "var(--tm-inv)" }}>{label}</span>
+                <span className={`ml-auto w-1.5 h-1.5 rounded-full shrink-0 ${isFeat && hot ? "live-blink" : ""}`}
+                  style={{ background: isFeat ? "var(--tm-hot)" : "var(--tm-edge)" }} />
+                {isLock && (
+                  <span className="absolute -top-2 left-2 f-mono text-[7px] tracking-[0.14em] font-bold px-1.5 py-0.5 rounded-sm bg-[var(--tm-hot)] text-[#DDDDD8]">LOCK</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+      <div className="relative" style={{ aspectRatio: mobile ? "290 / 615" : "560 / 640" }}>
+      <svg viewBox={mobile ? "268 26 292 618" : "0 0 560 640"} className="absolute inset-0 w-full h-full">
         {/* ============ BACK LAYER — structural framework ============ */}
         <g>
           <rect x="282" y="34" width="252" height="572" rx="10" fill="var(--tm-deep)" stroke="var(--tm-edge)" strokeWidth="1.6" />
@@ -269,14 +306,17 @@ function NodeMap({
             className={reduced ? undefined : "core-engage"} />
         </g>
 
-        {/* ============ COMPANY DOCKING MODULES — all four on the LEFT ============ */}
+        {/* ============ COMPANY DOCKING MODULES — all four on the LEFT
+             (hidden on mobile — the stacked docking buttons above take over) ============ */}
+        <g className="hidden lg:block">
         {companies.map((co, i) => {
           const cy = PLATE_CY[i];
           const label = co.name === "PREMA SAI DESIGNERS" ? "PSD" : co.name;
           const isFeat = i === featured;
           const isLock = i === active && locked;
-          /* material inversion on the light theme; graphite lift on dark */
-          const plateFill = isFeat ? (theme === "light" ? "#DDDDD8" : "var(--tm-mid)") : "var(--tm-plate)";
+          /* material inversion both ways: light plate flips to off-white,
+             dark (off-white) plate flips to matte graphite */
+          const plateFill = isFeat ? (theme === "light" ? "#DDDDD8" : "#292A2F") : "var(--tm-plate)";
           const plateText = isFeat ? (theme === "light" ? "#222328" : "#DDDDD8") : "var(--tm-inv)";
           const plateStroke = isFeat ? "var(--tm-hot)" : "var(--tm-edge)";
           const ext = isFeat ? 1 : 0; /* connector extension 0..1 */
@@ -370,7 +410,9 @@ function NodeMap({
             </g>
           );
         })}
+        </g>
       </svg>
+      </div>
     </div>
   );
 }
@@ -457,15 +499,15 @@ export default function Expertise() {
             </div>
 
             <div className="grid lg:grid-cols-[1.02fr_0.98fr] gap-x-6 gap-y-8 lg:gap-x-10 mb-5">
-              <ModuleHeading tag="A" title="CAREER INFO" right="CLICK MODULE — LOCK · AGAIN — RELEASE" />
-              <ModuleHeading tag="B" title="CAREER NODE MAP" right={<span style={{ color: "var(--outer-ink)" }}>{co.num} — {co.name}</span>} />
+              <ModuleHeading tag="A" title="CAREER INFO" right="CLICK MODULE — LOCK · AGAIN — RELEASE" className="order-2 lg:order-1" />
+              <ModuleHeading tag="B" title="CAREER NODE MAP" right={<span style={{ color: "var(--outer-ink)" }}>{co.num} — {co.name}</span>} className="order-1 lg:order-2" />
             </div>
 
             <div className="grid lg:grid-cols-[1.02fr_0.98fr] gap-6 lg:gap-10 lg:items-start"
               onMouseEnter={() => setHover(true)} onMouseLeave={() => { setHover(false); setHoverIdx(null); }}>
 
               {/* ================= CAREER INFO (LEFT) ================= */}
-              <div className="mat-inner mat-texture dossier-clip corner-bracket relative p-5 sm:p-7 flex flex-col min-h-0 overflow-hidden lg:min-h-[640px] order-1">
+              <div className="mat-inner mat-texture dossier-clip corner-bracket relative p-5 sm:p-7 flex flex-col min-h-0 overflow-hidden lg:min-h-[640px] order-2 lg:order-1">
                 <span key={`edge-${co.id}`} className="absolute top-0 left-0 h-[3px] bg-[var(--crimson)] scan-pass" style={{ width: "46%" }} aria-hidden />
 
                 <div key={co.id} className="dossier-swap flex flex-col gap-3.5 min-h-0 flex-1">
@@ -517,8 +559,8 @@ export default function Expertise() {
                 </div>
               </div>
 
-              {/* ================= CAREER NODE MAP (RIGHT) ================= */}
-              <div className="min-h-0 flex flex-col order-2">
+              {/* ================= CAREER NODE MAP (RIGHT on desktop, FIRST on mobile) ================= */}
+              <div className="min-h-0 flex flex-col order-1 lg:order-2">
                 <NodeMap
                   active={active} hoverIdx={hoverIdx} locked={locked} reduced={reduced} theme={theme}
                   companies={companies}
