@@ -1,0 +1,115 @@
+import React, { useEffect, useState } from "react";
+import { useHashRoute, useLocalTime, useStore } from "../lib/store";
+import { LinkedInIcon, MoonIcon, SunIcon } from "./icons";
+
+const NAV = [
+  { label: "ABOUT", href: "#about" },
+  { label: "CREATIVES", href: "#showreel" },
+  { label: "AI LAB", href: "#ailab" },
+  { label: "ARC", href: "#arc" },
+  { label: "CONTACT ME", href: "#contact" },
+];
+
+export default function Header() {
+  const { theme, toggleTheme } = useStore();
+  const [, nav] = useHashRoute();
+  const time = useLocalTime();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const on = () => setScrolled(window.scrollY > 24);
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
+  }, []);
+
+  const [hh, mm, ss, mer] = time.split(/[: ]/);
+
+  return (
+    <header className="fixed top-0 inset-x-0 z-50">
+      <div
+        className="hdr-shell mat-texture transition-all duration-500"
+        style={{
+          backgroundColor: "color-mix(in srgb, var(--page) 88%, transparent)",
+          backdropFilter: scrolled ? "blur(3px)" : "none",
+          WebkitBackdropFilter: scrolled ? "blur(3px)" : "none",
+          borderBottom: "1px solid var(--line)",
+        }}
+      >
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 h-[58px] lg:h-[64px] flex items-center gap-4 lg:gap-6">
+          {/* CBK identity — compact futuristic mark, not a badge */}
+          <a href="#about" className="relative flex items-baseline gap-2.5 shrink-0 group" aria-label="CBK Designfolio — home">
+            <span className="f-automata text-[21px] lg:text-[23px] leading-none tracking-[0.08em] text-[var(--ink)]">
+              CBK
+            </span>
+            <span className="absolute left-[-3px] right-auto top-[54%] w-[52px] h-[2px] bg-[var(--crimson)] -rotate-6 group-hover:rotate-0 transition-transform duration-400" aria-hidden />
+            <span className="absolute left-[46px] top-[54%] w-[6px] h-[6px] bg-[var(--crimson)] -translate-y-1/2" aria-hidden />
+            <span className="f-tech font-semibold text-[11px] lg:text-[12px] tracking-[0.42em] text-[var(--ink2)] hidden sm:inline">
+              DESIGNFOLIO
+            </span>
+          </a>
+
+          <span className="w-px h-6 shrink-0" style={{ background: "var(--line)" }} aria-hidden />
+
+          <button onClick={() => nav("#/edit")}
+            className="f-tech font-bold text-[11px] lg:text-[12px] tracking-[0.3em] text-[var(--ink2)] hover:text-[var(--crimson)] transition-colors duration-300 shrink-0">
+            EDIT
+          </button>
+
+          {/* nav */}
+          <nav className="hidden md:flex items-center gap-5 lg:gap-6 ml-1">
+            {NAV.map((n) => (
+              <a key={n.label} href={n.href}
+                className="f-tech font-semibold text-[11.5px] lg:text-[12.5px] tracking-[0.22em] text-[var(--ink2)] hover:text-[var(--ink)] transition-colors duration-300 relative group">
+                {n.label}
+                <span className="absolute -bottom-1.5 left-0 h-[2px] w-0 bg-[var(--crimson)] group-hover:w-full transition-all duration-300" />
+              </a>
+            ))}
+          </nav>
+
+          <div className="flex-1" />
+
+          {/* technical clock */}
+          <div className="hidden sm:flex items-baseline gap-1.5 f-clock text-[17px] lg:text-[18px] leading-none tabular-nums">
+            <span className="f-mono text-[7.5px] tracking-[0.3em] text-[var(--ink2)] mr-1 self-center">LOCAL</span>
+            <span className="clock-num">{hh}:{mm}:{ss}</span>
+            <span className={`f-tech font-bold text-[9px] tracking-[0.18em] px-1.5 py-[3px] rounded-[4px] self-center ${
+              mer === "PM" ? "bg-[var(--crimson)] text-[#DDDDD8]" : "border border-[var(--ink2)] text-[var(--ink2)]"
+            }`}>
+              {mer}
+            </span>
+          </div>
+
+          {/* theme — light: black square + white moon · dark: off-white square + crimson/orange sun */}
+          <button onClick={toggleTheme} aria-label="Toggle theme"
+            className="w-9 h-9 lg:w-10 lg:h-10 grid place-items-center rounded-[8px] border transition-all duration-400 hover:-translate-y-0.5 shrink-0"
+            style={{
+              backgroundColor: theme === "light" ? "#222328" : "#DDDDD8",
+              borderColor: "var(--line)",
+            }}>
+            {theme === "light" ? <MoonIcon size={19} className="moon-drift" /> : <SunIcon size={20} />}
+          </button>
+
+          {/* LinkedIn */}
+          <a href="https://www.linkedin.com/in/c-bala-krishnan" target="_blank" rel="noreferrer" aria-label="LinkedIn"
+            className="w-9 h-9 lg:w-10 lg:h-10 grid place-items-center rounded-[8px] border border-[var(--line)] text-[var(--ink)] transition-all duration-400 hover:-translate-y-0.5 hover:text-[var(--crimson)] hover:border-[var(--crimson)] shrink-0">
+            <LinkedInIcon size={15} />
+          </a>
+        </div>
+
+        {/* structural bottom edge — horizontal line + diagonal rises */}
+        <div className="h-[12px] relative" aria-hidden>
+          <svg width="52" height="12" viewBox="0 0 52 12" fill="none" className="absolute left-0 bottom-0">
+            <path d="M0 0.5 L51 11.5" stroke="var(--hdr-edge)" strokeWidth="1.5" />
+            <path d="M44 10.8 h8" stroke="var(--crimson)" strokeWidth="2" />
+          </svg>
+          <div className="absolute inset-x-[52px] bottom-0 h-px" style={{ background: "var(--hdr-edge)" }} />
+          <svg width="52" height="12" viewBox="0 0 52 12" fill="none" className="absolute right-0 bottom-0">
+            <path d="M52 0.5 L1 11.5" stroke="var(--hdr-edge)" strokeWidth="1.5" />
+            <path d="M0 10.8 h8" stroke="var(--crimson)" strokeWidth="2" />
+          </svg>
+        </div>
+      </div>
+    </header>
+  );
+}
