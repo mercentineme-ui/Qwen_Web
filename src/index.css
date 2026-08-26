@@ -54,6 +54,9 @@
   --core-well: #3C3D42;
   --core-ptr: #DDDDD8;
   --core-ptr-edge: #A6A6A4;
+  /* major rotating rings + central gear bodies — black core: identical to housing, unchanged */
+  --core-ring: #222328;
+  --core-gear: #222328;
 
   /* capability node materials — LIGHT: graphite idle, black+off-white active */
   --node-bg: #3C3D42;
@@ -115,6 +118,9 @@
   --core-well: #59595B;
   --core-ptr: #3C3D42;
   --core-ptr-edge: #A6A6A4;
+  /* white core depth: rotating rings read as graphite, the central drive reads as matte black */
+  --core-ring: #59595B;
+  --core-gear: #222328;
 
   /* capability node materials — DARK: graphite idle, off-white structural active */
   --node-bg: #3C3D42;

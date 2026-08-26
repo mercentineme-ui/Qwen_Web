@@ -508,7 +508,7 @@ export default function CreativeCore() {
 
                     {/* SECONDARY RING (r=134) — rotates CLOCKWISE, its own speed */}
                     <g className={spin("gear-cw")} style={{ animationDuration: "74s" }}>
-                      <circle cx={C} cy={C} r={SECOND_R} fill="none" stroke="var(--core-plate)" strokeWidth="7" />
+                      <circle cx={C} cy={C} r={SECOND_R} fill="none" stroke="var(--core-ring)" strokeWidth="7" />
                       {Array.from({ length: 8 }).map((_, i) => {
                         const [x, y] = polar(C, C, SECOND_R, i * 45 + 22.5);
                         return <circle key={i} cx={x} cy={y} r="2.4" fill="var(--core-line)" />;
@@ -518,7 +518,7 @@ export default function CreativeCore() {
 
                     {/* INNER TRANSMISSION RING (r=112) — rotates COUNTER-CLOCKWISE (rAF, surges) */}
                     <g ref={innerRingG}>
-                      <circle cx={C} cy={C} r={INNER_R} fill="none" stroke="var(--core-plate)" strokeWidth="9" />
+                      <circle cx={C} cy={C} r={INNER_R} fill="none" stroke="var(--core-ring)" strokeWidth="9" />
                       {Array.from({ length: 40 }).map((_, i) => {
                         const [x, y] = polar(C, C, INNER_R, i * 9);
                         return <rect key={i} x={x - 2} y={y - 2} width="4" height="4" fill="var(--core-line)" opacity="0.7" transform={`rotate(${i * 9} ${x} ${y})`} />;
@@ -549,7 +549,7 @@ export default function CreativeCore() {
                     <g ref={gearBoostG}>
                       <g transform={`translate(${C} ${C})`}>
                         <g className={spin("gear-cw")} style={{ animationDuration: "34s" }}>
-                          <GearShape r={50} teeth={20} fill="var(--core-plate)" stroke="var(--core-line)" spokes={5} />
+                          <GearShape r={50} teeth={20} fill="var(--core-gear)" stroke="var(--core-line)" spokes={5} />
                         </g>
                       </g>
                       <g transform={`translate(${polar(C, C, 79, -45).join(" ")})`}>
@@ -559,7 +559,7 @@ export default function CreativeCore() {
                       </g>
                       <g transform={`translate(${polar(C, C, 79, -45)[0] + 40} ${polar(C, C, 79, -45)[1] + 30})`}>
                         <g className={spin("gear-cw")} style={{ animationDuration: "9s" }}>
-                          <GearShape r={16} teeth={9} fill="var(--core-plate)" stroke="var(--core-line)" hub={false} />
+                          <GearShape r={16} teeth={9} fill="var(--core-ring)" stroke="var(--core-line)" hub={false} />
                         </g>
                       </g>
                     </g>
@@ -582,7 +582,7 @@ export default function CreativeCore() {
                         <Drop cx={0} cy={4} rx={26} ry={20} o={0.14} />
                         {/* segmented output ring (counter-rotates, slower) */}
                         <g ref={outputRingG}>
-                          <circle r={26} fill="none" stroke="var(--core-plate)" strokeWidth="4.5" />
+                          <circle r={26} fill="none" stroke="var(--core-ring)" strokeWidth="4.5" />
                           {Array.from({ length: 16 }).map((_, i) => {
                             const [x, y] = polar(0, 0, 26, i * 22.5);
                             return <rect key={i} x={x - 1.6} y={y - 1.6} width="3.2" height="3.2" fill="var(--core-mid)" opacity="0.75" transform={`rotate(${i * 22.5} ${x} ${y})`} />;
