@@ -277,8 +277,8 @@ export default function CreativeCore() {
                     <circle key={r} cx={C} cy={C} r={r} fill="none" stroke="var(--core-line)" strokeWidth={0.7} opacity={0.4} />
                   ))}
                   {/* riveted perimeter seam */}
-                  {Array.from({ length: 16 }).map((_, i) => {
-                    const [x, y] = polar(247, i * 22.5);
+                  {Array.from({ length: 12 }).map((_, i) => {
+                    const [x, y] = polar(247, i * 30);
                     return <Rivet key={i} x={x} y={y} r={2.6} />;
                   })}
                 </g>
@@ -295,9 +295,9 @@ export default function CreativeCore() {
                   <path d={`M ${polar(220, 20)[0]} ${polar(220, 20)[1]} A 220 220 0 0 1 ${polar(220, 160)[0]} ${polar(220, 160)[1]}`}
                     fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth={1.6} strokeLinecap="round" />
                   {/* housing bolts + inspection plates */}
-                  {Array.from({ length: 12 }).map((_, i) => {
-                    const [x, y] = polar(225, i * 30 + 15);
-                    return <Bolt key={i} x={x} y={y} deg={i * 30} />;
+                  {Array.from({ length: 8 }).map((_, i) => {
+                    const [x, y] = polar(225, i * 45 + 22.5);
+                    return <Bolt key={i} x={x} y={y} deg={i * 45} />;
                   })}
                   {[45, 135, 225, 315].map((deg) => {
                     const [x, y] = polar(225, deg);
@@ -306,16 +306,6 @@ export default function CreativeCore() {
                         <rect x={-11} y={-7} width={22} height={14} rx={2.5} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.1} />
                         <circle cx={-7} r={1.4} fill="var(--core-deep)" /><circle cx={7} r={1.4} fill="var(--core-deep)" />
                         <rect x={-4} y={-2} width={8} height={4} rx={1} fill="var(--core-deep)" opacity={0.7} />
-                      </g>
-                    );
-                  })}
-                  {/* bearing housing stubs at cardinal points */}
-                  {[0, 90, 180, 270].map((deg) => {
-                    const [x, y] = polar(238, deg);
-                    return (
-                      <g key={deg} transform={`translate(${x} ${y}) rotate(${deg})`}>
-                        <rect x={-9} y={-6} width={18} height={12} rx={3} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.2} />
-                        <circle r={3} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
                       </g>
                     );
                   })}
@@ -385,11 +375,6 @@ export default function CreativeCore() {
                           fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={0.9} />
                       );
                     })}
-                    {/* small mechanical markers */}
-                    {Array.from({ length: 4 }).map((_, k) => {
-                      const [x, y] = polar(146, k * 90 + 45);
-                      return <circle key={k} cx={x} cy={y} r={2.4} fill="var(--core-crimson)" opacity={0.85} />;
-                    })}
                   </g>
                 </g>
 
@@ -399,12 +384,6 @@ export default function CreativeCore() {
                   {/* chamber inner shadow — it sits deeper than the rings */}
                   <circle cx={C} cy={C} r={140} fill="none" stroke="rgba(0,0,0,0.4)" strokeWidth={6} opacity={0.55} />
                   <circle cx={C} cy={C} r={133} fill="none" stroke="rgba(0,0,0,0.22)" strokeWidth={3} />
-                  {/* machined radial channels */}
-                  {[20, 95, 165, 240, 310].map((deg) => {
-                    const [x1, y1] = polar(132, deg);
-                    const [x2, y2] = polar(74, deg);
-                    return <line key={deg} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(0,0,0,0.25)" strokeWidth={5} strokeLinecap="round" />;
-                  })}
                   <circle cx={C} cy={C} r={112} fill="none" stroke="var(--core-line)" strokeWidth={0.8} opacity={0.5} />
                 </g>
 
