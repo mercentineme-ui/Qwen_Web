@@ -42,12 +42,13 @@
   --machine-crimson-hot: #E72241;
   --machine-shadow: #59232F;
 
-  /* CORE governor — light: matte black machine, off-white precision parts */
+  /* CORE radial engine — light: matte black machine, off-white precision parts */
   --core-plate: #222328;
   --core-deep: #3C3D42;
   --core-line: #59595B;
   --core-mid: #A6A6A4;
   --core-inv: #DDDDD8;
+  --core-crimson: #E72241;
 
   /* Contact — inverts with the page: LIGHT page → dark matte section */
   --ct-bg: #222328;
@@ -97,6 +98,7 @@
   --core-line: #59595B;
   --core-mid: #A6A6A4;
   --core-inv: #DDDDD8;
+  --core-crimson: #E72241;
 
   /* Contact — DARK page → light matte section */
   --ct-bg: #DDDDD8;
