@@ -75,6 +75,19 @@ const SECOND_R = 134;      // structural ring — clockwise (CSS, different spee
 const easeOut = (x: number) => 1 - (1 - x) * (1 - x);
 const easeInOut = (x: number) => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2);
 const wrap = (d: number) => ((d + 180) % 360 + 360) % 360 - 180;
+const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+/* a fold "window" — lets one joint unfold within a slice of the master morph,
+   so the three joints open (and close) sequentially, not together */
+const seg = (m: number, s: number, e: number) => clamp01((m - s) / (e - s));
+
+/* 3-point folding pointer geometry — local "up" is the pointing direction */
+const L1 = 44;   // pivot A → joint B
+const L2 = 40;   // joint B → joint C
+const HEAD = 26; // joint C → tip
+const FOLD_A1 = 138; // arm1 folded angle (tucked back)
+const FOLD_A2 = 148; // arm2 folded angle
+const FOLD_TIP = 70; // head folded angle
 
 /* one physical connector, drawn pointing "up"; caller rotates to capability angle */
 function Connector({ on, sigKey, reduced }: { on: boolean; sigKey: number; reduced: boolean }) {
@@ -206,15 +219,25 @@ export default function CreativeCore() {
   const gearBoostG = useRef<SVGGElement>(null);
   const heartbeatG = useRef<SVGGElement>(null);
 
-  /* pointer refs */
-  const ptrRotG = useRef<SVGGElement>(null);     // whole driven assembly (rotates)
-  const ptrSlideG = useRef<SVGGElement>(null);   // telescoping shaft (slides)
-  const ptrMidG = useRef<SVGGElement>(null);     // counter-rotating mid gear
-  const ptrLockG = useRef<SVGGElement>(null);    // locking collar
+  /* pointer refs — the 3-point folding arm */
+  const ptrAimG = useRef<SVGGElement>(null);     // whole assembly: rotates about pivot A
+  const ptrJointAG = useRef<SVGGElement>(null);  // joint A fold (arm1)
+  const ptrJointBG = useRef<SVGGElement>(null);  // joint B fold (arm2)
+  const ptrJointCG = useRef<SVGGElement>(null);  // joint C fold (head)
+  const ptrBaseGearG = useRef<SVGGElement>(null);// pivot gear — the pointer's gear identity
+  const ptrMidG = useRef<SVGGElement>(null);     // joint-B mesh gear (counter-rotates)
+  const ptrTipGear = useRef<SVGGElement>(null);  // joint-C mesh gear
+  const ptrCollarG = useRef<SVGGElement>(null);  // rotating collar + lock
+  /* bottom output transmission refs */
+  const outputGearG = useRef<SVGGElement>(null); // output gear (rAF rotation)
+  const outputRingG = useRef<SVGGElement>(null); // segmented output ring (counter-rotates)
+  const outputPulseG = useRef<SVGGElement>(null);// power stroke / surge pulse
 
   const m = useRef({
-    rot: 0, rotV: 0,              // pointer angle + velocity
+    rot: 0, rotV: 0,              // pointer aim angle + velocity (about pivot A)
     morph: 0, morphV: 0,          // 0 = compact gear, 1 = extended pointer
+    gearSpin: 0,                  // pivot/base gear tooth rotation
+    outputAng: 0,                 // bottom output gear rotation
     innerAng: 0,                  // transmission ring angle
     sweepAng: 0,
     surgeLast: 0, surgeStart: 0, bursting: false,
@@ -235,8 +258,11 @@ export default function CreativeCore() {
 
   useEffect(() => {
     if (reduced) {
-      /* static: pointer parked as gear, rings at rest position */
-      ptrSlideG.current?.setAttribute("transform", "translate(0 110)");
+      /* static: pointer folded into its compact gear state, rings at rest */
+      ptrAimG.current?.setAttribute("transform", `rotate(0 ${C} ${C})`);
+      ptrJointAG.current?.setAttribute("transform", `rotate(${FOLD_A1})`);
+      ptrJointBG.current?.setAttribute("transform", `translate(0 ${-L1}) rotate(${FOLD_A2})`);
+      ptrJointCG.current?.setAttribute("transform", `translate(0 ${-L2}) rotate(${FOLD_TIP})`);
       return;
     }
     const loop = (t: number) => {
@@ -286,18 +312,40 @@ export default function CreativeCore() {
         s.rotV += (dA * 42 - s.rotV * 9.5) * dt;      // weighted, slight overshoot
         s.rot += s.rotV * dt;
       } else {
-        /* idle gear rotation — ramps in only as the mechanism folds back */
+        /* idle: the folded mechanism spins as a working gear assembly */
         s.rot += 26 * (1 - morph) * dt;
         s.rotV = 0;
       }
 
-      ptrRotG.current?.setAttribute("transform", `rotate(${s.rot.toFixed(2)} ${C} ${C})`);
-      /* shaft slides out of its sleeve as morph → 1 (pure translation, clipped) */
-      ptrSlideG.current?.setAttribute("transform", `translate(0 ${(110 * (1 - morph)).toFixed(1)})`);
-      /* mid gear counter-rotates relative to the arm (gear ratio 2:1) */
-      ptrMidG.current?.setAttribute("transform", `rotate(${(-s.rot * 2 % 360).toFixed(1)})`);
-      /* locking collar seats when extended */
-      ptrLockG.current?.setAttribute("transform", `translate(0 ${(5 * morph).toFixed(1)})`);
+      /* ---------- 3-point folding: joints open/close sequentially ---------- */
+      const ext1 = easeInOut(seg(morph, 0.00, 0.50)); // pivot arm unfolds first
+      const ext2 = easeInOut(seg(morph, 0.22, 0.72)); // then the second arm
+      const ext3 = easeInOut(seg(morph, 0.45, 1.00)); // then the head settles
+      const a1 = lerp(FOLD_A1, 0, ext1);
+      const a2 = lerp(FOLD_A2, 0, ext2);
+      const tipA = lerp(FOLD_TIP, 0, ext3);
+
+      ptrAimG.current?.setAttribute("transform", `rotate(${s.rot.toFixed(2)} ${C} ${C})`);
+      ptrJointAG.current?.setAttribute("transform", `rotate(${a1.toFixed(2)})`);
+      ptrJointBG.current?.setAttribute("transform", `translate(0 ${-L1}) rotate(${a2.toFixed(2)})`);
+      ptrJointCG.current?.setAttribute("transform", `translate(0 ${-L2}) rotate(${tipA.toFixed(2)})`);
+
+      /* pivot gear teeth spin — fast when parked (gear identity), slow when driving */
+      s.gearSpin += ((1 - morph) * 120 + 24 + burst * 200) * dt;
+      ptrBaseGearG.current?.setAttribute("transform", `rotate(${(s.gearSpin % 360).toFixed(1)})`);
+      /* joint gears counter-mesh against the arms */
+      ptrMidG.current?.setAttribute("transform", `rotate(${(-s.gearSpin * 1.5 % 360).toFixed(1)})`);
+      ptrTipGear.current?.setAttribute("transform", `rotate(${(s.gearSpin * 1.2 % 360).toFixed(1)})`);
+      /* rotating collar + lock — seats down as the pointer engages */
+      ptrCollarG.current?.setAttribute("transform",
+        `rotate(${(s.rot * 0.35 % 360).toFixed(1)} ${C} ${C}) translate(0 ${(4 * morph).toFixed(1)})`);
+
+      /* ---------- bottom output transmission: medium speed, surge + load ---------- */
+      const outSpeed = 30 + burst * 190 + (tracking ? 26 : 0);
+      s.outputAng = (s.outputAng + outSpeed * dt) % 360;
+      outputGearG.current?.setAttribute("transform", `rotate(${s.outputAng.toFixed(1)})`);
+      outputRingG.current?.setAttribute("transform", `rotate(${(-s.outputAng * 0.6 % 360).toFixed(1)})`);
+      outputPulseG.current?.setAttribute("transform", `scale(${(1 + burst * 0.1 + (tracking ? 0.04 : 0)).toFixed(3)})`);
 
       s.raf = requestAnimationFrame(loop);
     };
@@ -333,8 +381,11 @@ export default function CreativeCore() {
               <div className={`mech-stage ${rebuilding ? "mech-rebuild" : ""}`} style={frozen ?? undefined}>
                 <svg viewBox="0 0 600 600" className={`absolute inset-0 w-full h-full ${rebuilding ? "mech-tilt" : ""}`}>
                   <defs>
-                    {/* clip so the telescoping shaft only shows beyond its sleeve */}
-                    <clipPath id="coreShaftClip"><rect x={C - 22} y={C - 162} width="44" height="122" /></clipPath>
+                    <radialGradient id="coreChamberDepth" cx="50%" cy="42%" r="65%">
+                      <stop offset="0%" stopColor="rgba(0,0,0,0)" />
+                      <stop offset="78%" stopColor="rgba(0,0,0,0.10)" />
+                      <stop offset="100%" stopColor="rgba(0,0,0,0.28)" />
+                    </radialGradient>
                   </defs>
 
                   {/* ============ LAYER 0 — BACKGROUND RADIAL CONSTRUCTION ============ */}
@@ -407,6 +458,7 @@ export default function CreativeCore() {
                   <g className="rb-c">
                     {/* chamber floor — progressively deeper */}
                     <circle cx={C} cy={C} r={CHAMBER} fill="var(--core-deep)" />
+                    <circle cx={C} cy={C} r={CHAMBER} fill="url(#coreChamberDepth)" />
                     <circle cx={C} cy={C} r={CHAMBER} fill="none" stroke="rgba(0,0,0,0.4)" strokeWidth="4" opacity="0.5" />
                     <circle cx={C} cy={C} r={132} fill="none" stroke="rgba(0,0,0,0.25)" strokeWidth="2" opacity="0.5" />
                     {[126, 96, 66].map((r) => (
@@ -461,9 +513,19 @@ export default function CreativeCore() {
                     </g>
                   </g>
 
-                  {/* ============ LAYER 5 — CENTRAL GEAR ASSEMBLY ============ */}
+                  {/* ============ LAYER 5 — CENTRAL GEAR ASSEMBLY + OUTPUT TRANSMISSION ============ */}
                   <g className="rb-d">
+                    {/* BACK — recessed transmission plate the hub is mounted on */}
+                    <circle cx={C} cy={C} r={72} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth="1.4" />
+                    <circle cx={C} cy={C} r={72} fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="3" opacity="0.4" />
+                    {Array.from({ length: 8 }).map((_, i) => {
+                      const [x, y] = polar(C, C, 64, i * 45 + 22.5);
+                      return <circle key={i} cx={x} cy={y} r="2.2" fill="var(--core-line)" opacity="0.8" />;
+                    })}
+                    <circle cx={C} cy={C} r={56} fill="none" stroke="var(--core-line)" strokeWidth="0.8" strokeDasharray="3 6" opacity="0.5" />
+
                     <Drop cx={C} cy={C + 7} rx={58} ry={52} o={0.16} />
+                    {/* MID — main drive + secondary + transfer gears (boosted by surge) */}
                     <g ref={gearBoostG}>
                       <g transform={`translate(${C} ${C})`}>
                         <g className={spin("gear-cw")} style={{ animationDuration: "34s" }}>
@@ -481,54 +543,123 @@ export default function CreativeCore() {
                         </g>
                       </g>
                     </g>
+
+                    {/* BOTTOM OUTPUT TRANSMISSION — central drive → shaft → idler → output gear.
+                       Rotates at its own medium speed (rAF), responds to load + surge. */}
+                    <g>
+                      {/* drive shaft from the main gear down to the idler */}
+                      <rect x={C - 2.5} y={C + 46} width="5" height="16" rx="2" fill="var(--core-line)" stroke="var(--core-deep)" strokeWidth="0.9" />
+                      {/* idler / bevel gear at the junction */}
+                      <g transform={`translate(${C} ${C + 60})`}>
+                        <g className={spin("gear-ccw")} style={{ animationDuration: "12s" }}>
+                          <GearShape r={8} teeth={7} fill="var(--core-plate)" stroke="var(--core-line)" hub={false} />
+                        </g>
+                      </g>
+                      {/* short shaft to the output gear */}
+                      <rect x={C - 2} y={C + 62} width="4" height="12" rx="2" fill="var(--core-line)" />
+                      {/* output assembly */}
+                      <g transform={`translate(${C} ${C + 84})`}>
+                        <Drop cx={0} cy={4} rx={26} ry={20} o={0.14} />
+                        {/* segmented output ring (counter-rotates, slower) */}
+                        <g ref={outputRingG}>
+                          <circle r={26} fill="none" stroke="var(--core-plate)" strokeWidth="4.5" />
+                          {Array.from({ length: 16 }).map((_, i) => {
+                            const [x, y] = polar(0, 0, 26, i * 22.5);
+                            return <rect key={i} x={x - 1.6} y={y - 1.6} width="3.2" height="3.2" fill="var(--core-mid)" opacity="0.75" transform={`rotate(${i * 22.5} ${x} ${y})`} />;
+                          })}
+                        </g>
+                        {/* output gear (rAF rotation) */}
+                        <g ref={outputPulseG}>
+                          <g ref={outputGearG}>
+                            <GearShape r={18} teeth={11} fill="var(--core-deep)" stroke="var(--core-mid)" spokes={4} />
+                          </g>
+                          {/* bearing + crimson output indicator */}
+                          <circle r={5.5} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth="1.2" />
+                          <circle r={2.2} fill="var(--core-crimson)" />
+                        </g>
+                      </g>
+                      {/* crimson power signal traveling hub → output on activation / surge */}
+                      {!reduced && sel !== null && (
+                        <circle key={`pwr-${sigKey}`} cx={C} cy={C + 50} r="2.4" fill="var(--core-crimson)" opacity="0.85">
+                          <animateMotion dur="0.6s" repeatCount="1" path="M0,0 L0,34" />
+                        </circle>
+                      )}
+                    </g>
+
+                    {/* FRONT — hub bearing stack under the pointer pivot */}
                     <circle cx={C} cy={C} r={21} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth="1.5" />
                     <circle cx={C} cy={C} r={14} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth="1.2" />
                   </g>
 
-                  {/* ============ LAYER 6 — THE GEAR-POINTER + CORE HEARTBEAT ============ */}
+                  {/* ============ LAYER 6 — 3-POINT FOLDING GEAR-POINTER + HEARTBEAT ============ */}
                   <g className="rb-f">
-                    {/* driven assembly — rotates (pointer) or free-spins (parked gear) */}
-                    <g ref={ptrRotG}>
-                      {/* base pinion gear — the pointer's gear identity when parked */}
+                    {/* ---- the articulated pointer: pivot A → joint B → joint C → head.
+                          Folds into a compact gear when idle, unfolds to track a capability. ---- */}
+                    <g ref={ptrAimG}>
                       <g transform={`translate(${C} ${C})`}>
-                        <GearShape r={15} teeth={10} fill="var(--core-deep)" stroke="var(--core-mid)" />
-                      </g>
-                      {/* telescoping shaft, clipped to only show beyond its sleeve */}
-                      <g clipPath="url(#coreShaftClip)">
-                        <g ref={ptrSlideG} transform="translate(0 110)">
-                          {/* main shaft */}
-                          <rect x={C - 2.6} y={C - 150} width="5.2" height="110" rx="2" fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth="1" />
-                          <line x1={C} y1={C - 146} x2={C} y2={C - 46} stroke="var(--core-inv)" strokeWidth="0.8" opacity="0.3" />
-                          {/* toothed termination where shaft meets the pinion */}
-                          <rect x={C - 5} y={C - 48} width="10" height="8" rx="1.5" fill="var(--core-line)" />
-                          {/* counter-rotating mid joint gear (rides the shaft) */}
-                          <g transform={`translate(${C} ${C - 98})`}>
-                            <g ref={ptrMidG}>
-                              <GearShape r={8} teeth={7} fill="var(--core-plate)" stroke="var(--core-mid)" hub={false} />
+                        {/* ---- JOINT A fold: primary arm (A → B) ---- */}
+                        <g ref={ptrJointAG}>
+                          {/* arm 1 body with a machined rack edge (gear-driven look) */}
+                          <rect x={-4.5} y={-L1} width={9} height={L1} rx={3.5} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.2} />
+                          <line x1={-1.6} y1={-L1 + 5} x2={-1.6} y2={-7} stroke="var(--core-inv)" strokeWidth={0.8} opacity={0.25} />
+                          {Array.from({ length: 6 }).map((_, i) => (
+                            <rect key={i} x={4.5} y={-L1 + 6 + i * 6.5} width={2.6} height={3.4} rx={0.8} fill="var(--core-line)" opacity={0.85} />
+                          ))}
+
+                          {/* ---- JOINT B fold: secondary arm (B → C) ---- */}
+                          <g transform={`translate(0 ${-L1})`}>
+                            <g ref={ptrJointBG}>
+                              <rect x={-3.6} y={-L2} width={7.2} height={L2} rx={3} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.1} />
+                              {/* joint-B mesh gear (counter-rotates against the arm) */}
+                              <g ref={ptrMidG}>
+                                <GearShape r={9} teeth={8} fill="var(--core-plate)" stroke="var(--core-mid)" hub={false} />
+                              </g>
+
+                              {/* ---- JOINT C fold: pointer head ---- */}
+                              <g transform={`translate(0 ${-L2})`}>
+                                <g ref={ptrJointCG}>
+                                  {/* tapered mechanical head */}
+                                  <polygon points={`0,${-HEAD} 5.5,${-HEAD + 14} 3.4,${-8} -3.4,${-8} -5.5,${-HEAD + 14}`}
+                                    fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.1} />
+                                  {/* mechanical collar at the head base */}
+                                  <rect x={-5} y={-12.5} width={10} height={4.5} rx={1.5} fill="var(--core-line)" />
+                                  {/* tiny gear teeth where the head articulates */}
+                                  <g ref={ptrTipGear}>
+                                    <GearShape r={6} teeth={7} fill="var(--core-deep)" stroke="var(--core-mid)" hub={false} />
+                                  </g>
+                                  {/* crimson tip indicator + bearing */}
+                                  <polygon points={`0,${-HEAD - 7} 3.4,${-HEAD + 3} -3.4,${-HEAD + 3}`} fill="var(--core-crimson)" />
+                                  <circle cy={-HEAD + 2.5} r={1.8} fill="var(--core-inv)" />
+                                </g>
+                                {/* joint C bearing */}
+                                <circle r={3.2} fill="var(--core-deep)" stroke="var(--core-mid)" strokeWidth={1} />
+                              </g>
                             </g>
+                            {/* joint B bearing */}
+                            <circle r={3.6} fill="var(--core-deep)" stroke="var(--core-mid)" strokeWidth={1.1} />
                           </g>
-                          {/* pointer tip — crimson blade + bearing */}
-                          <polygon points={`${C},${C - 160} ${C + 7},${C - 144} ${C - 7},${C - 144}`} fill="var(--core-crimson)" stroke="var(--core-line)" strokeWidth="1.2" />
-                          <circle cx={C} cy={C - 144} r="2.6" fill="var(--core-inv)" />
                         </g>
-                      </g>
-                      {/* static sleeve housing the shaft + locking collar */}
-                      <rect x={C - 5} y={C - 46} width="10" height="26" rx="2.5" fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth="1.2" />
-                      <g ref={ptrLockG}>
-                        <rect x={C - 6.5} y={C - 42} width="13" height="4.5" rx="1.5" fill="var(--core-line)" stroke="var(--core-deep)" strokeWidth="0.9" />
+
+                        {/* ---- pivot gear: the pointer's gear identity when parked (spins) ---- */}
+                        <g ref={ptrBaseGearG}>
+                          <GearShape r={20} teeth={12} fill="var(--core-deep)" stroke="var(--core-mid)" />
+                        </g>
                       </g>
                     </g>
 
-                    {/* fixed central pivot bearing — pointer never detaches from this */}
-                    <circle cx={C} cy={C} r={9} fill="var(--core-deep)" stroke="var(--core-mid)" strokeWidth="1.4" />
+                    {/* ---- rotating collar + lock around the pivot (seats on engagement) ---- */}
+                    <g ref={ptrCollarG}>
+                      <circle cx={C} cy={C} r={12.5} fill="none" stroke="var(--core-mid)" strokeWidth={1.6} strokeDasharray="7 5" />
+                      <rect x={C - 3} y={C - 16} width={6} height={4} rx={1.2} fill="var(--core-line)" />
+                    </g>
+                    {/* fixed central pivot bearing — the pointer never detaches from this */}
+                    <circle cx={C} cy={C} r={8.5} fill="var(--core-deep)" stroke="var(--core-mid)" strokeWidth={1.4} />
 
                     {/* CORE HEARTBEAT */}
                     <g ref={heartbeatG}>
                       <g className={spin("core-beat")}>
-                        <circle cx={C} cy={C} r={15} fill="none" stroke="var(--core-line)" strokeWidth="1" strokeDasharray="2 3" opacity="0.8" />
-                        <circle cx={C} cy={C} r={9.5} fill="var(--core-plate)" stroke="var(--core-crimson)" strokeWidth="1.5" />
-                        <circle cx={C} cy={C} r={3.6} fill="var(--core-crimson)" />
-                        <circle cx={C} cy={C} r={1.2} fill="var(--core-inv)" />
+                        <circle cx={C} cy={C} r={4.6} fill="var(--core-crimson)" />
+                        <circle cx={C} cy={C} r={1.4} fill="var(--core-inv)" />
                       </g>
                     </g>
                   </g>
