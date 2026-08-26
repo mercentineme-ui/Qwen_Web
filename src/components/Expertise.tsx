@@ -50,7 +50,11 @@ function Gear({ cx, cy, r, teeth, spin, dur, fill = "var(--machine-deep)", strok
   cx: number; cy: number; r: number; teeth: number; spin?: string; dur?: string; fill?: string; stroke?: string;
 }) {
   return (
-    <g className={spin} style={spin && dur ? { animationDuration: dur } : undefined}>
+    <g>
+      {/* machined edge highlight — fixed upper-left light catch on a raised face */}
+      <path d={`M${cx - r * 0.62} ${cy - r * 0.42} A${r * 0.75} ${r * 0.75} 0 0 1 ${cx + r * 0.12} ${cy - r * 0.72}`}
+        fill="none" stroke="var(--machine-inv)" strokeWidth="1" opacity="0.2" strokeLinecap="round" />
+      <g className={spin} style={spin && dur ? { animationDuration: dur } : undefined}>
       {Array.from({ length: teeth }).map((_, i) => {
         const a = (i / teeth) * Math.PI * 2;
         const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
@@ -62,6 +66,7 @@ function Gear({ cx, cy, r, teeth, spin, dur, fill = "var(--machine-deep)", strok
       })}
       <circle cx={cx} cy={cy} r={r * 0.82} fill={fill} stroke={stroke} strokeWidth={1.4} />
       <circle cx={cx} cy={cy} r={r * 0.3} fill="var(--machine-plate)" stroke={stroke} strokeWidth={1.1} />
+      </g>
     </g>
   );
 }
@@ -240,6 +245,14 @@ function NodeMap({
               <rect x="168" y={cy - 12} width="12" height="24" rx="2" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.2" />
               <circle cx="174" cy={cy} r="3" fill={isFeat ? "var(--crimson)" : "var(--machine-line)"} stroke="var(--machine-line)" strokeWidth="1" style={{ transition: "fill .35s ease" }} />
 
+              {/* idle tick lever — parked nodes stay subtly alive, not dead */}
+              {!isFeat && !reduced && (
+                <g className="valve-wiggle" style={{ transformOrigin: `166px ${cy + 22}px`, animationDuration: `${4.2 + i * 1.3}s`, animationDelay: `${i * 0.7}s` }}>
+                  <line x1="166" y1={cy + 22} x2="166" y2={cy + 32} stroke="var(--machine-line)" strokeWidth="1.6" strokeLinecap="round" />
+                  <circle cx="166" cy={cy + 32} r="1.8" fill="var(--machine-line)" />
+                </g>
+              )}
+
               {/* articulated rod — telescopes outward when engaged */}
               <g style={{ transform: `translateX(${ext * 10}px)`, transition: reduced ? "none" : "transform .6s cubic-bezier(.32,1.16,.42,1) .08s" }}>
                 <rect x="180" y={cy - 4.5} width="46" height="9" rx="2" fill="var(--machine-line)" stroke="var(--machine-deep)" strokeWidth="1" />
@@ -255,6 +268,11 @@ function NodeMap({
                 <Gear cx={268} cy={cy} r={13} teeth={8} spin={spin("gear-cw")} dur={isFeat ? "2.2s" : "12s"}
                   fill={isFeat ? "var(--machine-line)" : "var(--machine-deep)"} stroke={isFeat ? "var(--crimson)" : "var(--machine-line)"} />
               </g>
+
+              {/* recessed clutch chamber in the machine wall — the clutch slides INTO it */}
+              <rect x="278" y={cy - 18} width="27" height="36" rx="3" fill="rgba(0,0,0,0.28)" />
+              <rect x="278" y={cy - 18} width="27" height="36" rx="3" fill="none" stroke="var(--machine-line)" strokeWidth="1" opacity="0.8" />
+              <path d={`M279 ${cy + 15} h25`} stroke="var(--machine-inv)" strokeWidth="0.8" opacity="0.18" />
 
               {/* dog clutch sliding onto the shaft */}
               <g style={{ transform: `translateX(${ext * 12}px)`, transition: reduced ? "none" : "transform .5s cubic-bezier(.3,.9,.3,1.1) .26s" }}>
