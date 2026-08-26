@@ -50,6 +50,12 @@
   --core-inv: #DDDDD8;
   --core-crimson: #E72241;
 
+  /* capability node materials — LIGHT: graphite idle, black+off-white active */
+  --node-bg: #3C3D42;
+  --node-ink: #A6A6A4;
+  --node-active-bg: #222328;
+  --node-active-ink: #DDDDD8;
+
   /* Contact — inverts with the page: LIGHT page → dark matte section */
   --ct-bg: #222328;
   --ct-ink: #DDDDD8;
@@ -99,6 +105,12 @@
   --core-mid: #A6A6A4;
   --core-inv: #DDDDD8;
   --core-crimson: #E72241;
+
+  /* capability node materials — DARK: graphite idle, off-white structural active */
+  --node-bg: #3C3D42;
+  --node-ink: #A6A6A4;
+  --node-active-bg: #DDDDD8;
+  --node-active-ink: #222328;
 
   /* Contact — DARK page → light matte section */
   --ct-bg: #DDDDD8;
