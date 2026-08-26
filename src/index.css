@@ -42,12 +42,12 @@
   --machine-crimson-hot: #E72241;
   --machine-shadow: #59232F;
 
-  /* CORE radial engine — light: matte black machine, off-white precision parts */
-  --core-plate: #222328;
-  --core-deep: #3C3D42;
-  --core-line: #59595B;
-  --core-mid: #A6A6A4;
-  --core-inv: #DDDDD8;
+  /* CORE — LIGHT: matte-white machine, warm-grey recesses, charcoal structure */
+  --core-plate: #DDDDD8;
+  --core-deep: #C3C1BC;
+  --core-line: #222328;
+  --core-mid: #59595B;
+  --core-inv: #222328;
   --core-crimson: #E72241;
 
   /* capability node materials — LIGHT: graphite idle, black+off-white active */
@@ -98,9 +98,9 @@
   --machine-line: #222328;
   --machine-inv: #222328;
 
-  /* CORE governor — dark: graphite machine, black recesses, restrained off-white */
-  --core-plate: #3C3D42;
-  --core-deep: #222328;
+  /* CORE — DARK: matte-black machine, graphite recesses, sparing off-white edges */
+  --core-plate: #222328;
+  --core-deep: #3C3D42;
   --core-line: #59595B;
   --core-mid: #A6A6A4;
   --core-inv: #DDDDD8;
@@ -317,6 +317,10 @@ body::before {
 @keyframes balOsc { from { transform: rotate(-32deg); } to { transform: rotate(32deg); } }
 .core-beat { animation: coreBeat 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes coreBeat { 0%, 100% { transform: scale(1); } 12% { transform: scale(1.06); } 24% { transform: scale(1); } 36% { transform: scale(1.04); } }
+
+/* first inner indexing ring — slow continuous clockwise, detented clockwork feel */
+.idx-ring-spin { animation: idxRingSpin 240s steps(480, end) infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes idxRingSpin { to { transform: rotate(360deg); } }
 .core-engage { animation: coreEngage 0.9s ease-out both; transform-box: fill-box; transform-origin: center; }
 @keyframes coreEngage { 0% { transform: scale(0.5); opacity: 0.9; } 60% { transform: scale(1.3); opacity: 0.35; } 100% { transform: scale(1.6); opacity: 0; } }
 .spring-stretch { animation: springStretch 3s ease-in-out infinite alternate; }

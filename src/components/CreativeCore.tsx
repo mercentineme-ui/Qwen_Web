@@ -244,27 +244,30 @@ export default function CreativeCore() {
     mouseAng: 0,
     raf: 0, last: 0,
   });
-  const hoverRef = useRef<number | null>(null);
-  hoverRef.current = hoverIdx;
-
-  /* mouse tracking — only meaningful while inside a capability node */
-  const onNodeMove = (e: React.MouseEvent) => {
+  /* pointer contact zone = the whole Core disc. Inside → articulated clock hand
+     tracking the cursor; outside → folded compact gear. The pivot never moves. */
+  const insideRef = useRef(false);
+  const onDiscMove = (e: React.MouseEvent) => {
     const el = discRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     m.current.mouseAng = (Math.atan2(e.clientY - cy, e.clientX - cx) * 180) / Math.PI + 90;
+    insideRef.current = true;
   };
+  const onDiscLeave = () => { insideRef.current = false; };
+
+  /* reduced motion: park the pointer extended toward the selected capability */
+  useEffect(() => {
+    if (!reduced) return;
+    ptrAimG.current?.setAttribute("transform", `rotate(${nodeAngle(sel)} ${C} ${C})`);
+    ptrJointAG.current?.setAttribute("transform", "rotate(0)");
+    ptrJointBG.current?.setAttribute("transform", `translate(0 ${-L1}) rotate(0)`);
+    ptrJointCG.current?.setAttribute("transform", `translate(0 ${-L2}) rotate(0)`);
+  }, [reduced, sel]);
 
   useEffect(() => {
-    if (reduced) {
-      /* static: pointer folded into its compact gear state, rings at rest */
-      ptrAimG.current?.setAttribute("transform", `rotate(0 ${C} ${C})`);
-      ptrJointAG.current?.setAttribute("transform", `rotate(${FOLD_A1})`);
-      ptrJointBG.current?.setAttribute("transform", `translate(0 ${-L1}) rotate(${FOLD_A2})`);
-      ptrJointCG.current?.setAttribute("transform", `translate(0 ${-L2}) rotate(${FOLD_TIP})`);
-      return;
-    }
+    if (reduced) return;
     const loop = (t: number) => {
       const s = m.current;
       const dt = Math.min(0.045, s.last ? (t - s.last) / 1000 : 0.016);
@@ -298,7 +301,7 @@ export default function CreativeCore() {
       heartbeatG.current?.setAttribute("transform", `translate(${C} ${C}) scale(${(1 + burst * 0.16).toFixed(3)}) translate(${-C} ${-C})`);
 
       /* ---------- gear ⇄ pointer transformation ---------- */
-      const tracking = hoverRef.current !== null;
+      const tracking = insideRef.current;
       const morphTarget = tracking ? 1 : 0;
 
       /* morph spring (physical unfold / fold) */
@@ -338,7 +341,7 @@ export default function CreativeCore() {
       ptrTipGear.current?.setAttribute("transform", `rotate(${(s.gearSpin * 1.2 % 360).toFixed(1)})`);
       /* rotating collar + lock — seats down as the pointer engages */
       ptrCollarG.current?.setAttribute("transform",
-        `rotate(${(s.rot * 0.35 % 360).toFixed(1)} ${C} ${C}) translate(0 ${(4 * morph).toFixed(1)})`);
+        `rotate(${(s.rot * 0.35 % 360).toFixed(1)} ${C} ${C}) translate(0 ${(2.5 * morph).toFixed(1)})`);
 
       /* ---------- bottom output transmission: medium speed, surge + load ---------- */
       const outSpeed = 30 + burst * 190 + (tracking ? 26 : 0);
@@ -355,13 +358,14 @@ export default function CreativeCore() {
 
   const spin = (s?: string) => (reduced || !s ? undefined : s);
 
-  /* theme-aware node materials — active never defaults to crimson */
+  /* theme-aware node materials — active inverts to the opposite structural tone,
+     never defaults to crimson (crimson stays a micro-accent) */
   const nodeFill = (active: boolean, hover: boolean) =>
-    active ? (theme === "dark" ? "var(--core-inv)" : "var(--core-plate)")
+    active ? "var(--core-inv)"
       : hover ? "var(--core-deep)"
       : "var(--core-plate)";
   const nodeIcon = (active: boolean) =>
-    active ? (theme === "dark" ? "var(--core-deep)" : "var(--core-inv)") : "var(--core-mid)";
+    active ? (theme === "dark" ? "var(--core-deep)" : "var(--core-plate)") : "var(--core-mid)";
 
   return (
     <section id="core" className="relative py-20 lg:py-28 scroll-mt-20">
@@ -377,7 +381,8 @@ export default function CreativeCore() {
         <div className="mt-12 grid lg:grid-cols-[minmax(0,1.14fr)_minmax(0,352px)] gap-12 lg:gap-24 xl:gap-40 items-center">
           {/* ================= THE RADIAL CLOCKWORK ENGINE ================= */}
           <Reveal>
-            <div ref={discRef} className="relative mx-auto w-full max-w-[660px] aspect-square select-none">
+            <div ref={discRef} onMouseMove={onDiscMove} onMouseLeave={onDiscLeave}
+              className="relative mx-auto w-full max-w-[660px] aspect-square select-none">
               <div className={`mech-stage ${rebuilding ? "mech-rebuild" : ""}`} style={frozen ?? undefined}>
                 <svg viewBox="0 0 600 600" className={`absolute inset-0 w-full h-full ${rebuilding ? "mech-tilt" : ""}`}>
                   <defs>
@@ -433,6 +438,10 @@ export default function CreativeCore() {
                   {/* ============ LAYER 3 — SEGMENTED INDEX / TRANSMISSION RING ============ */}
                   <g className="rb-b">
                     <circle cx={C} cy={C} r={IDX_OUT} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth="1.2" />
+                    {/* static tick ring just below — parallax reference as the index ring turns above it */}
+                    <circle cx={C} cy={C} r={IDX_IN - 1} fill="none" stroke="var(--core-mid)" strokeWidth="0.7" strokeDasharray="1.5 5" opacity="0.5" />
+                    {/* FIRST INNER INDEXING RING — rotates continuously clockwise, carrying the crimson marker */}
+                    <g className={spin("idx-ring-spin")}>
                     {Array.from({ length: SEG_COUNT }).map((_, k) => {
                       const isActive = k === sel * 4;
                       const isGlint = k === glintSeg;
@@ -446,6 +455,7 @@ export default function CreativeCore() {
                           style={{ transition: "fill .3s ease, stroke .3s ease" }} />
                       );
                     })}
+                    </g>
                     {/* idle orbit signal circling the capability orbit */}
                     {!reduced && (
                       <circle r="2.6" fill="var(--core-crimson)" opacity="0.3">
@@ -591,52 +601,68 @@ export default function CreativeCore() {
                     <circle cx={C} cy={C} r={14} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth="1.2" />
                   </g>
 
-                  {/* ============ LAYER 6 — 3-POINT FOLDING GEAR-POINTER + HEARTBEAT ============ */}
+                  {/* ============ LAYER 6 — ARTICULATED CLOCKWORK POINTER + HEARTBEAT ============
+                        pivot A → joint B → joint C → head. Idle = compact spinning gear
+                        folded around the bearing; contact = narrow machined clock hand. */}
                   <g className="rb-f">
-                    {/* ---- the articulated pointer: pivot A → joint B → joint C → head.
-                          Folds into a compact gear when idle, unfolds to track a capability. ---- */}
                     <g ref={ptrAimG}>
                       <g transform={`translate(${C} ${C})`}>
-                        {/* ---- JOINT A fold: primary arm (A → B) ---- */}
+                        {/* ---- JOINT A fold: primary arm (A → B), tapered + machined ---- */}
                         <g ref={ptrJointAG}>
-                          {/* arm 1 body with a machined rack edge (gear-driven look) */}
-                          <rect x={-4.5} y={-L1} width={9} height={L1} rx={3.5} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.2} />
-                          <line x1={-1.6} y1={-L1 + 5} x2={-1.6} y2={-7} stroke="var(--core-inv)" strokeWidth={0.8} opacity={0.25} />
-                          {Array.from({ length: 6 }).map((_, i) => (
-                            <rect key={i} x={4.5} y={-L1 + 6 + i * 6.5} width={2.6} height={3.4} rx={0.8} fill="var(--core-line)" opacity={0.85} />
+                          {/* contact shadow — arm floats above the dial */}
+                          <polygon points={`-5.5,2 -3.4,${-L1} 3.4,${-L1} 5.5,2`} fill="#000" opacity="0.14" transform="translate(1.6 2.6)" />
+                          {/* arm body */}
+                          <polygon points={`-5.5,2 -3.4,${-L1} 3.4,${-L1} 5.5,2`}
+                            fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.1} />
+                          {/* bright machined edge */}
+                          <line x1={-2.3} y1={-5} x2={-1.4} y2={-L1 + 4} stroke="var(--core-inv)" strokeWidth={0.9} opacity={0.3} />
+                          {/* recessed drive groove */}
+                          <line x1={0.6} y1={-7} x2={0.4} y2={-L1 + 6} stroke="var(--core-deep)" strokeWidth={1.6} opacity={0.55} />
+                          {/* rack teeth along the trailing edge */}
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <rect key={i} x={3.1} y={-L1 + 8 + i * 7} width={2.3} height={3.2} rx={0.7} fill="var(--core-line)" opacity={0.9} />
                           ))}
 
                           {/* ---- JOINT B fold: secondary arm (B → C) ---- */}
                           <g transform={`translate(0 ${-L1})`}>
                             <g ref={ptrJointBG}>
-                              <rect x={-3.6} y={-L2} width={7.2} height={L2} rx={3} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.1} />
+                              <polygon points={`-3.4,2 -2.1,${-L2} 2.1,${-L2} 3.4,2`} fill="#000" opacity="0.13" transform="translate(1.4 2.2)" />
+                              <polygon points={`-3.4,2 -2.1,${-L2} 2.1,${-L2} 3.4,2`}
+                                fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1} />
+                              <line x1={-1.3} y1={-4} x2={-0.8} y2={-L2 + 3} stroke="var(--core-inv)" strokeWidth={0.8} opacity={0.28} />
                               {/* joint-B mesh gear (counter-rotates against the arm) */}
                               <g ref={ptrMidG}>
-                                <GearShape r={9} teeth={8} fill="var(--core-plate)" stroke="var(--core-mid)" hub={false} />
+                                <GearShape r={8.5} teeth={8} fill="var(--core-plate)" stroke="var(--core-line)" hub={false} />
                               </g>
 
                               {/* ---- JOINT C fold: pointer head ---- */}
                               <g transform={`translate(0 ${-L2})`}>
                                 <g ref={ptrJointCG}>
-                                  {/* tapered mechanical head */}
-                                  <polygon points={`0,${-HEAD} 5.5,${-HEAD + 14} 3.4,${-8} -3.4,${-8} -5.5,${-HEAD + 14}`}
-                                    fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.1} />
+                                  {/* head contact shadow */}
+                                  <polygon points={`0,${-HEAD} 3.9,${-HEAD + 12} 2.4,-5 -2.4,-5 -3.9,${-HEAD + 12}`}
+                                    fill="#000" opacity="0.14" transform="translate(1.3 2)" />
+                                  {/* tapered needle body — narrow, elegant */}
+                                  <polygon points={`0,${-HEAD} 3.9,${-HEAD + 12} 2.4,-5 -2.4,-5 -3.9,${-HEAD + 12}`}
+                                    fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1} />
+                                  <line x1={-1.5} y1={-7} x2={-0.7} y2={-HEAD + 10} stroke="var(--core-inv)" strokeWidth={0.7} opacity={0.3} />
                                   {/* mechanical collar at the head base */}
-                                  <rect x={-5} y={-12.5} width={10} height={4.5} rx={1.5} fill="var(--core-line)" />
-                                  {/* tiny gear teeth where the head articulates */}
+                                  <rect x={-4.2} y={-10.5} width={8.4} height={4} rx={1.4} fill="var(--core-line)" />
+                                  {/* articulation gear where the head folds */}
                                   <g ref={ptrTipGear}>
-                                    <GearShape r={6} teeth={7} fill="var(--core-deep)" stroke="var(--core-mid)" hub={false} />
+                                    <GearShape r={5.6} teeth={7} fill="var(--core-deep)" stroke="var(--core-mid)" hub={false} />
                                   </g>
-                                  {/* crimson tip indicator + bearing */}
-                                  <polygon points={`0,${-HEAD - 7} 3.4,${-HEAD + 3} -3.4,${-HEAD + 3}`} fill="var(--core-crimson)" />
-                                  <circle cy={-HEAD + 2.5} r={1.8} fill="var(--core-inv)" />
+                                  {/* crimson tip + tiny indicator */}
+                                  <polygon points={`0,${-HEAD - 6} 2.8,${-HEAD + 2.5} -2.8,${-HEAD + 2.5}`} fill="var(--core-crimson)" />
+                                  <circle cy={-HEAD + 5} r={1.1} fill="var(--core-crimson)" />
                                 </g>
-                                {/* joint C bearing */}
-                                <circle r={3.2} fill="var(--core-deep)" stroke="var(--core-mid)" strokeWidth={1} />
+                                {/* joint C bearing (recessed) */}
+                                <circle r={3} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
+                                <circle cx={-0.8} cy={-0.8} r={0.7} fill="var(--core-inv)" opacity={0.6} />
                               </g>
                             </g>
-                            {/* joint B bearing */}
-                            <circle r={3.6} fill="var(--core-deep)" stroke="var(--core-mid)" strokeWidth={1.1} />
+                            {/* joint B bearing (recessed) */}
+                            <circle r={3.4} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1.1} />
+                            <circle cx={-0.9} cy={-0.9} r={0.8} fill="var(--core-inv)" opacity={0.6} />
                           </g>
                         </g>
 
@@ -647,15 +673,23 @@ export default function CreativeCore() {
                       </g>
                     </g>
 
-                    {/* ---- rotating collar + lock around the pivot (seats on engagement) ---- */}
-                    <g ref={ptrCollarG}>
-                      <circle cx={C} cy={C} r={12.5} fill="none" stroke="var(--core-mid)" strokeWidth={1.6} strokeDasharray="7 5" />
-                      <rect x={C - 3} y={C - 16} width={6} height={4} rx={1.2} fill="var(--core-line)" />
-                    </g>
-                    {/* fixed central pivot bearing — the pointer never detaches from this */}
-                    <circle cx={C} cy={C} r={8.5} fill="var(--core-deep)" stroke="var(--core-mid)" strokeWidth={1.4} />
+                    {/* ---- FIXED CENTRAL BEARING MOUNT — the permanent anchor. Never rotates. ---- */}
+                    <circle cx={C} cy={C} r={24.5} fill="none" stroke="var(--core-line)" strokeWidth={0.9} opacity={0.6} />
+                    <circle cx={C} cy={C} r={22} fill="none" stroke="var(--core-deep)" strokeWidth={5} />
+                    <circle cx={C} cy={C} r={19.5} fill="none" stroke="var(--core-line)" strokeWidth={0.9} opacity={0.7} />
+                    {[45, 135, 225, 315].map((deg) => {
+                      const [bx, by] = polar(C, C, 22, deg);
+                      return <circle key={deg} cx={bx} cy={by} r={1.6} fill="var(--core-line)" stroke="var(--core-deep)" strokeWidth={0.6} />;
+                    })}
 
-                    {/* CORE HEARTBEAT */}
+                    {/* ---- rotating locking collar around the bearing (seats on engagement) ---- */}
+                    <g ref={ptrCollarG}>
+                      <circle cx={C} cy={C} r={27} fill="none" stroke="var(--core-mid)" strokeWidth={1.4} strokeDasharray="8 6" opacity={0.9} />
+                      <rect x={C - 2.6} y={C - 30.5} width={5.2} height={3.6} rx={1.1} fill="var(--core-line)" />
+                      <rect x={C - 2.6} y={C + 26.9} width={5.2} height={3.6} rx={1.1} fill="var(--core-line)" />
+                    </g>
+
+                    {/* CORE HEARTBEAT — the crimson pivot jewel */}
                     <g ref={heartbeatG}>
                       <g className={spin("core-beat")}>
                         <circle cx={C} cy={C} r={4.6} fill="var(--core-crimson)" />
@@ -681,7 +715,6 @@ export default function CreativeCore() {
                 return (
                   <button key={dis.id}
                     onMouseEnter={() => setHoverIdx(i)}
-                    onMouseMove={onNodeMove}
                     onMouseLeave={() => setHoverIdx(null)}
                     onClick={() => pick(i)}
                     className="absolute -translate-x-1/2 -translate-y-1/2 group"
