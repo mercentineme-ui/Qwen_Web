@@ -51,16 +51,6 @@
   --ct-card-ink: #222328;
   --ct-card-sub: #59595B;
 
-  /* Career transmission — dark graphite machine in BOTH themes,
-     tonal separation keeps it physical and readable */
-  --tm-plate: #222328;
-  --tm-deep: #3C3D42;
-  --tm-edge: #59595B;
-  --tm-mid: #4A4B50;
-  --tm-inv: #DDDDD8;
-  --tm-detail: #A6A6A4;
-  --tm-hot: #E72241;
-  --tm-mut: #9E2237;
 }
 
 .dark {
@@ -102,17 +92,6 @@
   --ct-card: #222328;
   --ct-card-ink: #DDDDD8;
   --ct-card-sub: #A6A6A4;
-
-  /* dark-theme transmission — INVERTED machine, same universe as the Creative
-     Core: off-white structure, light-grey components, graphite recesses +
-     linework, crimson activation */
-  --tm-plate: #E7E6E1;
-  --tm-deep: #292A2F;
-  --tm-edge: #222328;
-  --tm-mid: #D9D9D4;
-  --tm-inv: #222328;
-  --tm-detail: #59595B;
-  --tm-hot: #E72241;
 }
 
 html { scroll-behavior: smooth; }
@@ -304,15 +283,6 @@ body::before {
 @keyframes shaftFlow { to { stroke-dashoffset: -28; } }
 .piston { animation: pistonPump 2.6s ease-in-out infinite; }
 @keyframes pistonPump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
-.piston-stroke { animation: pistonStroke 1.8s ease-in-out infinite; }
-@keyframes pistonStroke { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(14px); } }
-.crank-arm { animation: rotCW 3.6s linear infinite; transform-box: fill-box; transform-origin: center; }
-.belt-dash { stroke-dasharray: 5 7; animation: beltDash 1.2s linear infinite; }
-@keyframes beltDash { to { stroke-dashoffset: -24; } }
-.boiler-pulse { animation: boilerPulse 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-@keyframes boilerPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.015); } }
-.gauge-needle { animation: gaugeNeedle 4.2s ease-in-out infinite; }
-@keyframes gaugeNeedle { 0%, 100% { transform: rotate(-24deg); } 30% { transform: rotate(18deg); } 60% { transform: rotate(-6deg); } }
 .escapement { animation: escTick 1.6s steps(2, jump-none) infinite; }
 @keyframes escTick { 0%, 49% { transform: rotate(-8deg); } 50%, 100% { transform: rotate(8deg); } }
 .balance { animation: balOsc 1.7s ease-in-out infinite alternate; }
