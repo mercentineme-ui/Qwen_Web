@@ -27,11 +27,11 @@ function GearShape({ r, teeth, fill = "var(--core-plate)", stroke = "var(--core-
         fill="none" stroke="var(--core-inv)" strokeWidth={1.1} opacity={0.16} strokeLinecap="round" />
       {spokes > 0 && Array.from({ length: spokes }).map((_, i) => {
         const a = (i / spokes) * Math.PI * 2;
-        return <circle key={i} cx={r * 0.5 * Math.cos(a)} cy={r * 0.5 * Math.sin(a)} r={r * 0.16} fill="var(--core-deep)" stroke={stroke} strokeWidth={0.9} />;
+        return <circle key={i} cx={r * 0.5 * Math.cos(a)} cy={r * 0.5 * Math.sin(a)} r={r * 0.16} fill="var(--core-well)" stroke={stroke} strokeWidth={0.9} />;
       })}
       {hub && (
         <>
-          <circle r={r * 0.3} fill="var(--core-deep)" stroke={stroke} strokeWidth={1.2} />
+          <circle r={r * 0.3} fill="var(--core-well)" stroke={stroke} strokeWidth={1.2} />
           <circle r={r * 0.1} fill={stroke} />
         </>
       )}
@@ -86,7 +86,7 @@ const seg = (m: number, s: number, e: number) => clamp01((m - s) / (e - s));
    It folds at ONE hinge and telescopes, collapsing into the base gear when idle. */
 const HUB_R = 26;      // base gear radius (the pointer's compact gear identity)
 const HINGE_R = 60;    // hub center → hinge (inner sleeve length)
-const HAND_LEN = 165;  // hinge → tip at full extension (tip reaches the connector ring)
+const HAND_LEN = 40;   // hinge → tip at full extension (tip stops at the first large inner circle, never the outer rings)
 const FOLD_ANG = 150;  // outer hand folded angle at the hinge (tucked back)
 const FOLD_SCALE = 0.4;// outer hand telescoped length when folded (collapses into hub)
 
@@ -185,6 +185,9 @@ export default function CreativeCore() {
           "--core-mid": grab("--core-mid"),
           "--core-inv": grab("--core-inv"),
           "--core-crimson": grab("--core-crimson"),
+          "--core-well": grab("--core-well"),
+          "--core-ptr": grab("--core-ptr"),
+          "--core-ptr-edge": grab("--core-ptr-edge"),
         });
         setRebuilding(true);
         const t = window.setTimeout(() => { setRebuilding(false); setFrozen(null); }, 1560);
@@ -533,7 +536,7 @@ export default function CreativeCore() {
                   {/* ============ LAYER 5 — CENTRAL GEAR ASSEMBLY + OUTPUT TRANSMISSION ============ */}
                   <g className="rb-d">
                     {/* BACK — recessed transmission plate the hub is mounted on */}
-                    <circle cx={C} cy={C} r={72} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth="1.4" />
+                    <circle cx={C} cy={C} r={72} fill="var(--core-well)" stroke="var(--core-line)" strokeWidth="1.4" />
                     <circle cx={C} cy={C} r={72} fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="3" opacity="0.4" />
                     {Array.from({ length: 8 }).map((_, i) => {
                       const [x, y] = polar(C, C, 64, i * 45 + 22.5);
@@ -616,17 +619,17 @@ export default function CreativeCore() {
                       <g transform={`translate(${C} ${C})`}>
                         {/* ---- base gear: the pointer's compact gear identity (spins when idle) ---- */}
                         <g ref={ptrHubGearG}>
-                          <GearShape r={HUB_R} teeth={12} fill="var(--core-deep)" stroke="var(--core-mid)" />
+                          <GearShape r={HUB_R} teeth={12} fill="var(--core-ptr)" stroke="var(--core-ptr-edge)" />
                         </g>
 
                         {/* ---- single continuous pointer body, part 1: inner sleeve (hub → hinge) ---- */}
                         <polygon points={`-5.5,4 -4,${-HINGE_R} 4,${-HINGE_R} 5.5,4`} fill="#000" opacity="0.13" transform="translate(1.5 2.4)" />
                         <polygon points={`-5.5,4 -4,${-HINGE_R} 4,${-HINGE_R} 5.5,4`}
-                          fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.1} />
-                        <line x1={-2.4} y1={-4} x2={-1.6} y2={-HINGE_R + 4} stroke="var(--core-inv)" strokeWidth={0.9} opacity={0.3} />
+                          fill="var(--core-ptr)" stroke="var(--core-ptr-edge)" strokeWidth={1.1} />
+                        <line x1={-2.4} y1={-4} x2={-1.6} y2={-HINGE_R + 4} stroke="var(--core-ptr-edge)" strokeWidth={0.9} opacity={0.5} />
                         {/* integrated rack teeth at the base — the gear-driven section */}
                         {Array.from({ length: 4 }).map((_, i) => (
-                          <rect key={i} x={4} y={-HINGE_R + 10 + i * 10} width={2.4} height={3.4} rx={0.8} fill="var(--core-line)" opacity={0.85} />
+                          <rect key={i} x={4} y={-HINGE_R + 10 + i * 10} width={2.4} height={3.4} rx={0.8} fill="var(--core-ptr-edge)" opacity={0.9} />
                         ))}
 
                         {/* ---- hinge fold group: outer hand rotates + telescopes at ONE axis ---- */}
@@ -635,24 +638,24 @@ export default function CreativeCore() {
                             {/* single tapered hand: hinge → tip (one continuous piece with the sleeve) */}
                             <polygon points={`0,${-HAND_LEN} 4.2,${-HAND_LEN + 15} 2.8,-8 -2.8,-8 -4.2,${-HAND_LEN + 15}`} fill="#000" opacity="0.13" transform="translate(1.4 2.2)" />
                             <polygon points={`0,${-HAND_LEN} 4.2,${-HAND_LEN + 15} 2.8,-8 -2.8,-8 -4.2,${-HAND_LEN + 15}`}
-                              fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.1} />
-                            <line x1={-1.4} y1={-14} x2={-0.8} y2={-HAND_LEN + 13} stroke="var(--core-inv)" strokeWidth={0.8} opacity={0.28} />
+                              fill="var(--core-ptr)" stroke="var(--core-ptr-edge)" strokeWidth={1.1} />
+                            <line x1={-1.4} y1={-14} x2={-0.8} y2={-HAND_LEN + 13} stroke="var(--core-ptr-edge)" strokeWidth={0.8} opacity={0.5} />
                             {/* mechanical collar at the tip base */}
-                            <rect x={-4} y={-16} width={8} height={4.2} rx={1.4} fill="var(--core-line)" />
+                            <rect x={-4} y={-16} width={8} height={4.2} rx={1.4} fill="var(--core-ptr-edge)" />
                             {/* crimson pointer tip + bearing */}
                             <polygon points={`0,${-HAND_LEN - 7} 3,${-HAND_LEN + 2.5} -3,${-HAND_LEN + 2.5}`} fill="var(--core-crimson)" />
-                            <circle cy={-HAND_LEN + 4} r={1.7} fill="var(--core-inv)" />
+                            <circle cy={-HAND_LEN + 4} r={1.7} fill="var(--core-ptr-edge)" />
                           </g>
                           {/* hinge bearing — the single articulation axis (always attached) */}
-                          <circle r={4.2} fill="var(--core-deep)" stroke="var(--core-mid)" strokeWidth={1.2} />
-                          <circle r={1.5} fill="var(--core-mid)" />
+                          <circle r={4.2} fill="var(--core-ptr)" stroke="var(--core-ptr-edge)" strokeWidth={1.2} />
+                          <circle r={1.5} fill="var(--core-ptr-edge)" />
                         </g>
                       </g>
                     </g>
 
                     {/* ---- FIXED CENTRAL BEARING MOUNT — the permanent anchor. Never rotates. ---- */}
                     <circle cx={C} cy={C} r={24.5} fill="none" stroke="var(--core-line)" strokeWidth={0.9} opacity={0.6} />
-                    <circle cx={C} cy={C} r={22} fill="none" stroke="var(--core-deep)" strokeWidth={5} />
+                    <circle cx={C} cy={C} r={22} fill="none" stroke="var(--core-well)" strokeWidth={5} />
                     <circle cx={C} cy={C} r={19.5} fill="none" stroke="var(--core-line)" strokeWidth={0.9} opacity={0.7} />
                     {[45, 135, 225, 315].map((deg) => {
                       const [bx, by] = polar(C, C, 22, deg);
