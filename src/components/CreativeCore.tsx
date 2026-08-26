@@ -3,9 +3,6 @@ import { useReducedMotion, useStore } from "../lib/store";
 import { disciplineIcons } from "./icons";
 import { Reveal, SectionHead } from "./ui";
 
-/* the system chain rendered in the right card */
-const SYSTEM_CHAIN = ["DIRECT", "GENERATE", "DEVELOP", "BUILD", "DELIVER"];
-
 const C = 300;
 const N = 9;
 const DEG = Math.PI / 180;
@@ -515,64 +512,6 @@ export default function CreativeCore() {
                       </p>
                     </>
                   )}
-                </div>
-
-                {/* disciplines index — synced to the orbital field */}
-                <div className="mt-6 pt-5" style={{ borderTop: "1px solid var(--line)" }}>
-                  <div className="flex items-center justify-between mb-3.5">
-                    <span className="f-mono text-[9px] tracking-[0.3em]" style={{ color: "var(--m-sub)" }}>DISCIPLINES</span>
-                    <span className="f-mono text-[9px] tracking-[0.22em]" style={{ color: selected !== null ? "var(--crim-panel)" : "var(--m-sub)" }}>
-                      {selected !== null ? `${disciplines[selected].num} / 09` : "09 / 09"}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-x-4 gap-y-1">
-                    {disciplines.map((dis, i) => {
-                      const on = hoverIdx === i;
-                      const sel = lockedIdx === i;
-                      return (
-                        <div key={dis.id}
-                          onMouseEnter={() => setHoverIdx(i)}
-                          onMouseLeave={() => setHoverIdx(null)}
-                          onClick={() => pick(i)}
-                          className="group flex items-center gap-2.5 py-1.5 cursor-pointer transition-all duration-300"
-                          style={{ transform: on || sel ? "translateX(3px)" : "none" }}>
-                          <span className="f-mono text-[8.5px] tracking-[0.14em] w-6 shrink-0 transition-colors duration-300"
-                            style={{ color: sel ? "var(--crim-panel)" : on ? "var(--ink)" : "var(--m-sub)" }}>{dis.num}</span>
-                          <span className="h-px shrink-0 transition-all duration-300"
-                            style={{ background: sel ? "var(--crim-panel)" : on ? "var(--ink)" : "color-mix(in srgb, var(--m-sub) 40%, transparent)", width: sel || on ? 16 : 10 }} />
-                          <span className="f-tech font-bold text-[10.5px] sm:text-[11px] tracking-[0.13em] leading-snug transition-colors duration-300"
-                            style={{ color: sel ? "var(--crim-panel)" : on ? "var(--ink)" : "color-mix(in srgb, var(--ink) 62%, transparent)" }}>
-                            {dis.name}
-                          </span>
-                          <span className="ml-auto w-1.5 h-1.5 rotate-45 shrink-0 transition-all duration-300"
-                            style={{ background: sel ? "var(--crim-panel)" : "color-mix(in srgb, var(--m-sub) 35%, transparent)", transform: sel ? "rotate(225deg) scale(1.25)" : "rotate(45deg)" }} />
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* system chain */}
-                <div className="mt-6 pt-5" style={{ borderTop: "1px solid var(--line)" }}>
-                  <span className="f-mono text-[9px] tracking-[0.3em] block mb-4" style={{ color: "var(--m-sub)" }}>SYSTEM</span>
-                  <div className="flex flex-wrap items-center gap-y-3">
-                    {SYSTEM_CHAIN.map((step, i) => (
-                      <React.Fragment key={step}>
-                        <span className="flex items-center gap-2.5">
-                          <span className="f-mono text-[8.5px] tracking-[0.12em] w-5 h-5 grid place-items-center shrink-0 rounded-sm"
-                            style={{ background: "color-mix(in srgb, var(--ink) 7%, transparent)", color: "var(--m-sub)", border: "1px solid var(--line)" }}>
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                          <span className="f-tech font-bold text-[11.5px] tracking-[0.18em]" style={{ color: "var(--ink)" }}>{step}</span>
-                        </span>
-                        {i < SYSTEM_CHAIN.length - 1 && (
-                          <svg width="18" height="10" viewBox="0 0 18 10" className="mx-2 shrink-0" style={{ color: "var(--crim-panel)" }} aria-hidden>
-                            <path d="M0 5h13M10 1.5 14.5 5 10 8.5" fill="none" stroke="currentColor" strokeWidth="1.4" />
-                          </svg>
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </div>
                 </div>
 
                 <div className="mt-6 pt-4 f-mono text-[8.5px] tracking-[0.26em] flex items-center justify-between"
