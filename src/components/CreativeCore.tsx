@@ -269,6 +269,16 @@ export default function CreativeCore() {
 
                   {/* ============ SEGMENTED OUTER RING + PRECISION TICKS ============ */}
                   <g className="rb-b">
+                    {/* great toothed wheel — the clock's outer drive, very slow */}
+                    <g className={reduced ? undefined : "gear-ccw"} style={{ animationDuration: "300s" }}>
+                      {Array.from({ length: 36 }).map((_, i) => {
+                        const [x, y] = polar(300, 300, 228, (i / 36) * 360);
+                        return <rect key={i} x="-6" y="-8" width="12" height="16" rx="2"
+                          transform={`translate(${x} ${y}) rotate(${(i / 36) * 360})`}
+                          fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth="0.9" opacity="0.95" />;
+                      })}
+                      <circle cx="300" cy="300" r="221" fill="none" stroke="var(--machine-line)" strokeWidth="1.2" opacity="0.8" />
+                    </g>
                     {/* rotating segmented ring — extremely slow sign of life */}
                     <g className={reduced ? undefined : "gear-cw"} style={{ animationDuration: "240s" }}>
                     {Array.from({ length: 24 }).map((_, i) => {
@@ -327,40 +337,54 @@ export default function CreativeCore() {
                     })}
                   </g>
 
-                  {/* ============ MIDGROUND — spokes, secondary gears, inner rings ============ */}
+                  {/* ============ MIDGROUND — exposed gear train, bridges, jewel bearings ============ */}
                   <g className="rb-c">
-                    {/* recessed inner plate */}
+                    {/* recessed movement plate */}
                     <circle cx="300" cy="300" r="170" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.4" opacity="0.55" />
-                    {/* six mechanical spokes */}
-                    {Array.from({ length: 6 }).map((_, i) => {
-                      const deg = i * 60 + 30;
-                      const [ax, ay] = polar(300, 300, 66, deg);
-                      const [bx, by] = polar(300, 300, 168, deg);
-                      return (
-                        <g key={i}>
-                          <line x1={ax} y1={ay} x2={bx} y2={by} stroke="var(--machine-line)" strokeWidth="11" strokeLinecap="round" />
-                          <line x1={ax} y1={ay} x2={bx} y2={by} stroke="var(--machine-plate)" strokeWidth="6" strokeLinecap="round" />
-                          <line x1={ax} y1={ay} x2={bx} y2={by} stroke="var(--machine-inv)" strokeWidth="1" opacity="0.16" strokeLinecap="round" />
-                        </g>
-                      );
-                    })}
-                    {/* secondary gears mounted at the spoke ends — always alive */}
-                    {Array.from({ length: 6 }).map((_, i) => {
-                      const deg = i * 60 + 30;
-                      const [gx, gy] = polar(300, 300, 168, deg);
-                      return (
-                        <g key={i} transform={`translate(${gx} ${gy})`}>
-                          <g className={reduced ? undefined : i % 2 ? "gear-cw" : "gear-ccw"} style={{ animationDuration: `${16 + i * 4}s` }}>
-                            <GearShape r={15} teeth={9} fill="var(--machine-plate)" hub={false} />
-                          </g>
-                          <circle r="2.2" fill="var(--machine-line)" />
-                        </g>
-                      );
-                    })}
+                    {/* mechanical timing ring — segmented, counter-rotating */}
+                    <g className={reduced ? undefined : "gear-ccw"} style={{ animationDuration: "70s" }}>
+                      {Array.from({ length: 12 }).map((_, i) => {
+                        const [x, y] = polar(300, 300, 152, (i / 12) * 360 + 15);
+                        return <rect key={i} x="-11" y="-4.5" width="22" height="9" rx="2"
+                          transform={`translate(${x} ${y}) rotate(${(i / 12) * 360 + 15})`}
+                          fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth="0.9" opacity="0.9" />;
+                      })}
+                    </g>
+                    {/* exposed gear train — upper-left cluster (big slow → small fast) */}
+                    <g transform="translate(212 212)">
+                      <g className={reduced ? undefined : "gear-cw"} style={{ animationDuration: "34s" }}>
+                        <GearShape r={30} teeth={16} fill="var(--machine-plate)" spokes={4} />
+                      </g>
+                    </g>
+                    <g transform="translate(252 182)">
+                      <g className={reduced ? undefined : "gear-ccw"} style={{ animationDuration: "14s" }}>
+                        <GearShape r={15} teeth={10} fill="var(--machine-deep)" hub={false} />
+                      </g>
+                    </g>
+                    {/* exposed gear train — lower-right cluster */}
+                    <g transform="translate(396 388)">
+                      <g className={reduced ? undefined : "gear-ccw"} style={{ animationDuration: "26s" }}>
+                        <GearShape r={26} teeth={14} fill="var(--machine-plate)" spokes={3} />
+                      </g>
+                    </g>
+                    <g transform="translate(430 356)">
+                      <g className={reduced ? undefined : "gear-cw"} style={{ animationDuration: "11s" }}>
+                        <GearShape r={13} teeth={9} fill="var(--machine-deep)" hub={false} />
+                      </g>
+                    </g>
+                    {/* clock bridges holding jewel bearings */}
+                    {[[212, 212], [396, 388], [300, 148]].map(([bx, by], k) => (
+                      <g key={k}>
+                        <rect x={bx - 20} y={by - 5} width="40" height="10" rx="5" fill="var(--machine-plate)" stroke="var(--machine-line)" strokeWidth="1"
+                          transform={`rotate(${k === 2 ? 0 : k === 0 ? 45 : -45} ${bx} ${by})`} opacity="0.9" />
+                        <circle cx={bx} cy={by} r="4.5" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1" />
+                        <circle cx={bx} cy={by} r="1.8" fill="var(--machine-crimson-hot)" opacity="0.85" />
+                      </g>
+                    ))}
                     {/* concentric calibration rings */}
-                    <circle cx="300" cy="300" r="146" fill="none" stroke="var(--machine-line)" strokeWidth="1.3" opacity="0.8" />
-                    <g className={reduced ? undefined : "gear-ccw-slow"}>
-                      <circle cx="300" cy="300" r="122" fill="none" stroke="var(--machine-line)" strokeWidth="1" strokeDasharray="3 7" opacity="0.7" />
+                    <circle cx="300" cy="300" r="132" fill="none" stroke="var(--machine-line)" strokeWidth="1.2" opacity="0.75" />
+                    <g className={reduced ? undefined : "gear-cw"} style={{ animationDuration: "90s" }}>
+                      <circle cx="300" cy="300" r="116" fill="none" stroke="var(--machine-line)" strokeWidth="1" strokeDasharray="3 7" opacity="0.65" />
                     </g>
                     <circle cx="300" cy="300" r="100" fill="none" stroke="var(--machine-inv)" strokeWidth="0.8" opacity="0.2" />
                   </g>
@@ -388,11 +412,32 @@ export default function CreativeCore() {
                     <g className={reduced ? undefined : "gear-cw"} style={{ animationDuration: "40s" }}>
                       <circle cx="300" cy="300" r="38" fill="none" stroke="var(--machine-inv)" strokeWidth="1" strokeDasharray="2 5" opacity="0.45" />
                     </g>
-                    {/* heartbeat core */}
-                    <g className={reduced ? undefined : "core-beat"}>
-                      <circle cx="300" cy="300" r="13" fill="var(--machine-crimson-hot)" />
-                      <circle cx="300" cy="300" r="5" fill="var(--machine-inv)" opacity="0.9" />
+                    {/* mechanical hub — pivot bearing, not an energy core */}
+                    <circle cx="300" cy="300" r="22" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.3" />
+                    <circle cx="300" cy="300" r="16" fill="none" stroke="var(--machine-inv)" strokeWidth="0.8" opacity="0.35" />
+                    {/* escapement: escape wheel + rocking anchor (clockwork rhythm) */}
+                    <g transform="translate(344 258)">
+                      <g className={reduced ? undefined : "gear-cw"} style={{ animationDuration: "8s" }}>
+                        {Array.from({ length: 12 }).map((_, i) => {
+                          const a = (i / 12) * Math.PI * 2;
+                          return <path key={i} d={`M${13 * Math.cos(a)} ${13 * Math.sin(a)} l3 -3 l-1 5 z`} fill="var(--machine-line)" />;
+                        })}
+                        <circle r="10" fill="none" stroke="var(--machine-line)" strokeWidth="1.3" />
+                      </g>
+                      <g className={reduced ? undefined : "escapement"} style={{ transformOrigin: "0px -14px", transformBox: "view-box" }}>
+                        <path d="M-8 -8 L0 -20 L8 -8" fill="none" stroke="var(--machine-inv)" strokeWidth="2" strokeLinecap="round" />
+                      </g>
                     </g>
+                    {/* balance wheel — the regulator, oscillating */}
+                    <g className={reduced ? undefined : "balance"} style={{ transformOrigin: "254px 342px", transformBox: "view-box" }}>
+                      <circle cx="254" cy="342" r="16" fill="none" stroke="var(--machine-line)" strokeWidth="2.4" />
+                      <line x1="240" y1="342" x2="268" y2="342" stroke="var(--machine-line)" strokeWidth="1.6" />
+                      <circle cx="254" cy="342" r="3" fill="var(--machine-line)" />
+                    </g>
+                    {/* jewel bearings */}
+                    {[[344, 258], [254, 342]].map(([jx, jy], k) => (
+                      <circle key={k} cx={jx} cy={jy} r="2" fill="var(--machine-crimson-hot)" opacity="0.8" />
+                    ))}
                     {/* micro pressure gauge — idle needle sway */}
                     <g transform="translate(352 246)">
                       <circle r="12" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.1" />
