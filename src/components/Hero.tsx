@@ -10,14 +10,16 @@ const getDaypart = (): Daypart => {
 };
 const daypartWord: Record<Daypart, string> = { MORNING: "Morning", AFTERNOON: "Afternoon", EVENING: "Evening" };
 
-/* Always renders: "A Beautiful <Daypart> to you, welcome in." — never duplicated */
+/* Always renders: "A Beautiful <Daypart> to you, welcome in." — never duplicated.
+   Forces capital-B "Beautiful" even if persisted data carries a lowercase variant. */
 function buildGreeting(raw: string): [string, string] {
+  const cap = (x: string) => x.replace(/\bbeautiful\b/i, "Beautiful");
   const s = raw.includes("{DAYPART}") ? raw : raw.replace(/\b(Morning|Afternoon|Evening)\b/i, "{DAYPART}");
   if (s.includes("{DAYPART}")) {
     const [a, b] = s.split("{DAYPART}");
-    return [a, b ?? ""];
+    return [cap(a), b ?? ""];
   }
-  return [s, ""];
+  return [cap(s), ""];
 }
 
 function Frame({ idx }: { idx: number }) {
