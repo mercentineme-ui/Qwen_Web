@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useReducedMotion, useStore } from "../lib/store";
+import { disciplineIcons } from "./icons";
 import { Reveal, SectionHead } from "./ui";
 
 /* the system chain rendered in the right card */
@@ -22,241 +23,263 @@ const SPLIT: [string, string][] = [
   ["PROMPT", "ARCHITECTURE"],
 ];
 
+/* which side of the chip the title label sits on (outward from the circle) */
+const SIDE: ("above" | "right" | "below" | "left")[] = [
+  "above", "right", "right", "right", "below", "below", "left", "left", "left",
+];
+
+/* ---- orbital radii (viewBox 600, centre 300) ---- */
+const R_OUTER = 272; /* outer calibration orbit          */
+const R_NODE = 204;  /* node ring (pct 34)               */
+const R_SEG = 148;   /* segmented interactive ring       */
+const R_INNER = 112; /* inner orbit                      */
+const R_NUC = 58;    /* nucleus                          */
+const SEG_COUNT = 24;
+
 const angleOf = (i: number) => i * (360 / N);
 const pt = (r: number, deg: number) => [C + r * Math.sin(deg * DEG), C - r * Math.cos(deg * DEG)] as const;
 const pct = (i: number, r: number) => ({ x: 50 + r * Math.sin(angleOf(i) * DEG), y: 50 - r * Math.cos(angleOf(i) * DEG) });
 
 const wrap = (d: number) => ((d + 180) % 360 + 360) % 360 - 180;
-const ss = (x: number, a: number, b: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+const easeOutCubic = (x: number) => 1 - Math.pow(1 - x, 3);
 
-/* ============================================================
-   STEAM ENGINE LAYOUT — asymmetric industrial composition
-   flywheel (upper-left) · cylinder/piston/crank (upper-right)
-   transmission gear (centre-left) · output wheel (lower-right)
-   central power hub (centre)
-   ============================================================ */
-const FLY = { x: 216, y: 220, r: 58 };
-const CYL = { x: 386, y: 190, w: 34, h: 68 };
-const CRK = { x: 372, y: 284, r: 26, pin: 15 };
-const TRN = { x: 232, y: 330, r: 28 };
-const OUT = { x: 376, y: 388, r: 26 };
-const VALVE = { x: 414, y: 214 };
-const GAUGE = { x: 414, y: 248, r: 15 };
-const ROD_LEN = 56;
-const PISTON_X = 386;
-
-/* ---------- physical primitives ---------- */
-function Gear({ r, teeth, fill = "var(--core-gear)", stroke = "var(--core-line)", hub = true, spokes = 0 }: {
-  r: number; teeth: number; fill?: string; stroke?: string; hub?: boolean; spokes?: number;
-}) {
-  return (
-    <>
-      {Array.from({ length: teeth }).map((_, i) => {
-        const a = (i / teeth) * 2 * Math.PI;
-        return (
-          <rect key={i} x={-r * 0.14} y={-r * 0.22} width={r * 0.28} height={r * 0.44} rx={r * 0.05}
-            transform={`translate(${r * Math.cos(a)} ${r * Math.sin(a)}) rotate(${(a * 180) / Math.PI})`}
-            fill={fill} stroke={stroke} strokeWidth={1} />
-        );
-      })}
-      <circle r={r * 0.84} fill={fill} stroke={stroke} strokeWidth={1.5} />
-      <path d={`M${-r * 0.6} ${-r * 0.42} A${r * 0.74} ${r * 0.74} 0 0 1 ${r * 0.1} ${-r * 0.72}`}
-        fill="none" stroke="var(--core-inv)" strokeWidth={1.1} opacity={0.2} strokeLinecap="round" />
-      {spokes > 0 && Array.from({ length: spokes }).map((_, i) => {
-        const a = (i / spokes) * 2 * Math.PI;
-        return <circle key={i} cx={r * 0.5 * Math.cos(a)} cy={r * 0.5 * Math.sin(a)} r={r * 0.16} fill="var(--core-deep)" stroke={stroke} strokeWidth={0.9} />;
-      })}
-      {hub && (
-        <>
-          <circle r={r * 0.3} fill="var(--core-deep)" stroke={stroke} strokeWidth={1.2} />
-          <circle r={r * 0.1} fill={stroke} />
-        </>
-      )}
-    </>
-  );
-}
-
-const Bolt = ({ x, y, deg = 0 }: { x: number; y: number; deg?: number }) => (
-  <g transform={`translate(${x} ${y}) rotate(${deg})`}>
-    <circle r={4.2} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.1} />
-    <rect x={-2.5} y={-0.9} width={5} height={1.8} fill="var(--core-deep)" />
-  </g>
-);
-
-const Bearing = ({ x, y, r = 11 }: { x: number; y: number; r?: number }) => (
-  <g>
-    <circle cx={x} cy={y} r={r + 4} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1.2} />
-    <circle cx={x} cy={y} r={r} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.2} />
-    <circle cx={x} cy={y} r={r - 3.5} fill="none" stroke="var(--core-line)" strokeWidth={1} strokeDasharray="3 2.4" opacity={0.8} />
-    <circle cx={x} cy={y} r={3} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1} />
-  </g>
-);
-
-/* cylindrical shaft between two points — body, matte highlight, end collars */
-function Shaft({ x1, y1, x2, y2, w = 7 }: { x1: number; y1: number; x2: number; y2: number; w?: number }) {
-  const len = Math.hypot(x2 - x1, y2 - y1);
-  const ang = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
-  return (
-    <g transform={`translate(${x1} ${y1}) rotate(${ang})`}>
-      <rect x={0} y={-w / 2} width={len} height={w} rx={w / 2} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1} />
-      <rect x={4} y={-w / 2 + 1.3} width={len - 8} height={1.5} rx={0.75} fill="var(--core-inv)" opacity={0.25} />
-      <rect x={-3} y={-w / 2 - 2} width={6.5} height={w + 4} rx={2} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={0.9} />
-      <rect x={len - 3.5} y={-w / 2 - 2} width={6.5} height={w + 4} rx={2} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={0.9} />
-    </g>
-  );
-}
+/* arc path between two angles (0 = up, clockwise) */
+const arcPath = (r: number, a0: number, a1: number) => {
+  const [x0, y0] = pt(r, a0);
+  const [x1, y1] = pt(r, a1);
+  return `M${x0.toFixed(1)} ${y0.toFixed(1)} A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`;
+};
+/* stroke-dash values to reveal `deg` of arc on a circle of radius r */
+const dashFor = (r: number, deg: number) => {
+  const circ = 2 * Math.PI * r;
+  const d = (deg / 360) * circ;
+  return `${d.toFixed(1)} ${(circ - d).toFixed(1)}`;
+};
 
 export default function CreativeCore() {
   const { data, theme } = useStore();
   const disciplines = data.core;
   const reduced = useReducedMotion();
+
+  /* selection — hover previews only; click locks; second click unlocks */
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const [lockedIdx, setLockedIdx] = useState<number | null>(null);
+  const selected = lockedIdx;
+
   const hoverRef = useRef<number | null>(null);
+  const lockRef = useRef<number | null>(null);
   hoverRef.current = hoverIdx;
+  lockRef.current = lockedIdx;
+
   const themeRef = useRef(theme);
   themeRef.current = theme;
 
-  /* ---------- interactive mechanism refs ---------- */
-  const coupRodGs = useRef<(SVGGElement | null)[]>([]);
-  const coupGearGs = useRef<(SVGGElement | null)[]>([]);
-  const coupDots = useRef<(SVGCircleElement | null)[]>([]);
-  const pointerG = useRef<SVGGElement>(null);
-  const armFoldG = useRef<SVGGElement>(null);
-  const armExtG = useRef<SVGGElement>(null);
-  const baseGearG = useRef<SVGGElement>(null);
-  const flyG = useRef<SVGGElement>(null);
-  const crankG = useRef<SVGGElement>(null);
-  const rodL = useRef<SVGLineElement>(null);
-  const rodH = useRef<SVGLineElement>(null);
-  const pistonG = useRef<SVGGElement>(null);
-  const transG = useRef<SVGGElement>(null);
-  const outG = useRef<SVGGElement>(null);
-  const hubGearG = useRef<SVGGElement>(null);
-  const valveStemG = useRef<SVGGElement>(null);
-  const needleG = useRef<SVGGElement>(null);
-  const heartG = useRef<SVGGElement>(null);
-  const mechG = useRef<SVGGElement>(null);
+  /* ---------- refs: orbital layers driven by rAF ---------- */
+  const containerRef = useRef<HTMLDivElement>(null);
+  const orbitalG = useRef<SVGGElement>(null);
+  const outerTicksG = useRef<SVGGElement>(null);
+  const arcOuterG = useRef<SVGGElement>(null);
+  const arcMidG = useRef<SVGGElement>(null);
+  const arcInnerG = useRef<SVGGElement>(null);
+  const dashRingG = useRef<SVGGElement>(null);
+  const markerG = useRef<SVGGElement>(null);
+  const pulseC = useRef<SVGCircleElement>(null);
+  const glowC = useRef<SVGCircleElement>(null);
+  const dotA = useRef<SVGCircleElement>(null);
+  const dotB = useRef<SVGCircleElement>(null);
+  const dotC = useRef<SVGCircleElement>(null);
+  const segRefs = useRef<(SVGPathElement | null)[]>([]);
+  const signalLine = useRef<SVGLineElement>(null);
+  const signalDot = useRef<SVGCircleElement>(null);
+  const nodeWrapRefs = useRef<(HTMLDivElement | null)[]>([]);
 
+  const mouse = useRef({ x: 0, y: 0, in: false });
+  const box = useRef({ cx: 0, cy: 0, w: 0, h: 0 });
+  const sig = useRef({ idx: -1, t: 1 });
+  const pulse = useRef({ p: 1, intensity: 0, next: 2.5 });
   const eng = useRef({
     t: 0, last: 0, raf: 0,
-    ext: Array(N).fill(0), jointRot: Array(N).fill(0),
-    pAngle: 0, pAngleV: 0, pExt: 0,
-    fly: 0, crank: 0, trans: 0, out: 0, hubR: 0, baseGear: 0,
-    surgeAt: 5, surge: -1, env: 0,
+    outerTicks: 0, arcOuter: 0, arcMid: 0, arcInner: 0, dashRot: 0,
+    dA: 0, dB: 120, dC: 240,
+    markerAngle: 0, markerPresence: 0,
     recT: -1, lastTheme: "",
+    prox: Array(N).fill(0),
   });
+
+  const pick = (i: number) => {
+    if (lockedIdx === i) {
+      setLockedIdx(null);
+      sig.current = { idx: -1, t: 1 };
+    } else {
+      setLockedIdx(i);
+      sig.current = { idx: i, t: 0 };
+      pulse.current.p = 0;
+      pulse.current.intensity = 1;
+    }
+  };
 
   useEffect(() => {
     const e = eng.current;
     e.lastTheme = themeRef.current;
 
-    if (reduced) {
-      /* static assembled machine — pointer parked, everything mid-position */
-      return;
-    }
+    const onMove = (ev: MouseEvent) => {
+      const el = containerRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      box.current = { cx: r.left + r.width / 2, cy: r.top + r.height / 2, w: r.width, h: r.height };
+      mouse.current.x = ev.clientX - box.current.cx;
+      mouse.current.y = ev.clientY - box.current.cy;
+      mouse.current.in = true;
+    };
+    const onLeave = () => { mouse.current.in = false; };
+    const el = containerRef.current;
+    el?.addEventListener("mousemove", onMove);
+    el?.addEventListener("mouseleave", onLeave);
 
     const loop = (t: number) => {
       const dt = Math.min(0.05, e.last ? (t - e.last) / 1000 : 0.016);
       e.last = t; e.t += dt;
-      const hov = hoverRef.current;
+      const rm = reduced ? 0 : 1;
 
-      /* ---- 10-second steam surge: build → peak → decay ---- */
-      if (e.surge < 0 && e.t >= e.surgeAt) e.surge = 0;
-      let env = 0;
-      if (e.surge >= 0) {
-        e.surge += dt;
-        env = e.surge < 0.5 ? e.surge / 0.5
-          : e.surge < 1.5 ? 1
-          : e.surge < 3.1 ? Math.max(0, 1 - (e.surge - 1.5) / 1.6) : 0;
-        if (e.surge >= 3.1) { e.surge = -1; e.surgeAt = e.t + 10; }
-      }
-      e.env = env;
-
-      /* ---- theme recalibration: machine slows, contracts, re-seats ---- */
+      /* theme recalibration — layers gently separate, opacity dips, materials swap, re-settle */
       if (themeRef.current !== e.lastTheme) { e.lastTheme = themeRef.current; e.recT = 0.0001; }
       let recal = 1;
       if (e.recT > 0) {
         e.recT += dt;
-        recal = e.recT < 1.5 ? 1 - 0.8 * Math.sin(Math.PI * Math.min(1, e.recT / 1.5)) : 1;
-        if (e.recT >= 1.5) e.recT = -1;
+        recal = e.recT < 1 ? 1 - 0.55 * Math.sin(Math.PI * Math.min(1, e.recT)) : 1;
+        if (e.recT >= 1) e.recT = -1;
       }
-      mechG.current?.setAttribute("transform",
-        `translate(${C} ${C}) scale(${(0.985 + 0.015 * recal).toFixed(4)}) translate(${-C} ${-C})`);
-      mechG.current?.setAttribute("opacity", (0.4 + 0.6 * recal).toFixed(2));
+      orbitalG.current?.setAttribute("opacity", (0.35 + 0.65 * recal).toFixed(3));
+      orbitalG.current?.setAttribute("transform",
+        `translate(${C} ${C}) scale(${(1 + 0.03 * (1 - recal)).toFixed(4)}) translate(${-C} ${-C})`);
 
-      const m = (1 + 1.4 * env + (hov !== null ? 0.25 : 0)) * (0.2 + 0.8 * recal);
+      /* ---- continuous ambient motion (multiple slow layers, never synchronized) ---- */
+      e.outerTicks += dt * 2.4 * rm;
+      e.arcOuter += dt * 3.6 * rm;
+      e.arcMid -= dt * 6.5 * rm;
+      e.arcInner += dt * 9.5 * rm;
+      e.dashRot -= dt * 13 * rm;
+      e.dA += dt * 4.5 * rm;
+      e.dB -= dt * 8 * rm;
+      e.dC += dt * 12.5 * rm;
 
-      /* ---- steam engine: crank → piston, flywheel, transmission, output ---- */
-      e.fly += 38 * m * dt;
-      e.crank += 84 * m * dt;
-      e.trans -= 66 * m * dt;
-      e.out += 52 * m * dt;
-      e.hubR += 24 * m * dt;
-      e.baseGear += (40 + 200 * Math.max(0, e.pExt)) * m * dt;
+      outerTicksG.current?.setAttribute("transform", `rotate(${(e.outerTicks % 360).toFixed(2)} ${C} ${C})`);
+      arcOuterG.current?.setAttribute("transform", `rotate(${(e.arcOuter % 360).toFixed(2)} ${C} ${C})`);
+      arcMidG.current?.setAttribute("transform", `rotate(${(e.arcMid % 360).toFixed(2)} ${C} ${C})`);
+      arcInnerG.current?.setAttribute("transform", `rotate(${(e.arcInner % 360).toFixed(2)} ${C} ${C})`);
+      dashRingG.current?.setAttribute("transform", `rotate(${(e.dashRot % 360).toFixed(2)} ${C} ${C})`);
 
-      flyG.current?.setAttribute("transform", `translate(${FLY.x} ${FLY.y}) rotate(${(e.fly % 360).toFixed(1)})`);
-      crankG.current?.setAttribute("transform", `translate(${CRK.x} ${CRK.y}) rotate(${(e.crank % 360).toFixed(1)})`);
-      transG.current?.setAttribute("transform", `translate(${TRN.x} ${TRN.y}) rotate(${(e.trans % 360).toFixed(1)})`);
-      outG.current?.setAttribute("transform", `translate(${OUT.x} ${OUT.y}) rotate(${(e.out % 360).toFixed(1)})`);
-      hubGearG.current?.setAttribute("transform", `rotate(${(e.hubR % 360).toFixed(1)} ${C} ${C})`);
+      /* orbiting satellite dots */
+      const setDot = (g: React.RefObject<SVGCircleElement>, r: number, a: number) => {
+        const [x, y] = pt(r, a % 360);
+        g.current?.setAttribute("cx", x.toFixed(1));
+        g.current?.setAttribute("cy", y.toFixed(1));
+      };
+      setDot(dotA, R_OUTER, e.dA);
+      setDot(dotB, R_SEG, e.dB);
+      setDot(dotC, R_INNER, e.dC);
 
-      /* slider-crank: crank pin drives piston crosshead vertically */
-      const th = e.crank * DEG;
-      const pinX = CRK.x + CRK.pin * Math.sin(th);
-      const pinY = CRK.y + CRK.pin * Math.cos(th);
-      const dx = PISTON_X - pinX;
-      const pistonY = pinY - Math.sqrt(Math.max(ROD_LEN * ROD_LEN - dx * dx, 100));
-      pistonG.current?.setAttribute("transform", `translate(${PISTON_X} ${pistonY.toFixed(1)})`);
-      rodL.current?.setAttribute("x1", String(PISTON_X)); rodL.current?.setAttribute("y1", pistonY.toFixed(1));
-      rodL.current?.setAttribute("x2", pinX.toFixed(1)); rodL.current?.setAttribute("y2", pinY.toFixed(1));
-      rodH.current?.setAttribute("x1", String(PISTON_X)); rodH.current?.setAttribute("y1", pistonY.toFixed(1));
-      rodH.current?.setAttribute("x2", pinX.toFixed(1)); rodH.current?.setAttribute("y2", pinY.toFixed(1));
+      /* ---- mouse field: focus angle + node proximity + cursor glow ---- */
+      const m = mouse.current;
+      const mAng = Math.atan2(m.x, -m.y) / DEG;
+      let focus: number | null = null;
+      if (hoverRef.current !== null) focus = angleOf(hoverRef.current);
+      else if (lockRef.current !== null) focus = angleOf(lockRef.current);
+      else if (m.in && !reduced) focus = mAng;
 
-      /* pressure valve + gauge respond to the surge envelope */
-      valveStemG.current?.setAttribute("transform", `translate(0 ${(-env * 4).toFixed(2)})`);
-      needleG.current?.setAttribute("transform",
-        `rotate(${(-52 + 104 * (0.25 + 0.75 * env) + Math.sin(e.t * 2.1) * 4).toFixed(1)} ${GAUGE.x} ${GAUGE.y})`);
-
-      /* ---- node couplings: compact engage / disengage ---- */
-      for (let i = 0; i < N; i++) {
-        const target = hov === i ? 1 : 0;
-        e.ext[i] += (target - e.ext[i]) * Math.min(1, dt * (target ? 8 : 6));
-        const ex = e.ext[i];
-        coupRodGs.current[i]?.setAttribute("transform", `translate(0 ${(-6 * (1 - ex)).toFixed(1)})`);
-        e.jointRot[i] += ex * (hov === i ? 260 : 70) * m * dt;
-        coupGearGs.current[i]?.setAttribute("transform", `rotate(${(e.jointRot[i] % 360).toFixed(1)})`);
-        coupDots.current[i]?.setAttribute("opacity", ss(ex, 0.5, 0.95).toFixed(2));
+      /* segmented ring brightens toward the focus angle */
+      for (let i = 0; i < SEG_COUNT; i++) {
+        const segAng = i * (360 / SEG_COUNT) + 360 / SEG_COUNT / 2;
+        let b = 0;
+        if (focus !== null) {
+          const d = Math.abs(wrap(segAng - focus));
+          b = Math.exp(-(d * d) / (2 * 24 * 24));
+        }
+        const el = segRefs.current[i];
+        if (el) {
+          el.setAttribute("opacity", (0.22 + 0.78 * b).toFixed(3));
+          el.setAttribute("stroke", b > 0.45 ? "var(--crimson)" : "var(--ink2)");
+        }
       }
 
-      /* ---- articulated pointer: folds into hub when idle, extends to the coupling ---- */
-      const hasTarget = hov !== null;
-      if (hasTarget) {
-        const dA = wrap(angleOf(hov as number) - e.pAngle);
-        e.pAngleV += (dA * 30 - e.pAngleV * 8) * dt;
-        e.pAngle += e.pAngleV * dt;
+      /* node proximity shift toward cursor */
+      if (box.current.w > 0) {
+        const scale = 600 / box.current.w;
+        for (let i = 0; i < N; i++) {
+          const nx = (pct(i, 34).x / 100 - 0.5) * box.current.w;
+          const ny = (pct(i, 34).y / 100 - 0.5) * box.current.h;
+          const dist = Math.hypot(m.x - nx, m.y - ny);
+          const target = m.in && !reduced ? clamp01(1 - dist / 170) : 0;
+          e.prox[i] += (target - e.prox[i]) * Math.min(1, dt * 8);
+          const p = e.prox[i];
+          let dx = 0, dy = 0;
+          if (dist > 1) { dx = ((m.x - nx) / dist) * p * 4.5; dy = ((m.y - ny) / dist) * p * 4.5; }
+          const w = nodeWrapRefs.current[i];
+          if (w) w.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
+        }
+        /* cursor glow field */
+        if (glowC.current) {
+          glowC.current.setAttribute("cx", (C + m.x * scale).toFixed(1));
+          glowC.current.setAttribute("cy", (C + m.y * scale).toFixed(1));
+          glowC.current.setAttribute("opacity", (m.in && !reduced ? 0.5 : 0).toFixed(2));
+        }
+      }
+
+      /* ---- central directional marker — follows cursor, returns to centre ---- */
+      const mTarget = m.in && !reduced ? mAng : 0;
+      e.markerAngle += wrap(mTarget - e.markerAngle) * Math.min(1, dt * 6);
+      e.markerPresence += (((m.in && !reduced) ? 1 : 0) - e.markerPresence) * Math.min(1, dt * 5);
+      markerG.current?.setAttribute("transform", `rotate(${e.markerAngle.toFixed(1)} ${C} ${C})`);
+      markerG.current?.setAttribute("opacity", (e.markerPresence * 0.9).toFixed(3));
+
+      /* ---- lock signal: node → centre ---- */
+      if (sig.current.t < 1.4) {
+        sig.current.t += dt / 0.65;
+        const a = angleOf(sig.current.idx);
+        const rr = R_NODE - (R_NODE - (R_NUC + 8)) * easeOutCubic(clamp01(sig.current.t));
+        const [nx, ny] = pt(R_NODE - 6, a);
+        const [sx, sy] = pt(rr, a);
+        signalLine.current?.setAttribute("x1", nx.toFixed(1));
+        signalLine.current?.setAttribute("y1", ny.toFixed(1));
+        signalLine.current?.setAttribute("x2", sx.toFixed(1));
+        signalLine.current?.setAttribute("y2", sy.toFixed(1));
+        signalDot.current?.setAttribute("cx", sx.toFixed(1));
+        signalDot.current?.setAttribute("cy", sy.toFixed(1));
+        const vis = sig.current.idx >= 0 && sig.current.t < 1.15 ? 1 : 0;
+        signalLine.current?.setAttribute("opacity", (vis * 0.4).toFixed(2));
+        signalDot.current?.setAttribute("opacity", (vis * (sig.current.t > 1 ? Math.max(0, 1.15 - sig.current.t) * 6 : 1)).toFixed(2));
       } else {
-        e.pAngleV *= Math.max(0, 1 - dt * 6);
-        e.pAngle += e.pAngleV * dt;
+        signalLine.current?.setAttribute("opacity", "0");
+        signalDot.current?.setAttribute("opacity", "0");
       }
-      e.pExt += ((hasTarget ? 1 : 0) - e.pExt) * Math.min(1, dt * 5.5);
-      const k = 0.16 + 0.84 * e.pExt;
-      const fold = 148 * (1 - ss(e.pExt, 0.15, 0.85));
-      pointerG.current?.setAttribute("transform", `rotate(${e.pAngle.toFixed(1)} ${C} ${C})`);
-      armExtG.current?.setAttribute("transform", `translate(${C} ${C}) scale(${k.toFixed(3)}) translate(${-C} ${-C})`);
-      armFoldG.current?.setAttribute("transform", `rotate(${fold.toFixed(1)} ${C} ${C - 66})`);
-      baseGearG.current?.setAttribute("transform", `rotate(${(e.baseGear % 360).toFixed(1)} ${C} ${C})`);
 
-      /* core heart — the tiny crimson power indicator */
-      const s = 1 + 0.06 * Math.sin(e.t * 2.3) + 0.05 * env;
-      heartG.current?.setAttribute("transform", `translate(${C} ${C}) scale(${s.toFixed(3)}) translate(${-C} ${-C})`);
+      /* ---- radial pulse (ambient + lock reaction) ---- */
+      if (pulse.current.p < 1) {
+        pulse.current.p += dt / 1.5;
+      } else if (e.t > pulse.current.next && !reduced) {
+        pulse.current.p = 0;
+        pulse.current.intensity = 0.4;
+        pulse.current.next = e.t + 4.5 + Math.random() * 2.5;
+      }
+      if (pulse.current.p < 1) {
+        const p = pulse.current.p;
+        pulseC.current?.setAttribute("r", (R_NUC + p * 165).toFixed(1));
+        pulseC.current?.setAttribute("opacity", ((1 - p) * 0.4 * pulse.current.intensity).toFixed(3));
+      } else {
+        pulseC.current?.setAttribute("opacity", "0");
+      }
 
       e.raf = requestAnimationFrame(loop);
     };
     eng.current.raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(eng.current.raf);
-  }, [reduced]);
 
-  const active = hoverIdx;
+    return () => {
+      cancelAnimationFrame(eng.current.raf);
+      el?.removeEventListener("mousemove", onMove);
+      el?.removeEventListener("mouseleave", onLeave);
+    };
+  }, [reduced]);
 
   return (
     <section id="core" className="relative py-20 lg:py-28 scroll-mt-20">
@@ -264,347 +287,219 @@ export default function CreativeCore() {
         <SectionHead
           label="02 — WHAT I DO"
           title="WHAT I DO"
-          desc="Nine disciplines feed one machine — direction, generation and story transmitted through a single steam-driven engine."
-          meta="09 MODULES · ONE ENGINE"
+          desc="Nine disciplines orbit one field — direction, generation and story held in a single creative system."
+          meta="09 MODULES · ONE FIELD"
         />
 
         <div className="mt-12 grid lg:grid-cols-[1.22fr_0.78fr] gap-12 lg:gap-14 xl:gap-16 items-center">
+          {/* ================= THE ORBITAL FIELD ================= */}
           <Reveal>
-            <div className="relative mx-auto w-full max-w-[620px] aspect-square select-none">
-              {/* ================= THE STEAM ENGINE CORE ================= */}
+            <div ref={containerRef} className="relative mx-auto w-full max-w-[620px] aspect-square select-none cursor-crosshair">
               <svg viewBox="0 0 600 600" className="absolute inset-0 w-full h-full">
                 <defs>
-                  <filter id="softBlur" x="-40%" y="-40%" width="180%" height="180%">
-                    <feGaussianBlur stdDeviation="13" />
-                  </filter>
+                  <radialGradient id="orbGlow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="var(--crimson)" stopOpacity="0.10" />
+                    <stop offset="60%" stopColor="var(--crimson)" stopOpacity="0.03" />
+                    <stop offset="100%" stopColor="var(--crimson)" stopOpacity="0" />
+                  </radialGradient>
+                  <radialGradient id="orbBg" cx="50%" cy="46%" r="60%">
+                    <stop offset="0%" stopColor="var(--ink)" stopOpacity="0.045" />
+                    <stop offset="70%" stopColor="var(--ink)" stopOpacity="0.015" />
+                    <stop offset="100%" stopColor="var(--ink)" stopOpacity="0" />
+                  </radialGradient>
                 </defs>
 
-                {/* cast shadow — machine sits heavy on the surface */}
-                <ellipse cx={C} cy={C + 24} rx={190} ry={180} fill="#000" opacity={0.24} filter="url(#softBlur)" />
+                {/* soft ambient field behind the system */}
+                <circle cx={C} cy={C} r={292} fill="url(#orbBg)" />
+                {/* cursor glow (follows the mouse inside the field) */}
+                <circle ref={glowC} cx={C} cy={C} r={95} fill="url(#orbGlow)" opacity={0} />
 
-                <g ref={mechG}>
-                  {/* ---- OUTER INDUSTRIAL HOUSING (heavy riveted casing) ---- */}
-                  <g>
-                    <circle cx={C} cy={C} r={198} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={2} />
-                    <circle cx={C} cy={C} r={198} fill="none" stroke="var(--core-inv)" strokeWidth={1} opacity={0.16} />
-                    <circle cx={C} cy={C} r={193} fill="none" stroke="var(--core-deep)" strokeWidth={3.5} opacity={0.8} />
-                    {/* machined groove */}
-                    <circle cx={C} cy={C} r={187} fill="none" stroke="var(--core-line)" strokeWidth={0.8} opacity={0.5} />
-                    {/* reinforced bracket plates — six bolted segments */}
-                    {Array.from({ length: 6 }).map((_, i) => {
-                      const a0 = (i * 60 + 12) * DEG, a1 = ((i + 1) * 60 - 12) * DEG;
-                      const p0 = pt(197, i * 60 + 12), p1 = pt(197, (i + 1) * 60 - 12);
-                      const q0 = pt(178, (i + 1) * 60 - 12), q1 = pt(178, i * 60 + 12);
-                      void a0; void a1;
-                      return (
-                        <g key={i}>
-                          <path d={`M${p0[0]} ${p0[1]} A197 197 0 0 1 ${p1[0]} ${p1[1]} L${q0[0]} ${q0[1]} A178 178 0 0 0 ${q1[0]} ${q1[1]} Z`}
-                            fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1.2} />
-                          <Bolt x={pt(187.5, i * 60 + 22)[0]} y={pt(187.5, i * 60 + 22)[1]} deg={i * 60} />
-                          <Bolt x={pt(187.5, (i + 1) * 60 - 22)[0]} y={pt(187.5, (i + 1) * 60 - 22)[1]} deg={(i + 1) * 60} />
-                        </g>
-                      );
-                    })}
-                    {/* rim rivets */}
-                    {Array.from({ length: 12 }).map((_, i) => {
-                      const [x, y] = pt(193, i * 30 + 15);
-                      return <circle key={i} cx={x} cy={y} r={2.2} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={0.7} />;
-                    })}
-                    {/* mechanical seams between brackets */}
-                    {Array.from({ length: 6 }).map((_, i) => {
-                      const [x1, y1] = pt(176, i * 60);
-                      const [x2, y2] = pt(198, i * 60);
-                      return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--core-line)" strokeWidth={1.2} opacity={0.7} />;
-                    })}
-                    {/* recessed engine chamber */}
-                    <circle cx={C} cy={C} r={176} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1.4} />
-                    <circle cx={C} cy={C} r={176} fill="none" stroke="rgba(0,0,0,0.42)" strokeWidth={6} opacity={0.5} />
-                    <circle cx={C} cy={C} r={168} fill="none" stroke="rgba(0,0,0,0.22)" strokeWidth={2.5} />
-                    <circle cx={C} cy={C} r={170} fill="var(--core-plate)" opacity={0.35} />
-                  </g>
-
-                  {/* ---- DRIVE SHAFTS (mid-back, run beneath the wheels) ---- */}
-                  <g>
-                    <Shaft x1={C} y1={C} x2={FLY.x} y2={FLY.y} w={8} />
-                    <Shaft x1={CRK.x} y1={CRK.y} x2={C} y2={C} w={7} />
-                    <Shaft x1={C} y1={C} x2={TRN.x} y2={TRN.y} w={6} />
-                    <Shaft x1={C} y1={C} x2={OUT.x} y2={OUT.y} w={6} />
-                  </g>
-
-                  {/* ---- LARGE INDUSTRIAL FLYWHEEL (upper-left, dominant) ---- */}
-                  <g>
-                    <circle cx={FLY.x} cy={FLY.y + 3.5} r={FLY.r + 4} fill="rgba(0,0,0,0.26)" />
-                    <g ref={flyG}>
-                      {/* heavy outer rim */}
-                      <circle r={FLY.r} fill="var(--core-ring)" stroke="var(--core-line)" strokeWidth={2.2} />
-                      <circle r={FLY.r - 7} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1.3} />
-                      <circle r={FLY.r} fill="none" stroke="var(--core-inv)" strokeWidth={1} opacity={0.18} />
-                      {/* counterweight thickening on the rim */}
-                      <path d={`M${-FLY.r + 2} 0 A${FLY.r - 2} ${FLY.r - 2} 0 0 1 ${-(FLY.r - 2) * 0.5} ${-(FLY.r - 2) * 0.866}`}
-                        fill="none" stroke="var(--core-mid)" strokeWidth={6} opacity={0.85} strokeLinecap="round" />
-                      {/* heavy spokes */}
-                      {Array.from({ length: 5 }).map((_, i) => {
-                        const a = (i / 5) * 2 * Math.PI;
-                        return (
-                          <g key={i} transform={`rotate(${(a * 180) / Math.PI})`}>
-                            <rect x={-5} y={-FLY.r + 9} width={10} height={FLY.r - 22} rx={3}
-                              fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.1} />
-                            <rect x={-5} y={-FLY.r + 9} width={10} height={4} fill="var(--core-inv)" opacity={0.14} />
-                          </g>
-                        );
-                      })}
-                      {/* central axle + bearing */}
-                      <circle r={13} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.4} />
-                      <circle r={5} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1.1} />
-                      <rect x={-1.4} y={-5} width={2.8} height={10} fill="var(--core-mid)" />
-                    </g>
-                    {/* flywheel bearing housing (fixed, front) */}
-                    <Bearing x={FLY.x} y={FLY.y} r={9} />
-                  </g>
-
-                  {/* ---- PRESSURE CYLINDER + PISTON + CRANK (upper-right cluster) ---- */}
-                  <g>
-                    {/* cylinder body */}
-                    <rect x={CYL.x + 2.5} y={CYL.y - CYL.h / 2 + 2.5} width={CYL.w} height={CYL.h} rx={6} fill="rgba(0,0,0,0.26)" />
-                    <rect x={CYL.x - CYL.w / 2} y={CYL.y - CYL.h / 2} width={CYL.w} height={CYL.h} rx={6}
-                      fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.4} />
-                    <rect x={CYL.x - CYL.w / 2 + 3} y={CYL.y - CYL.h / 2 + 3} width={CYL.w - 6} height={CYL.h - 6} rx={4}
-                      fill="var(--core-ring)" stroke="var(--core-line)" strokeWidth={0.9} />
-                    {/* clamp bands */}
-                    {[-1, 1].map((s) => (
-                      <rect key={s} x={CYL.x - CYL.w / 2 - 2} y={CYL.y + s * 16 - 3} width={CYL.w + 4} height={6} rx={2}
-                        fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1} />
-                    ))}
-                    {/* top cap + bottom gland */}
-                    <rect x={CYL.x - CYL.w / 2 - 3} y={CYL.y - CYL.h / 2 - 6} width={CYL.w + 6} height={9} rx={3}
-                      fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.2} />
-                    <rect x={CYL.x - 8} y={CYL.y + CYL.h / 2 - 2} width={16} height={8} rx={2.5}
-                      fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.1} />
-
-                    {/* piston crosshead + connecting rod (driven by the crank) */}
-                    <line ref={rodL} x1={PISTON_X} y1={238} x2={CRK.x} y2={CRK.y} stroke="var(--core-mid)" strokeWidth={6} strokeLinecap="round" />
-                    <line ref={rodH} x1={PISTON_X} y1={238} x2={CRK.x} y2={CRK.y} stroke="var(--core-inv)" strokeWidth={1.4} strokeLinecap="round" opacity={0.22} />
-                    <g ref={pistonG}>
-                      <rect x={-11} y={-9} width={22} height={15} rx={3} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.3} />
-                      <rect x={-11} y={-3} width={22} height={2.4} fill="var(--core-deep)" opacity={0.7} />
-                      <circle r={3.6} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
-                    </g>
-
-                    {/* crank wheel — converts piston stroke to rotation */}
-                    <circle cx={CRK.x} cy={CRK.y + 3} r={CRK.r + 3} fill="rgba(0,0,0,0.24)" />
-                    <g ref={crankG}>
-                      <Gear r={CRK.r} teeth={11} fill="var(--core-gear)" stroke="var(--core-line)" spokes={0} hub={false} />
-                      <circle r={8} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.2} />
-                      {/* crank arm + pin */}
-                      <rect x={-3.5} y={-CRK.pin - 4} width={7} height={CRK.pin + 6} rx={3} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.1} />
-                      <circle cy={-CRK.pin} r={4.5} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.2} />
-                      <circle cy={-CRK.pin} r={1.6} fill="var(--core-deep)" />
-                    </g>
-                    <Bearing x={CRK.x} y={CRK.y} r={6} />
-
-                    {/* pressure pipe → valve → gauge (compact, connected) */}
-                    <path d={`M${CYL.x + CYL.w / 2} ${CYL.y - 8} L${VALVE.x} ${CYL.y - 8} L${VALVE.x} ${VALVE.y - 9}`}
-                      fill="none" stroke="var(--core-line)" strokeWidth={5} strokeLinecap="round" />
-                    <path d={`M${CYL.x + CYL.w / 2} ${CYL.y - 8} L${VALVE.x} ${CYL.y - 8} L${VALVE.x} ${VALVE.y - 9}`}
-                      fill="none" stroke="var(--core-mid)" strokeWidth={2.2} strokeLinecap="round" />
-                    {/* valve body + lifting stem */}
-                    <rect x={VALVE.x - 7} y={VALVE.y - 9} width={14} height={16} rx={2.5} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.2} />
-                    <g ref={valveStemG}>
-                      <rect x={VALVE.x - 2} y={VALVE.y - 15} width={4} height={8} rx={1.2} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={0.9} />
-                      <circle cx={VALVE.x} cy={VALVE.y - 15} r={2.6} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={0.9} />
-                    </g>
-                    {/* compact gauge */}
-                    <circle cx={GAUGE.x} cy={GAUGE.y + 2} r={GAUGE.r} fill="rgba(0,0,0,0.24)" />
-                    <circle cx={GAUGE.x} cy={GAUGE.y} r={GAUGE.r} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.3} />
-                    <circle cx={GAUGE.x} cy={GAUGE.y} r={GAUGE.r - 4} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={0.8} />
-                    {[-60, -30, 0, 30, 60].map((a) => (
-                      <line key={a} x1={GAUGE.x} y1={GAUGE.y - GAUGE.r + 5.5} x2={GAUGE.x} y2={GAUGE.y - GAUGE.r + 8}
-                        stroke="var(--core-inv)" strokeWidth={0.9} opacity={0.65} transform={`rotate(${a} ${GAUGE.x} ${GAUGE.y})`} />
-                    ))}
-                    <g ref={needleG}>
-                      <line x1={GAUGE.x} y1={GAUGE.y + 2} x2={GAUGE.x} y2={GAUGE.y - GAUGE.r + 5} stroke="var(--core-crimson)" strokeWidth={1.6} strokeLinecap="round" />
-                    </g>
-                    <circle cx={GAUGE.x} cy={GAUGE.y} r={2} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={0.8} />
-                  </g>
-
-                  {/* ---- TRANSMISSION GEAR (centre-left) ---- */}
-                  <g>
-                    <circle cx={TRN.x} cy={TRN.y + 3} r={TRN.r + 4} fill="rgba(0,0,0,0.24)" />
-                    <g ref={transG}>
-                      <Gear r={TRN.r} teeth={12} fill="var(--core-gear)" stroke="var(--core-line)" spokes={4} />
-                    </g>
-                    <Bearing x={TRN.x} y={TRN.y} r={7} />
-                  </g>
-
-                  {/* ---- POWER OUTPUT WHEEL (lower-right) ---- */}
-                  <g>
-                    <circle cx={OUT.x} cy={OUT.y + 3} r={OUT.r + 3} fill="rgba(0,0,0,0.24)" />
-                    <g ref={outG}>
-                      <Gear r={OUT.r} teeth={11} fill="var(--core-gear)" stroke="var(--core-line)" spokes={3} />
-                      {/* output coupling collar */}
-                      <circle r={OUT.r + 7} fill="none" stroke="var(--core-mid)" strokeWidth={2.6} strokeDasharray="7 6" opacity={0.7} />
-                    </g>
-                    <Bearing x={OUT.x} y={OUT.y} r={6} />
-                  </g>
-
-                  {/* ---- CENTRAL POWER HUB (where power is distributed) ---- */}
-                  <g>
-                    <circle cx={C} cy={C + 3.5} r={44} fill="rgba(0,0,0,0.3)" />
-                    {/* layered metal plates */}
-                    <circle cx={C} cy={C} r={44} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.8} />
-                    <circle cx={C} cy={C} r={38} fill="var(--core-ring)" stroke="var(--core-line)" strokeWidth={1.2} />
-                    {/* gear coupling (rotates) */}
-                    <g ref={hubGearG}>
-                      <Gear r={30} teeth={14} fill="var(--core-gear)" stroke="var(--core-line)" spokes={4} />
-                    </g>
-                    {/* bearing housing + collar */}
-                    <circle cx={C} cy={C} r={16} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1.4} />
-                    <circle cx={C} cy={C} r={16} fill="none" stroke="var(--core-line)" strokeWidth={0.9} strokeDasharray="2.6 2" opacity={0.8} />
-                    {/* hub bolts */}
-                    {[0, 1, 2, 3].map((i) => {
-                      const a = (i / 4) * 2 * Math.PI + 0.78;
-                      return <Bolt key={i} x={C + 36 * Math.cos(a)} y={C + 36 * Math.sin(a)} deg={(a * 180) / Math.PI} />;
+                <g ref={orbitalG}>
+                  {/* ---- OUTER CALIBRATION ORBIT ---- */}
+                  <circle cx={C} cy={C} r={R_OUTER} fill="none" stroke="var(--line)" strokeWidth={1} />
+                  <g ref={outerTicksG}>
+                    {Array.from({ length: 60 }).map((_, i) => {
+                      const major = i % 5 === 0;
+                      const [x1, y1] = pt(R_OUTER - (major ? 9 : 5), i * 6);
+                      const [x2, y2] = pt(R_OUTER + (major ? 3 : 1), i * 6);
+                      return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
+                        stroke="var(--ink2)" strokeWidth={major ? 1.2 : 0.7} opacity={major ? 0.55 : 0.3} />;
                     })}
                   </g>
-
-                  {/* ---- ARTICULATED POINTER (one connected piece, folds into the hub) ---- */}
-                  <g ref={pointerG}>
-                    <g ref={armExtG}>
-                      {/* inner arm: hub → joint */}
-                      <polygon points={`${C - 4},${C - 14} ${C + 4},${C - 14} ${C + 2.6},${C - 66} ${C - 2.6},${C - 66}`}
-                        fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.1} />
-                      <line x1={C - 1.3} y1={C - 18} x2={C - 0.7} y2={C - 62} stroke="var(--core-inv)" strokeWidth={0.8} opacity={0.25} />
-                      {/* folding outer section */}
-                      <g ref={armFoldG}>
-                        <polygon points={`${C - 3.4},${C - 62} ${C + 3.4},${C - 62} ${C + 2},${C - 176} ${C - 2},${C - 176}`}
-                          fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.1} />
-                        <line x1={C - 1} y1={C - 66} x2={C - 0.5} y2={C - 172} stroke="var(--core-inv)" strokeWidth={0.7} opacity={0.22} />
-                        {/* pointer tip — stops at the node coupling */}
-                        <polygon points={`${C},${C - 186} ${C + 4.6},${C - 175} ${C - 4.6},${C - 175}`} fill="var(--core-crimson)" />
-                        <rect x={C - 4.6} y={C - 176} width={9.2} height={2.2} fill="var(--core-inv)" opacity={0.55} />
-                      </g>
-                      {/* joint gear */}
-                      <circle cx={C} cy={C - 66} r={7} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.2} />
-                      <circle cx={C} cy={C - 66} r={2.2} fill="var(--core-deep)" />
-                    </g>
+                  {/* travelling outer arc */}
+                  <g ref={arcOuterG}>
+                    <circle cx={C} cy={C} r={R_OUTER} fill="none" stroke="var(--ink2)" strokeWidth={1.6}
+                      strokeDasharray={dashFor(R_OUTER, 38)} strokeLinecap="round" opacity={0.4} />
                   </g>
+                  <circle ref={dotA} r={2.6} fill="var(--ink2)" opacity={0.7} />
 
-                  {/* base drive gear + tiny crimson heart (front, always over the hub) */}
-                  <g ref={baseGearG}><Gear r={12} teeth={9} hub={false} fill="var(--core-mid)" stroke="var(--core-line)" /></g>
-                  <g ref={heartG}>
-                    <circle cx={C} cy={C} r={4} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
-                    <circle cx={C} cy={C} r={2.4} fill="var(--core-crimson)" />
+                  {/* ---- NODE RING GUIDE ---- */}
+                  <circle cx={C} cy={C} r={R_NODE} fill="none" stroke="var(--line)" strokeWidth={1} opacity={0.7} />
+                  {Array.from({ length: N }).map((_, i) => {
+                    const [x, y] = pt(R_NODE, angleOf(i));
+                    return <circle key={i} cx={x} cy={y} r={2.4} fill="var(--ink2)" opacity={0.5} />;
+                  })}
+
+                  {/* ---- SEGMENTED INTERACTIVE RING ---- */}
+                  {Array.from({ length: SEG_COUNT }).map((_, i) => {
+                    const span = 360 / SEG_COUNT;
+                    return (
+                      <path key={i} ref={(el) => { segRefs.current[i] = el; }}
+                        d={arcPath(R_SEG, i * span + 3, (i + 1) * span - 3)}
+                        fill="none" stroke="var(--ink2)" strokeWidth={7} strokeLinecap="round" opacity={0.22} />
+                    );
+                  })}
+                  {/* travelling mid arc (opposite direction) */}
+                  <g ref={arcMidG}>
+                    <circle cx={C} cy={C} r={R_SEG} fill="none" stroke="var(--ink2)" strokeWidth={1.4}
+                      strokeDasharray={dashFor(R_SEG, 52)} strokeLinecap="round" opacity={0.35} />
                   </g>
-                </g>
+                  <circle ref={dotB} r={2.2} fill="var(--crimson)" opacity={0.8} />
 
-                {/* ---- NINE COMPACT COUPLINGS (node → short shaft → housing) ---- */}
-                <g>
-                  {Array.from({ length: N }).map((_, i) => (
-                    <g key={i} transform={`rotate(${angleOf(i)} ${C} ${C})`}>
-                      {/* mounting pad on the housing rim */}
-                      <rect x={C - 7} y={C - 200} width={14} height={9} rx={2} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1} />
-                      {/* short telescoping shaft + coupling collar */}
-                      <g ref={(el) => { coupRodGs.current[i] = el; }}>
-                        <rect x={C - 2.6} y={C - 213} width={5.2} height={16} rx={2} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={0.9} />
-                        <rect x={C - 4.5} y={C - 206} width={9} height={5} rx={1.5} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1} />
-                      </g>
-                      {/* small joint gear — spins on engagement */}
-                      <g transform={`translate(${C} ${C - 216})`}>
-                        <g ref={(el) => { coupGearGs.current[i] = el; }}>
-                          <Gear r={6.5} teeth={7} hub={false} fill="var(--core-plate)" stroke="var(--core-line)" />
-                        </g>
-                        <circle r={2} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={0.8} />
-                      </g>
-                      {/* crimson contact indicator */}
-                      <circle ref={(el) => { coupDots.current[i] = el; }} cx={C} cy={C - 216} r={1.6} fill="var(--core-crimson)" opacity={0} />
-                    </g>
-                  ))}
+                  {/* ---- INNER ORBIT ---- */}
+                  <circle cx={C} cy={C} r={R_INNER} fill="none" stroke="var(--line)" strokeWidth={1} opacity={0.8} />
+                  <g ref={arcInnerG}>
+                    <circle cx={C} cy={C} r={R_INNER} fill="none" stroke="var(--ink2)" strokeWidth={1.3}
+                      strokeDasharray={dashFor(R_INNER, 44)} strokeLinecap="round" opacity={0.4} />
+                  </g>
+                  <circle ref={dotC} r={2} fill="var(--ink2)" opacity={0.6} />
+
+                  {/* ---- LOCK SIGNAL (node → centre) ---- */}
+                  <line ref={signalLine} stroke="var(--crimson)" strokeWidth={1.4} opacity={0} />
+                  <circle ref={signalDot} r={4} fill="var(--crimson)" opacity={0} />
+
+                  {/* ---- RADIAL PULSE ---- */}
+                  <circle ref={pulseC} cx={C} cy={C} r={R_NUC} fill="none" stroke="var(--crimson)" strokeWidth={1.2} opacity={0} />
+
+                  {/* ---- NUCLEUS (creative field seed — not a reactor) ---- */}
+                  <circle cx={C} cy={C} r={R_NUC} fill="none" stroke="var(--ink2)" strokeWidth={1.1} opacity={0.5} />
+                  <circle cx={C} cy={C} r={44} fill="none" stroke="var(--ink2)" strokeWidth={0.8} opacity={0.35} />
+                  <circle cx={C} cy={C} r={30} fill="none" stroke="var(--ink2)" strokeWidth={0.8} opacity={0.3} />
+                  {/* rotating dashed ring */}
+                  <g ref={dashRingG}>
+                    <circle cx={C} cy={C} r={36} fill="none" stroke="var(--ink2)" strokeWidth={1}
+                      strokeDasharray="3 7" opacity={0.55} />
+                  </g>
+                  {/* centre point */}
+                  <circle cx={C} cy={C} r={3.4} fill="var(--crimson)" />
+                  <circle cx={C} cy={C} r={7} fill="none" stroke="var(--crimson)" strokeWidth={0.9} opacity={0.5} />
+
+                  {/* ---- DIRECTIONAL MARKER (anchored wedge, follows cursor) ---- */}
+                  <g ref={markerG} opacity={0}>
+                    <path d={`M${C} ${C - 53} L${C + 5} ${C - 40} L${C} ${C - 44} L${C - 5} ${C - 40} Z`}
+                      fill="var(--crimson)" />
+                    <line x1={C} y1={C - 38} x2={C} y2={C - 30} stroke="var(--crimson)" strokeWidth={1.2} opacity={0.7} />
+                  </g>
                 </g>
               </svg>
 
-              {/* ================= NINE DISCIPLINE NODES (clearly separated) ================= */}
+              {/* ================= NINE DISCIPLINE NODES ================= */}
               {disciplines.map((dis, i) => {
-                const { x, y } = pct(i, 41);
-                const on = hoverIdx === i;
+                const { x, y } = pct(i, 34);
+                const Icon = disciplineIcons[dis.icon] ?? disciplineIcons.direction;
+                const hovered = hoverIdx === i;
+                const locked = lockedIdx === i;
+                const side = SIDE[i];
+                const titleStyle: React.CSSProperties =
+                  side === "above" ? { left: 0, bottom: 52, transform: "translateX(-50%)", textAlign: "center" } :
+                  side === "below" ? { left: 0, top: 52, transform: "translateX(-50%)", textAlign: "center" } :
+                  side === "left" ? { right: 52, top: 0, transform: "translateY(-50%)", textAlign: "right" } :
+                  { left: 52, top: 0, transform: "translateY(-50%)", textAlign: "left" };
                 return (
-                  <button key={dis.id}
-                    onMouseEnter={() => setHoverIdx(i)}
-                    onMouseLeave={() => setHoverIdx(null)}
-                    onFocus={() => setHoverIdx(i)}
-                    onBlur={() => setHoverIdx(null)}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 group outline-none"
-                    style={{ left: `${x}%`, top: `${y}%` }}
-                    aria-label={dis.name}>
-                    <span
-                      className="relative flex flex-col items-center justify-center gap-0.5 transition-all duration-300 mat-texture"
-                      style={{
-                        width: 96, height: 56,
-                        clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)",
-                        backgroundColor: on ? "var(--core-deep)" : "var(--core-plate)",
-                        boxShadow: on
-                          ? "inset 0 0 0 1.5px var(--core-crimson), 0 12px 26px -10px rgba(0,0,0,0.5)"
-                          : "inset 0 0 0 1.5px color-mix(in srgb, var(--core-line) 70%, transparent), 0 6px 16px -8px rgba(0,0,0,0.35)",
-                        transform: on ? "translateY(-3px) scale(1.05)" : "none",
-                      }}>
-                      <span className="absolute top-1.5 left-1.5 w-1.5 h-1.5 rounded-full" style={{ background: "var(--core-mid)" }} />
-                      <span className="absolute bottom-1.5 right-1.5 w-1.5 h-1.5 rounded-full" style={{ background: "var(--core-mid)" }} />
-                      <span className="f-tech font-medium text-[11px] leading-[1.25] tracking-[0.08em] text-center transition-colors duration-300"
-                        style={{ color: on ? "var(--core-inv)" : "var(--core-mid)" }}>
-                        {SPLIT[i][0]}
-                        <br />
-                        {SPLIT[i][1]}
+                  <div key={dis.id} ref={(el) => { nodeWrapRefs.current[i] = el; }}
+                    className="absolute" style={{ left: `${x}%`, top: `${y}%` }}>
+                    <button
+                      onMouseEnter={() => setHoverIdx(i)}
+                      onMouseLeave={() => setHoverIdx(null)}
+                      onFocus={() => setHoverIdx(i)}
+                      onBlur={() => setHoverIdx(null)}
+                      onClick={() => pick(i)}
+                      className="absolute outline-none"
+                      style={{ left: 0, top: 0, width: 74, height: 74, transform: "translate(-50%,-50%)" }}
+                      aria-label={dis.name}
+                      aria-pressed={locked}>
+                      <span
+                        className="absolute inset-0 flex items-center justify-center transition-all duration-300"
+                        style={{
+                          clipPath: "polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px)",
+                          backgroundColor: "var(--outer-bg)",
+                          color: "var(--outer-ink)",
+                          boxShadow: locked
+                            ? "inset 0 0 0 1.5px var(--crimson), 0 10px 24px -10px rgba(0,0,0,0.4)"
+                            : hovered
+                              ? "inset 0 0 0 1.5px color-mix(in srgb, var(--crimson) 65%, transparent), 0 8px 20px -10px rgba(0,0,0,0.35)"
+                              : "inset 0 0 0 1px color-mix(in srgb, var(--outer-ink) 22%, transparent), 0 4px 14px -10px rgba(0,0,0,0.25)",
+                          transform: hovered || locked ? "scale(1.07)" : "none",
+                        }}>
+                        <Icon size={26} strokeWidth={1.6} />
+                        <span className="absolute top-1.5 left-2 f-mono text-[8px] tracking-[0.1em] transition-colors duration-300"
+                          style={{ color: locked || hovered ? "var(--crimson)" : "color-mix(in srgb, var(--outer-ink) 55%, transparent)" }}>
+                          {dis.num}
+                        </span>
+                        <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 h-[3px] rounded-sm transition-all duration-300"
+                          style={{ width: locked ? 20 : hovered ? 14 : 8, background: locked ? "var(--crimson)" : "color-mix(in srgb, var(--outer-ink) 35%, transparent)" }} />
                       </span>
-                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-[3px] rounded-sm transition-colors duration-300"
-                        style={{ background: on ? "var(--core-crimson)" : "color-mix(in srgb, var(--core-mid) 40%, transparent)" }} />
+                    </button>
+                    {/* discipline title (outside the chip) */}
+                    <span className="absolute pointer-events-none f-tech font-bold text-[11px] leading-[1.3] tracking-[0.1em] transition-colors duration-300"
+                      style={{ ...titleStyle, color: locked ? "var(--crimson)" : hovered ? "var(--ink)" : "var(--ink2)", width: side === "left" || side === "right" ? 110 : 120 }}>
+                      {SPLIT[i][0]}
+                      <br />
+                      {SPLIT[i][1]}
                     </span>
-                  </button>
+                  </div>
                 );
               })}
 
               {/* bottom technical identifier */}
               <div className="absolute -bottom-9 inset-x-0 flex items-center justify-center gap-3 f-mono text-[9px] tracking-[0.3em] text-[var(--ink2)]">
                 <span className="w-9 h-px bg-[var(--line)]" />
-                STEAM ENGINE — CORE/09
+                ORBITAL FIELD — CORE/09
                 <span className="w-9 h-px bg-[var(--line)]" />
               </div>
             </div>
           </Reveal>
 
-          {/* ================= RIGHT — INFORMATION PANEL ================= */}
+          {/* ================= RIGHT — DETAIL CARD ================= */}
           <Reveal delay={0.12}>
-            <div className="mat-outer mat-texture relative overflow-hidden"
-              style={{
-                clipPath: "polygon(22px 0, 100% 0, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%, 0 22px)",
-                boxShadow: "inset 0 0 0 1.5px color-mix(in srgb, var(--outer-ink) 20%, transparent)",
-              }}>
-              <span className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2" style={{ borderColor: "var(--crim-panel)" }} aria-hidden />
-              <span className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2" style={{ borderColor: "var(--crim-panel)" }} aria-hidden />
+            <div className="relative rounded-xl overflow-hidden"
+              style={{ background: "var(--sup1)", boxShadow: "inset 0 0 0 1px var(--line)" }}>
+              {/* thin orbital accent */}
+              <span className="absolute top-0 left-0 h-[3px] w-16" style={{ background: "var(--crim-panel)" }} aria-hidden />
 
               <div className="p-6 sm:p-8">
-                {/* selection-driven output — never shows stale node data */}
-                <div key={active !== null ? disciplines[active].id : "standby"} className="career-wipe-in">
+                <div key={selected !== null ? disciplines[selected].id : "standby"} className="career-wipe-in">
                   <div className="flex items-center justify-between">
-                    <span className="f-mono text-[10px] tracking-[0.3em]" style={{ color: "var(--m-sub)" }}>
-                      {active !== null ? `MODULE ${disciplines[active].num}` : "OUTPUT"}
+                    <span className="flex items-center gap-2.5">
+                      {/* orbital glyph */}
+                      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden>
+                        <circle cx="10" cy="10" r="7.5" fill="none" stroke="var(--ink2)" strokeWidth="1" opacity="0.6" />
+                        <circle cx="10" cy="10" r="2.4" fill="var(--crim-panel)" />
+                        <circle cx="16.5" cy="6.5" r="1.6" fill="var(--ink2)" />
+                      </svg>
+                      <span className="f-mono text-[10px] tracking-[0.3em]" style={{ color: "var(--m-sub)" }}>
+                        {selected !== null ? `MODULE ${disciplines[selected].num}` : "OUTPUT"}
+                      </span>
                     </span>
-                    <span className="f-mono text-[9px] tracking-[0.22em] flex items-center gap-2" style={{ color: active !== null ? "var(--crim-panel)" : "var(--m-sub)" }}>
-                      <span className="w-1.5 h-1.5 rounded-full live-blink" style={{ background: active !== null ? "var(--crim-panel)" : "var(--m-sub)" }} />
-                      {active !== null ? "ENGAGED" : "STANDBY"}
+                    <span className="f-mono text-[9px] tracking-[0.22em] flex items-center gap-2"
+                      style={{ color: selected !== null ? "var(--crim-panel)" : "var(--m-sub)" }}>
+                      <span className="w-1.5 h-1.5 rounded-full live-blink" style={{ background: selected !== null ? "var(--crim-panel)" : "var(--m-sub)" }} />
+                      {selected !== null ? "SELECTED" : "STANDING BY"}
                     </span>
                   </div>
 
-                  {active !== null ? (
+                  {selected !== null ? (
                     <>
-                      <h3 className="f-display leading-[1.02] mt-3 text-[clamp(1.6rem,2.4vw,2.2rem)]" style={{ color: "var(--outer-ink)" }}>
-                        {disciplines[active].name}
+                      <h3 className="f-display leading-[1.02] mt-3.5 text-[clamp(1.6rem,2.4vw,2.2rem)]" style={{ color: "var(--ink)" }}>
+                        {disciplines[selected].name}
                       </h3>
-                      <p className="mt-3 text-[13px] sm:text-[13.5px] leading-relaxed" style={{ color: "var(--outer-ink)", opacity: 0.88 }}>
-                        {disciplines[active].blurb}
+                      <p className="mt-3 text-[13px] sm:text-[13.5px] leading-relaxed" style={{ color: "var(--ink)", opacity: 0.85 }}>
+                        {disciplines[selected].blurb}
                       </p>
                       <div className="mt-4 flex flex-wrap gap-2">
-                        {disciplines[active].tags.map((t) => (
-                          <span key={t} className="f-tech font-bold text-[9.5px] tracking-[0.14em] px-2.5 py-1"
-                            style={{ background: "color-mix(in srgb, var(--outer-ink) 12%, transparent)", border: "1px solid var(--m-line)", color: "var(--outer-ink)" }}>
+                        {disciplines[selected].tags.map((t) => (
+                          <span key={t} className="f-tech font-bold text-[9.5px] tracking-[0.14em] px-2.5 py-1 rounded-sm"
+                            style={{ background: "color-mix(in srgb, var(--ink) 8%, transparent)", border: "1px solid var(--line)", color: "var(--ink)" }}>
                             {t}
                           </span>
                         ))}
@@ -612,43 +507,45 @@ export default function CreativeCore() {
                     </>
                   ) : (
                     <>
-                      <h3 className="f-display leading-[1.05] mt-3 text-[clamp(1.6rem,2.4vw,2.2rem)]" style={{ color: "var(--outer-ink)" }}>
-                        On Stand by
+                      <h3 className="f-display leading-[1.05] mt-3.5 text-[clamp(1.6rem,2.4vw,2.2rem)]" style={{ color: "var(--ink)" }}>
+                        Standing by
                       </h3>
-                      <p className="mt-3 text-[13px] sm:text-[13.5px]" style={{ color: "var(--m-sub)" }}>
-                        Pick a node to discover.
+                      <p className="mt-3 text-[13px] sm:text-[13.5px]" style={{ color: "var(--ink2)" }}>
+                        Choose a node to explore.
                       </p>
                     </>
                   )}
                 </div>
 
-                {/* disciplines — synced to the machine */}
-                <div className="mt-6 pt-5" style={{ borderTop: "1px solid var(--m-line)" }}>
+                {/* disciplines index — synced to the orbital field */}
+                <div className="mt-6 pt-5" style={{ borderTop: "1px solid var(--line)" }}>
                   <div className="flex items-center justify-between mb-3.5">
                     <span className="f-mono text-[9px] tracking-[0.3em]" style={{ color: "var(--m-sub)" }}>DISCIPLINES</span>
-                    <span className="f-mono text-[9px] tracking-[0.22em]" style={{ color: active !== null ? "var(--crim-panel)" : "var(--m-sub)" }}>
-                      {active !== null ? `0${active + 1} / 09` : "09 / 09"}
+                    <span className="f-mono text-[9px] tracking-[0.22em]" style={{ color: selected !== null ? "var(--crim-panel)" : "var(--m-sub)" }}>
+                      {selected !== null ? `${disciplines[selected].num} / 09` : "09 / 09"}
                     </span>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-x-4 gap-y-1">
                     {disciplines.map((dis, i) => {
                       const on = hoverIdx === i;
+                      const sel = lockedIdx === i;
                       return (
                         <div key={dis.id}
                           onMouseEnter={() => setHoverIdx(i)}
                           onMouseLeave={() => setHoverIdx(null)}
-                          className="group flex items-center gap-2.5 py-1.5 cursor-default transition-all duration-300"
-                          style={{ transform: on ? "translateX(3px)" : "none" }}>
+                          onClick={() => pick(i)}
+                          className="group flex items-center gap-2.5 py-1.5 cursor-pointer transition-all duration-300"
+                          style={{ transform: on || sel ? "translateX(3px)" : "none" }}>
                           <span className="f-mono text-[8.5px] tracking-[0.14em] w-6 shrink-0 transition-colors duration-300"
-                            style={{ color: on ? "var(--crim-panel)" : "var(--m-sub)" }}>{dis.num}</span>
+                            style={{ color: sel ? "var(--crim-panel)" : on ? "var(--ink)" : "var(--m-sub)" }}>{dis.num}</span>
                           <span className="h-px shrink-0 transition-all duration-300"
-                            style={{ background: on ? "var(--crim-panel)" : "color-mix(in srgb, var(--m-sub) 40%, transparent)", width: on ? 16 : 10 }} />
+                            style={{ background: sel ? "var(--crim-panel)" : on ? "var(--ink)" : "color-mix(in srgb, var(--m-sub) 40%, transparent)", width: sel || on ? 16 : 10 }} />
                           <span className="f-tech font-bold text-[10.5px] sm:text-[11px] tracking-[0.13em] leading-snug transition-colors duration-300"
-                            style={{ color: on ? "var(--outer-ink)" : "color-mix(in srgb, var(--outer-ink) 62%, transparent)" }}>
+                            style={{ color: sel ? "var(--crim-panel)" : on ? "var(--ink)" : "color-mix(in srgb, var(--ink) 62%, transparent)" }}>
                             {dis.name}
                           </span>
                           <span className="ml-auto w-1.5 h-1.5 rotate-45 shrink-0 transition-all duration-300"
-                            style={{ background: on ? "var(--crim-panel)" : "color-mix(in srgb, var(--m-sub) 35%, transparent)", transform: on ? "rotate(225deg) scale(1.25)" : "rotate(45deg)" }} />
+                            style={{ background: sel ? "var(--crim-panel)" : "color-mix(in srgb, var(--m-sub) 35%, transparent)", transform: sel ? "rotate(225deg) scale(1.25)" : "rotate(45deg)" }} />
                         </div>
                       );
                     })}
@@ -656,17 +553,17 @@ export default function CreativeCore() {
                 </div>
 
                 {/* system chain */}
-                <div className="mt-6 pt-5" style={{ borderTop: "1px solid var(--m-line)" }}>
+                <div className="mt-6 pt-5" style={{ borderTop: "1px solid var(--line)" }}>
                   <span className="f-mono text-[9px] tracking-[0.3em] block mb-4" style={{ color: "var(--m-sub)" }}>SYSTEM</span>
                   <div className="flex flex-wrap items-center gap-y-3">
                     {SYSTEM_CHAIN.map((step, i) => (
                       <React.Fragment key={step}>
                         <span className="flex items-center gap-2.5">
-                          <span className="f-mono text-[8.5px] tracking-[0.12em] w-5 h-5 grid place-items-center shrink-0"
-                            style={{ background: "color-mix(in srgb, var(--outer-ink) 12%, transparent)", color: "var(--m-sub)", border: "1px solid var(--m-line)" }}>
+                          <span className="f-mono text-[8.5px] tracking-[0.12em] w-5 h-5 grid place-items-center shrink-0 rounded-sm"
+                            style={{ background: "color-mix(in srgb, var(--ink) 7%, transparent)", color: "var(--m-sub)", border: "1px solid var(--line)" }}>
                             {String(i + 1).padStart(2, "0")}
                           </span>
-                          <span className="f-tech font-bold text-[11.5px] tracking-[0.18em]" style={{ color: "var(--outer-ink)" }}>{step}</span>
+                          <span className="f-tech font-bold text-[11.5px] tracking-[0.18em]" style={{ color: "var(--ink)" }}>{step}</span>
                         </span>
                         {i < SYSTEM_CHAIN.length - 1 && (
                           <svg width="18" height="10" viewBox="0 0 18 10" className="mx-2 shrink-0" style={{ color: "var(--crim-panel)" }} aria-hidden>
@@ -679,8 +576,8 @@ export default function CreativeCore() {
                 </div>
 
                 <div className="mt-6 pt-4 f-mono text-[8.5px] tracking-[0.26em] flex items-center justify-between"
-                  style={{ borderTop: "1px solid var(--m-line)", color: "var(--m-sub)" }}>
-                  <span>HOVER A NODE — THE ENGINE RESPONDS</span>
+                  style={{ borderTop: "1px solid var(--line)", color: "var(--m-sub)" }}>
+                  <span>CLICK A NODE — THE FIELD RESPONDS</span>
                   <span style={{ color: "var(--crim-panel)" }}>SYS/09</span>
                 </div>
               </div>
