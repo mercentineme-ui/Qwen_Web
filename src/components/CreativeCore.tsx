@@ -7,105 +7,105 @@ const C = 300;
 const N = 9;
 const DEG = Math.PI / 180;
 
-const LBL: { lines: [string, string]; side: "above" | "right" | "left" | "below" }[] = [
-  { lines: ["CREATIVE", "DIRECTION"], side: "above" },
-  { lines: ["GENERATIVE", "AI"], side: "right" },
-  { lines: ["VISUAL", "DEVELOPMENT"], side: "right" },
-  { lines: ["CINEMATIC", "STORYTELLING"], side: "right" },
-  { lines: ["AI IMAGE +", "VIDEO"], side: "below" },
-  { lines: ["CHARACTER", "DEVELOPMENT"], side: "below" },
-  { lines: ["ENVIRONMENT", "DESIGN"], side: "left" },
-  { lines: ["AI CREATIVE", "WORKFLOWS"], side: "left" },
-  { lines: ["PROMPT", "ARCHITECTURE"], side: "left" },
+/* ---- technical palette (fixed — the Core is a dark instrument on a light work surface) ---- */
+const PAL = {
+  bg: "#E5E4DF",
+  cavity: "#15181C",
+  main: "#202328",
+  sec: "#292D32",
+  raised: "#34383D",
+  edge: "#4A4E53",
+  line: "#666A6E",
+  red: "#E9233F",
+  redDeep: "#8F1528",
+  redBright: "#FF334D",
+  white: "#D8D9D6",
+};
+
+/* ---- radial discipline layout (spec positions: 01 top, numbering counter-clockwise) ---- */
+const ANG_POS: Record<string, number> = {
+  "CREATIVE DIRECTION": 0,
+  "GENERATIVE AI": 40,
+  "VISUAL DEVELOPMENT": 80,
+  "CINEMATIC STORYTELLING": 120,
+  "AI IMAGE + VIDEO": 160,
+  "CHARACTER DEVELOPMENT": 200,
+  "ENVIRONMENT DESIGN": 240,
+  "AI CREATIVE WORKFLOWS": 280,
+  "PROMPT ARCHITECTURE": 320,
+};
+const LBL: Record<string, { lines: [string, string]; side: "above" | "right" | "left" | "below" }> = {
+  "CREATIVE DIRECTION": { lines: ["CREATIVE", "DIRECTION"], side: "above" },
+  "GENERATIVE AI": { lines: ["GENERATIVE", "AI"], side: "right" },
+  "VISUAL DEVELOPMENT": { lines: ["VISUAL", "DEVELOPMENT"], side: "right" },
+  "CINEMATIC STORYTELLING": { lines: ["CINEMATIC", "STORYTELLING"], side: "below" },
+  "AI IMAGE + VIDEO": { lines: ["AI IMAGE +", "VIDEO"], side: "below" },
+  "CHARACTER DEVELOPMENT": { lines: ["CHARACTER", "DEVELOPMENT"], side: "below" },
+  "ENVIRONMENT DESIGN": { lines: ["ENVIRONMENT", "DESIGN"], side: "left" },
+  "AI CREATIVE WORKFLOWS": { lines: ["AI CREATIVE", "WORKFLOWS"], side: "left" },
+  "PROMPT ARCHITECTURE": { lines: ["PROMPT", "ARCHITECTURE"], side: "left" },
+};
+const LBL_FALLBACK: [string, string][] = [
+  ["CREATIVE", "DIRECTION"], ["GENERATIVE", "AI"], ["VISUAL", "DEVELOPMENT"],
+  ["CINEMATIC", "STORYTELLING"], ["AI IMAGE +", "VIDEO"], ["CHARACTER", "DEVELOPMENT"],
+  ["ENVIRONMENT", "DESIGN"], ["AI CREATIVE", "WORKFLOWS"], ["PROMPT", "ARCHITECTURE"],
 ];
 
-function nodePos(i: number, r: number) {
-  const deg = i * (360 / N);
+function nodeAngle(i: number, name: string) {
+  return ANG_POS[name] ?? i * (360 / N);
+}
+function nodePos(i: number, name: string, r: number) {
+  const deg = nodeAngle(i, name);
   return { x: 50 + r * Math.sin(deg * DEG), y: 50 - r * Math.cos(deg * DEG), deg };
 }
+/* positional number per spec: 01 at top, increasing counter-clockwise */
+const posNum = (ang: number) => String(Math.round((((360 - ang) % 360) / 40) + 1)).padStart(2, "0");
 const polar = (r: number, deg: number) => [C + r * Math.sin(deg * DEG), C - r * Math.cos(deg * DEG)] as const;
+const wrap = (d: number) => ((d + 180) % 360 + 360) % 360 - 180;
+const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
-/* ================= physical drawing primitives ================= */
-
-/* machined gear — teeth, face, spokes, hub */
-function Gear({ r, teeth, fill = "var(--core-gear)", stroke = "var(--core-line)", hub = true, spokes = 0 }: {
-  r: number; teeth: number; fill?: string; stroke?: string; hub?: boolean; spokes?: number;
+/* ================= machined gear primitive (drawn at origin) ================= */
+function Gear({ r, teeth, fill, stroke, spokes = 0 }: {
+  r: number; teeth: number; fill: string; stroke: string; spokes?: number;
 }) {
   return (
     <>
       {Array.from({ length: teeth }).map((_, i) => {
         const a = (i / teeth) * 2 * Math.PI;
         return (
-          <rect key={i} x={-r * 0.14} y={-r * 0.22} width={r * 0.28} height={r * 0.44} rx={r * 0.05}
+          <rect key={i} x={-r * 0.15} y={-r * 0.24} width={r * 0.3} height={r * 0.48} rx={r * 0.05}
             transform={`translate(${r * Math.cos(a)} ${r * Math.sin(a)}) rotate(${(a * 180) / Math.PI})`}
-            fill={fill} stroke={stroke} strokeWidth={1} />
+            fill={fill} stroke={stroke} strokeWidth={0.9} />
         );
       })}
-      <circle r={r * 0.84} fill={fill} stroke={stroke} strokeWidth={1.5} />
-      <path d={`M${-r * 0.6} ${-r * 0.42} A${r * 0.74} ${r * 0.74} 0 0 1 ${r * 0.1} ${-r * 0.72}`}
-        fill="none" stroke="var(--core-inv)" strokeWidth={1.1} opacity={0.18} strokeLinecap="round" />
+      <circle r={r * 0.82} fill={fill} stroke={stroke} strokeWidth={1.4} />
+      <path d={`M${-r * 0.55} ${-r * 0.4} A${r * 0.7} ${r * 0.7} 0 0 1 ${r * 0.08} ${-r * 0.68}`}
+        fill="none" stroke={PAL.edge} strokeWidth={1.2} opacity={0.5} strokeLinecap="round" />
       {spokes > 0 && Array.from({ length: spokes }).map((_, i) => {
         const a = (i / spokes) * 2 * Math.PI;
-        return <circle key={i} cx={r * 0.5 * Math.cos(a)} cy={r * 0.5 * Math.sin(a)} r={r * 0.16} fill="var(--core-deep)" stroke={stroke} strokeWidth={0.9} />;
+        return <circle key={i} cx={r * 0.48 * Math.cos(a)} cy={r * 0.48 * Math.sin(a)} r={r * 0.15}
+          fill={PAL.cavity} stroke={stroke} strokeWidth={0.8} />;
       })}
-      {hub && (
-        <>
-          <circle r={r * 0.3} fill="var(--core-deep)" stroke={stroke} strokeWidth={1.2} />
-          <circle r={r * 0.1} fill={stroke} />
-        </>
-      )}
+      <circle r={r * 0.26} fill={PAL.cavity} stroke={stroke} strokeWidth={1.1} />
+      <circle r={r * 0.09} fill={stroke} />
     </>
   );
 }
 
 const Bolt = ({ x, y, deg = 0 }: { x: number; y: number; deg?: number }) => (
   <g transform={`translate(${x} ${y}) rotate(${deg})`}>
-    <circle r={4.4} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.1} />
-    <rect x={-2.6} y={-0.9} width={5.2} height={1.8} fill="var(--core-deep)" />
+    <circle r={4} fill={PAL.raised} stroke={PAL.edge} strokeWidth={1} />
+    <rect x={-2.4} y={-0.8} width={4.8} height={1.6} fill={PAL.cavity} />
   </g>
 );
 
-const Bearing = ({ x, y, r = 13 }: { x: number; y: number; r?: number }) => (
-  <g>
-    <circle cx={x} cy={y} r={r + 4} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1.2} />
-    <circle cx={x} cy={y} r={r} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.2} />
-    <circle cx={x} cy={y} r={r - 3.5} fill="none" stroke="var(--core-line)" strokeWidth={1} strokeDasharray="3 2.4" opacity={0.8} />
-    <circle cx={x} cy={y} r={3.2} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1} />
-  </g>
-);
-
-function Shaft({ x1, y1, x2, y2, w = 8 }: { x1: number; y1: number; x2: number; y2: number; w?: number }) {
-  const dx = x2 - x1, dy = y2 - y1;
-  const len = Math.hypot(dx, dy);
-  const ang = (Math.atan2(dy, dx) * 180) / Math.PI;
-  return (
-    <g transform={`translate(${x1} ${y1}) rotate(${ang})`}>
-      <rect x={0} y={-w / 2} width={len} height={w} rx={w / 2} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.1} />
-      <rect x={4} y={-w / 2 + 1.4} width={len - 8} height={1.6} rx={0.8} fill="var(--core-inv)" opacity={0.25} />
-      <rect x={-3} y={-w / 2 - 2} width={7} height={w + 4} rx={2} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
-      <rect x={len - 4} y={-w / 2 - 2} width={7} height={w + 4} rx={2} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
-    </g>
-  );
-}
-
-/* ================= machine layout — clockwork transmission =================
-   DRIVE (primary, on central shaft) → SHAFT (vertical) → GEAR (secondary,
-   offset) → CAM (eccentric) → LINKAGE (push-rod) → CENTRAL HUB → OUTPUT
-   (lower gear + crank). Governor regulates; escapement keeps time. */
-const PRI = { x: 300, y: 300, r: 46 };      // GEAR 01 — primary drive (center)
-const SEC = { x: 230, y: 234, r: 58 };      // GEAR 02 — transmission (upper-left, larger)
-const ESC = { x: 368, y: 214, r: 24 };      // GEAR 03 — escape wheel (upper-right)
-const GOV = { x: 300, y: 158, armLen: 42 }; // GEAR 05 — governor (top)
-const CAM = { x: 232, y: 396, r: 20 };      // eccentric cam (lower-left)
-const OUT = { x: 372, y: 392, r: 32 };      // GEAR 04 — output (lower-right)
-const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
-
+/* ================= component ================= */
 export default function CreativeCore() {
-  const { data, theme } = useStore();
+  const { data } = useStore();
   const disciplines = data.core;
   const reduced = useReducedMotion();
 
-  /* ---- selection model (card sync only — no pointer) ---- */
+  /* ---- selection model (preserved) ---- */
   const [autoIdx, setAutoIdx] = useState(0);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const [lockedIdx, setLockedIdx] = useState<number | null>(null);
@@ -124,93 +124,59 @@ export default function CreativeCore() {
     else setLockedIdx(i);
   };
 
-  /* ---- the engine: one integration loop drives every mechanism ---- */
-  const gFrame = useRef<SVGGElement>(null);
-  const gShafts = useRef<SVGGElement>(null);
-  const gSecondary = useRef<SVGGElement>(null);
-  const gEscape = useRef<SVGGElement>(null);
-  const gGovernor = useRef<SVGGElement>(null);
-  const gPrimary = useRef<SVGGElement>(null);
-  const gCam = useRef<SVGGElement>(null);
-  const gOutput = useRef<SVGGElement>(null);
-  const gHub = useRef<SVGGElement>(null);
-  /* rotating parts */
-  const primaryG = useRef<SVGGElement>(null);
-  const secG = useRef<SVGGElement>(null);
-  const escWG = useRef<SVGGElement>(null);
-  const anchorG = useRef<SVGGElement>(null);
-  const govSpinG = useRef<SVGGElement>(null);
-  const camG = useRef<SVGGElement>(null);
-  const outG = useRef<SVGGElement>(null);
-  const hubCollarG = useRef<SVGGElement>(null);
-  /* governor articulation */
-  const armL = useRef<SVGLineElement>(null);
-  const armR = useRef<SVGLineElement>(null);
-  const linkL = useRef<SVGLineElement>(null);
-  const linkR = useRef<SVGLineElement>(null);
-  const ballL = useRef<SVGCircleElement>(null);
-  const ballR = useRef<SVGCircleElement>(null);
-  const hlL = useRef<SVGCircleElement>(null);
-  const hlR = useRef<SVGCircleElement>(null);
-  const sleeveG = useRef<SVGGElement>(null);
-  /* cam linkage */
-  const camRoller = useRef<SVGCircleElement>(null);
-  const camRod = useRef<SVGLineElement>(null);
-  const camSliderG = useRef<SVGGElement>(null);
-  /* output crank */
-  const crankRod = useRef<SVGLineElement>(null);
-  const outSliderG = useRef<SVGGElement>(null);
-  /* status */
-  const hubLamp = useRef<SVGCircleElement>(null);
-  const govLamp = useRef<SVGCircleElement>(null);
+  const activeAngle = nodeAngle(sel, disciplines[sel].name);
+  /* machine attentiveness: auto → subtle, hover → attentive, lock → operating */
+  const intensity = hoverIdx !== null ? 0.65 : locked ? 1 : 0.4;
+
+  /* ---- engine state ---- */
+  const ringIndexG = useRef<SVGGElement>(null);
+  const perimG = useRef<SVGGElement>(null);
+  const secTrackG = useRef<SVGGElement>(null);
+  const gearLgG = useRef<SVGGElement>(null);
+  const gearSm1G = useRef<SVGGElement>(null);
+  const gearSm2G = useRef<SVGGElement>(null);
+  const cGear1G = useRef<SVGGElement>(null);
+  const cGear2G = useRef<SVGGElement>(null);
+  const cGear3G = useRef<SVGGElement>(null);
+  const lowerGearG = useRef<SVGGElement>(null);
+  const escG = useRef<SVGGElement>(null);
+  const armG = useRef<SVGGElement>(null);
+  const heartG = useRef<SVGGElement>(null);
+  const heartRed = useRef<SVGCircleElement>(null);
+  const pulseG = useRef<SVGCircleElement>(null);
+  const sigConn = useRef<SVGGElement>(null);
+  const sigOuter = useRef<SVGGElement>(null);
+  const sigInner = useRef<SVGGElement>(null);
 
   const eng = useRef({
-    t: 0, last: 0, raf: 0,
-    surgeAt: 6, surge: -1, env: 0, energy: 0,
-    pri: 0, sec: 0, cam: 0, out: 0, hubCollar: 0, govSpin: 0, spread: 0.3,
-    escTimer: 0, escStep: 0, escA: 0, anchorA: 0,
-    recalT: -1, lastTheme: "",
+    t: 0, last: 0, raf: 0, energy: 0,
+    surgeAt: 5, surge: -1, env: 0,
+    sig: 0, lastSel: -1, pulse: 0,
+    a: { ringIndex: 0, perim: 0, secTrack: 0, gearLg: 0, gearSm1: 0, gearSm2: 0,
+         cGear1: 0, cGear2: 0, cGear3: 0, lowerGear: 0, esc: 0, escTimer: 0, escStep: 0,
+         arm: 0, heart: 0 },
   });
-  const hoverRef = useRef<number | null>(null);
-  hoverRef.current = hoverIdx;
-  const themeRef = useRef(theme);
-  themeRef.current = theme;
-
-  const setTr = (g: React.RefObject<SVGGElement | null>, tr: string) => g.current?.setAttribute("transform", tr);
+  const intenRef = useRef(intensity);
+  intenRef.current = intensity;
+  const activeAngRef = useRef(activeAngle);
+  activeAngRef.current = activeAngle;
 
   useEffect(() => {
     const e = eng.current;
-    e.lastTheme = themeRef.current;
+    const setRot = (g: React.RefObject<SVGGElement | null>, a: number) =>
+      g.current?.setAttribute("transform", `rotate(${a.toFixed(2)} ${C} ${C})`);
+    const setLocal = (g: React.RefObject<SVGGElement | null>, a: number, cx: number, cy: number) =>
+      g.current?.setAttribute("transform", `translate(${cx} ${cy}) rotate(${a.toFixed(2)})`);
 
     if (reduced) {
-      /* static assembled machine */
-      [gFrame, gShafts, gSecondary, gEscape, gGovernor, gPrimary, gCam, gOutput, gHub].forEach((g) => {
-        g.current?.setAttribute("opacity", "1"); g.current?.setAttribute("transform", "");
-      });
-      setTr(primaryG, `translate(${PRI.x} ${PRI.y}) rotate(15)`);
-      setTr(secG, `translate(${SEC.x} ${SEC.y}) rotate(-12)`);
-      setTr(escWG, `translate(${ESC.x} ${ESC.y}) rotate(24)`);
-      setTr(camG, `translate(${CAM.x} ${CAM.y}) rotate(40)`);
-      setTr(outG, `translate(${OUT.x} ${OUT.y}) rotate(30)`);
-      setTr(hubCollarG, `translate(${PRI.x} ${PRI.y}) rotate(20)`);
-      setTr(govSpinG, `translate(${GOV.x} ${GOV.y}) rotate(25)`);
-      const th = (22 + 26 * 0.4) * DEG;
-      const bx = Math.sin(th) * GOV.armLen, by = GOV.y + Math.cos(th) * GOV.armLen;
-      armL.current?.setAttribute("x2", String(GOV.x - bx)); armL.current?.setAttribute("y2", String(by));
-      armR.current?.setAttribute("x2", String(GOV.x + bx)); armR.current?.setAttribute("y2", String(by));
-      ballL.current?.setAttribute("cx", String(GOV.x - bx)); ballL.current?.setAttribute("cy", String(by));
-      ballR.current?.setAttribute("cx", String(GOV.x + bx)); ballR.current?.setAttribute("cy", String(by));
-      hlL.current?.setAttribute("cx", String(GOV.x - bx - 2.5)); hlL.current?.setAttribute("cy", String(by - 2.5));
-      hlR.current?.setAttribute("cx", String(GOV.x + bx - 2.5)); hlR.current?.setAttribute("cy", String(by - 2.5));
-      const slY = by + 12;
-      setTr(sleeveG, `translate(0 ${slY})`);
-      linkL.current?.setAttribute("x1", String(GOV.x - bx)); linkL.current?.setAttribute("y1", String(by));
-      linkR.current?.setAttribute("x1", String(GOV.x + bx)); linkR.current?.setAttribute("y1", String(by));
-      const rollerY = CAM.y - CAM.r - 5 + 4.5 * Math.sin(40 * DEG);
-      camRoller.current?.setAttribute("cx", String(CAM.x)); camRoller.current?.setAttribute("cy", String(rollerY));
-      setTr(camSliderG, `translate(0 ${rollerY - 30})`);
-      camRod.current?.setAttribute("x1", String(CAM.x)); camRod.current?.setAttribute("y1", String(rollerY - 4));
-      camRod.current?.setAttribute("x2", String(CAM.x)); camRod.current?.setAttribute("y2", String(rollerY - 24));
+      /* static assembled state */
+      setRot(ringIndexG, 4); setRot(perimG, -6); setRot(secTrackG, 8);
+      setLocal(gearLgG, 10, 230, 224); setLocal(gearSm1G, -20, 266, 246); setLocal(gearSm2G, 26, 206, 254);
+      setLocal(cGear1G, 15, 350, 300); setLocal(cGear2G, -22, 275, 343); setLocal(cGear3G, 30, 275, 257);
+      setLocal(lowerGearG, 12, 300, 398);
+      setLocal(escG, 8, 230, 188);
+      armG.current?.setAttribute("transform", `rotate(${activeAngRef.current} ${C} ${C})`);
+      heartRed.current?.setAttribute("opacity", "0.8");
       return;
     }
 
@@ -218,126 +184,89 @@ export default function CreativeCore() {
       const dt = Math.min(0.05, e.last ? (t - e.last) / 1000 : 0.016);
       e.last = t; e.t += dt;
 
-      /* 10-second mechanical surge — build, ~1s peak, decay */
+      /* 10-second power surge */
       if (e.surge < 0 && e.t >= e.surgeAt) e.surge = 0;
       let env = 0;
       if (e.surge >= 0) {
         e.surge += dt;
-        env = e.surge < 0.5 ? e.surge / 0.5
-          : e.surge < 1.5 ? 1
-          : e.surge < 3.1 ? Math.max(0, 1 - (e.surge - 1.5) / 1.6) : 0;
-        if (e.surge >= 3.1) { e.surge = -1; e.surgeAt = e.t + 10; }
+        env = e.surge < 0.4 ? e.surge / 0.4
+          : e.surge < 1.4 ? 1
+          : e.surge < 3 ? Math.max(0, 1 - (e.surge - 1.4) / 1.6) : 0;
+        if (e.surge >= 3) { e.surge = -1; e.surgeAt = e.t + 10; }
       }
       e.env = env;
-      e.energy += (1 - e.energy) * Math.min(1, dt * 1.1); /* spin-up */
+      e.energy += (1 - e.energy) * Math.min(1, dt * 1.1);
+      const inten = intenRef.current;
+      const spd = e.energy * (1 + 1.4 * env + 0.3 * inten);
 
-      /* theme recalibration — slow, dismantle, re-seat */
-      if (themeRef.current !== e.lastTheme) { e.lastTheme = themeRef.current; e.recalT = 0.0001; }
-      let sep = 0;
-      if (e.recalT > 0) {
-        e.recalT += dt;
-        sep = e.recalT < 1.4 ? Math.sin(Math.PI * (e.recalT / 1.4)) : 0;
-        if (e.recalT >= 1.4) e.recalT = -1;
-      }
-      const recalScale = 1 - 0.85 * sep;
+      /* ---- independent ring / gear speeds ---- */
+      const a = e.a;
+      a.ringIndex += 0.7 * spd * dt;     /* very slow CW */
+      a.perim -= 1.2 * spd * dt;         /* slow CCW */
+      a.secTrack += 2.6 * spd * dt;      /* medium CW */
+      a.gearLg += 9 * spd * dt;
+      a.gearSm1 -= 21 * spd * dt;
+      a.gearSm2 += 31 * spd * dt;
+      a.cGear1 += 26 * spd * dt;
+      a.cGear2 -= 37 * spd * dt;
+      a.cGear3 += 50 * spd * dt;
+      a.lowerGear += 13 * spd * dt;
 
-      /* hover wakes the zone the node belongs to */
-      const h = hoverRef.current;
-      const bTop = h !== null && h <= 2 ? 0.4 : 0;
-      const bLeft = h !== null && h >= 6 ? 0.4 : 0;
-      const bRight = h !== null && h >= 3 && h <= 5 ? 0.4 : 0;
-      const hoverAny = h !== null ? 0.15 : 0;
-      const mC = e.energy * (1 + 1.6 * env + hoverAny) * recalScale;
-      const mTop = e.energy * (1 + 1.6 * env + hoverAny + bTop) * recalScale;
-      const mLeft = e.energy * (1 + 1.6 * env + hoverAny + bLeft) * recalScale;
-      const mRight = e.energy * (1 + 1.6 * env + hoverAny + bRight) * recalScale;
+      /* escapement: periodic tick → release → lock */
+      a.escTimer += dt * (0.8 + 1.2 * env);
+      if (a.escTimer > 0.5) { a.escTimer -= 0.5; a.escStep++; }
+      const escTarget = a.escStep * 14;
+      a.esc += (escTarget - a.esc) * Math.min(1, dt * 13);
 
-      /* ---- gear train: drive → transmission (meshed, opposed, ratio'd) ---- */
-      e.pri += 20 * mC * dt;
-      e.sec -= 20 * (PRI.r / SEC.r) * mLeft * dt;   /* larger gear turns slower, opposite */
-      e.cam += 55 * mLeft * dt;
-      e.out += 38 * mRight * dt;                     /* independent output */
-      e.hubCollar += 26 * mC * dt;
+      /* mechanical arm eases toward the active discipline */
+      a.arm += wrap(activeAngRef.current - a.arm) * Math.min(1, dt * 3.2);
 
-      setTr(primaryG, `translate(${PRI.x} ${PRI.y}) rotate(${(e.pri % 360).toFixed(1)})`);
-      setTr(secG, `translate(${SEC.x} ${SEC.y}) rotate(${(e.sec % 360).toFixed(1)})`);
-      setTr(camG, `translate(${CAM.x} ${CAM.y}) rotate(${(e.cam % 360).toFixed(1)})`);
-      setTr(outG, `translate(${OUT.x} ${OUT.y}) rotate(${(e.out % 360).toFixed(1)})`);
-      setTr(hubCollarG, `translate(${PRI.x} ${PRI.y}) rotate(${(e.hubCollar % 360).toFixed(1)})`);
+      /* signal propagates inward on selection change */
+      if (sel !== e.lastSel) { e.lastSel = sel; e.sig = 0; }
+      e.sig = clamp01(e.sig + dt / 1.15);
+      const sig = e.sig;
 
-      /* ---- escapement: release → lock → release (periodic, not constant) ---- */
-      e.escTimer += dt * (0.55 + 1.3 * env) * mTop;
-      if (e.escTimer > 0.5) { e.escTimer -= 0.5; e.escStep++; }
-      e.escA += (e.escStep * 24 - e.escA) * Math.min(1, dt * 14);
-      e.anchorA += ((e.escStep % 2 === 0 ? 13 : -13) - e.anchorA) * Math.min(1, dt * 16);
-      setTr(escWG, `translate(${ESC.x} ${ESC.y}) rotate(${e.escA.toFixed(1)})`);
-      setTr(anchorG, `translate(${ESC.x} ${ESC.y - ESC.r - 4}) rotate(${e.anchorA.toFixed(1)})`);
+      /* heart pulse + core brightness */
+      a.heart += dt;
+      const hp = 1 + 0.1 * Math.sin(a.heart * 3) * inten + 0.12 * env;
 
-      /* ---- governor: centrifugal arms spread with speed ---- */
-      e.govSpin += (90 + 150 * env) * mTop * dt;
-      const spreadTarget = clamp01((mTop - 0.3) / 1.2) * (0.45 + 0.55 * clamp01(0.3 + env));
-      e.spread += (spreadTarget - e.spread) * Math.min(1, dt * 2.2);
-      setTr(govSpinG, `translate(${GOV.x} ${GOV.y}) rotate(${(e.govSpin % 360).toFixed(1)})`);
-      const th = (22 + 26 * e.spread) * DEG;
-      const bx = Math.sin(th) * GOV.armLen, by = GOV.y + Math.cos(th) * GOV.armLen;
-      armL.current?.setAttribute("x2", (GOV.x - bx).toFixed(1)); armL.current?.setAttribute("y2", by.toFixed(1));
-      armR.current?.setAttribute("x2", (GOV.x + bx).toFixed(1)); armR.current?.setAttribute("y2", by.toFixed(1));
-      ballL.current?.setAttribute("cx", (GOV.x - bx).toFixed(1)); ballL.current?.setAttribute("cy", by.toFixed(1));
-      ballR.current?.setAttribute("cx", (GOV.x + bx).toFixed(1)); ballR.current?.setAttribute("cy", by.toFixed(1));
-      hlL.current?.setAttribute("cx", (GOV.x - bx - 2.5).toFixed(1)); hlL.current?.setAttribute("cy", (by - 2.5).toFixed(1));
-      hlR.current?.setAttribute("cx", (GOV.x + bx - 2.5).toFixed(1)); hlR.current?.setAttribute("cy", (by - 2.5).toFixed(1));
-      const slY = by + 12;
-      setTr(sleeveG, `translate(0 ${slY.toFixed(1)})`);
-      linkL.current?.setAttribute("x1", (GOV.x - bx).toFixed(1)); linkL.current?.setAttribute("y1", by.toFixed(1));
-      linkL.current?.setAttribute("x2", String(GOV.x - 5)); linkL.current?.setAttribute("y2", slY.toFixed(1));
-      linkR.current?.setAttribute("x1", (GOV.x + bx).toFixed(1)); linkR.current?.setAttribute("y1", by.toFixed(1));
-      linkR.current?.setAttribute("x2", String(GOV.x + 5)); linkR.current?.setAttribute("y2", slY.toFixed(1));
-      govLamp.current?.setAttribute("opacity", (0.25 + env * 0.75).toFixed(2));
+      /* outward response pulse (closed loop) */
+      e.pulse += dt;
+      if (e.pulse > 2.6) e.pulse = 0;
+      const pp = e.pulse / 2.6;
 
-      /* ---- cam → follower → push-rod → slider (rotation → linkage → linear) ---- */
-      const camRad = e.cam * DEG;
-      const rollerY = CAM.y - CAM.r - 5 + 4.5 * Math.sin(camRad);
-      const rollerX = CAM.x + 4.5 * Math.cos(camRad) * 0.35;
-      camRoller.current?.setAttribute("cx", rollerX.toFixed(1)); camRoller.current?.setAttribute("cy", rollerY.toFixed(1));
-      camRod.current?.setAttribute("x1", rollerX.toFixed(1)); camRod.current?.setAttribute("y1", (rollerY - 4).toFixed(1));
-      camRod.current?.setAttribute("x2", String(CAM.x)); camRod.current?.setAttribute("y2", (rollerY - 24).toFixed(1));
-      setTr(camSliderG, `translate(0 ${(rollerY - 30).toFixed(1)})`);
+      /* ---- apply ---- */
+      setRot(ringIndexG, a.ringIndex);
+      setRot(perimG, a.perim);
+      setRot(secTrackG, a.secTrack);
+      setLocal(gearLgG, a.gearLg, 230, 224);
+      setLocal(gearSm1G, a.gearSm1, 266, 246);
+      setLocal(gearSm2G, a.gearSm2, 206, 254);
+      setLocal(cGear1G, a.cGear1, 350, 300);
+      setLocal(cGear2G, a.cGear2, 275, 343);
+      setLocal(cGear3G, a.cGear3, 275, 257);
+      setLocal(lowerGearG, a.lowerGear, 300, 398);
+      setLocal(escG, a.esc, 230, 188);
+      armG.current?.setAttribute("transform", `rotate(${a.arm.toFixed(2)} ${C} ${C})`);
+      heartG.current?.setAttribute("transform", `translate(${C} ${C}) scale(${hp.toFixed(3)}) translate(${-C} ${-C})`);
+      heartRed.current?.setAttribute("opacity", clamp01(0.45 + 0.55 * inten + 0.35 * env).toFixed(2));
+      pulseG.current?.setAttribute("r", (34 + pp * 200).toFixed(1));
+      pulseG.current?.setAttribute("opacity", ((1 - pp) * 0.22 * inten).toFixed(2));
 
-      /* ---- output crank → connecting rod → slider on delivery rail ---- */
-      const outRad = e.out * DEG;
-      const pinX = OUT.x + 13 * Math.cos(outRad), pinY = OUT.y + 13 * Math.sin(outRad);
-      const sliderX = pinX + Math.sqrt(Math.max(2025 - (pinY - OUT.y) ** 2, 100));
-      crankRod.current?.setAttribute("x1", pinX.toFixed(1)); crankRod.current?.setAttribute("y1", pinY.toFixed(1));
-      crankRod.current?.setAttribute("x2", sliderX.toFixed(1)); crankRod.current?.setAttribute("y2", String(OUT.y));
-      setTr(outSliderG, `translate(${sliderX.toFixed(1)} ${OUT.y})`);
-
-      /* ---- status lamps ---- */
-      hubLamp.current?.setAttribute("opacity", clamp01(0.15 + env * 0.85 + (h !== null ? 0.2 : 0)).toFixed(2));
-
-      /* ---- assembly / recalibration layer motion ---- */
-      const prog = (delay: number) => clamp01((e.t - delay) / 0.45);
-      const layers: [React.RefObject<SVGGElement | null>, number, number, number][] = [
-        [gFrame, 0, 0, 0],
-        [gShafts, 0.2, 0, 10],
-        [gSecondary, 0.35, -12, -8],
-        [gEscape, 0.45, 12, -8],
-        [gGovernor, 0.55, 0, -14],
-        [gPrimary, 0.65, 0, 0],
-        [gCam, 0.75, -10, 10],
-        [gOutput, 0.85, 12, 10],
-        [gHub, 0.95, 0, -6],
-      ];
-      layers.forEach(([g, delay, dx, dy]) => {
-        const p = prog(delay);
-        g.current?.setAttribute("transform", `translate(${(dx * sep).toFixed(1)} ${(dy * sep + (1 - p) * 16).toFixed(1)})`);
-        g.current?.setAttribute("opacity", (p * (1 - 0.12 * sep)).toFixed(2));
-      });
+      /* signal layer cascade: connector → outer → inner */
+      sigConn.current?.setAttribute("opacity", clamp01((sig - 0.08) / 0.25).toFixed(2));
+      sigOuter.current?.setAttribute("opacity", clamp01((sig - 0.32) / 0.25).toFixed(2));
+      sigInner.current?.setAttribute("opacity", clamp01((sig - 0.58) / 0.25).toFixed(2));
 
       e.raf = requestAnimationFrame(loop);
     };
-    eng.current.raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(eng.current.raf);
-  }, [reduced]);
+    e.raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(e.raf);
+  }, [reduced, sel]);
+
+  /* ---- red active segment positions ---- */
+  const outerSegPos = polar(212, activeAngle);
+  const innerSegPos = polar(152, activeAngle);
 
   return (
     <section id="core" className="relative py-20 lg:py-28 scroll-mt-20">
@@ -345,289 +274,320 @@ export default function CreativeCore() {
         <SectionHead
           label="02 — WHAT I DO"
           title="CORE"
-          desc="Nine disciplines, one practice — direction, generation and story held together by structured workflows. One machine powers all of them."
+          desc="Nine disciplines feed one machine — direction, generation and story transmitted through a single clockwork engine."
           meta="09 MODULES · ONE ENGINE"
         />
 
-        <div className="mt-12 grid lg:grid-cols-[minmax(0,1.14fr)_minmax(0,352px)] gap-12 lg:gap-24 xl:gap-40 items-center">
-          {/* ==================== CLOCKWORK TRANSMISSION ENGINE ==================== */}
+        <div className="mt-12 grid lg:grid-cols-[minmax(0,1.22fr)_minmax(0,0.78fr)] gap-12 lg:gap-16 xl:gap-20 items-start">
+          {/* ==================== RADIAL ENGINE COMPOSITION ==================== */}
           <Reveal>
-            <div className="relative mx-auto w-full max-w-[660px] aspect-square select-none">
-              <svg viewBox="0 0 600 600" className="absolute inset-0 w-full h-full">
+            <div className="relative rounded-[14px] overflow-visible mat-texture"
+              style={{ background: PAL.bg, border: `1px solid ${PAL.line}`, boxShadow: "0 30px 70px -30px rgba(21,24,28,0.45)" }}>
+              {/* faint technical construction field */}
+              <svg viewBox="0 0 600 600" className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden>
+                <circle cx={C} cy={C} r={286} fill="none" stroke={PAL.line} strokeWidth={0.6} opacity={0.35} strokeDasharray="2 6" />
+                <circle cx={C} cy={C} r={250} fill="none" stroke={PAL.line} strokeWidth={0.5} opacity={0.3} />
+                <circle cx={C} cy={C} r={120} fill="none" stroke={PAL.line} strokeWidth={0.5} opacity={0.25} strokeDasharray="1 5" />
+                {Array.from({ length: 12 }).map((_, i) => {
+                  const [x1, y1] = polar(110, i * 30);
+                  const [x2, y2] = polar(288, i * 30);
+                  return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={PAL.line} strokeWidth={0.5} opacity={0.18} />;
+                })}
+                {[30, 75, 120, 165].map((r) => (
+                  <circle key={r} cx={C} cy={C} r={r} fill="none" stroke={PAL.line} strokeWidth={0.4} opacity={0.15} />
+                ))}
+              </svg>
 
-                {/* ---- LEVEL 0 · HOUSING + RECESSED CAVITY ---- */}
-                <g ref={gFrame}>
-                  <circle cx={C} cy={C + 4} r={252} fill="rgba(0,0,0,0.3)" />
-                  <circle cx={C} cy={C} r={250} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={2} />
-                  {/* thick rim + recessed inner wall */}
-                  <circle cx={C} cy={C} r={236} fill="none" stroke="var(--core-deep)" strokeWidth={9} />
-                  <circle cx={C} cy={C} r={228} fill="none" stroke="var(--core-line)" strokeWidth={1} opacity={0.7} />
-                  {/* machined grooves */}
-                  {[243, 222].map((r) => (
-                    <circle key={r} cx={C} cy={C} r={r} fill="none" stroke="var(--core-line)" strokeWidth={0.7} opacity={0.4} />
-                  ))}
-                  {/* bevel catches */}
-                  <path d={`M ${polar(246, 205)[0]} ${polar(246, 205)[1]} A 246 246 0 0 1 ${polar(246, 335)[0]} ${polar(246, 335)[1]}`}
-                    fill="none" stroke="var(--core-inv)" strokeWidth={1.6} opacity={0.18} strokeLinecap="round" />
-                  <path d={`M ${polar(246, 25)[0]} ${polar(246, 25)[1]} A 246 246 0 0 1 ${polar(246, 155)[0]} ${polar(246, 155)[1]}`}
-                    fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth={1.6} strokeLinecap="round" />
-                  {/* structural bolts */}
+              {/* top technical heading */}
+              <div className="relative pt-8 pb-2 text-center px-6">
+                <p className="f-mono text-[10px] sm:text-[11px] tracking-[0.32em] font-semibold" style={{ color: PAL.main }}>
+                  NINE DISCIPLINES. ONE CLOCKWORK ENGINE.
+                </p>
+                <p className="mt-1.5 text-[11px] sm:text-[12px] tracking-[0.08em]" style={{ color: PAL.line }}>
+                  Direction, generation and story — transmitted through a single core.
+                </p>
+              </div>
+
+              {/* machine + nodes */}
+              <div className="relative mx-auto w-full max-w-[560px] aspect-square select-none px-2">
+                <svg viewBox="0 0 600 600" className="absolute inset-0 w-full h-full">
+                  {/* ---- 10 · cast shadow ---- */}
+                  <ellipse cx={C} cy={C + 246} rx={225} ry={34} fill={PAL.cavity} opacity={0.22} />
+                  <ellipse cx={C} cy={C + 240} rx={190} ry={24} fill={PAL.cavity} opacity={0.18} />
+
+                  {/* ---- 11–12 · outer housing + rim ---- */}
+                  <circle cx={C} cy={C + 4} r={252} fill={PAL.cavity} opacity={0.5} />
+                  <circle cx={C} cy={C} r={252} fill={PAL.main} stroke={PAL.edge} strokeWidth={1.6} />
+                  <circle cx={C} cy={C} r={248} fill="none" stroke={PAL.edge} strokeWidth={1.2} opacity={0.6} />
+                  {/* rim band (raised metal) */}
+                  <circle cx={C} cy={C} r={238} fill="none" stroke={PAL.raised} strokeWidth={18} />
+                  <circle cx={C} cy={C} r={246} fill="none" stroke={PAL.edge} strokeWidth={1} opacity={0.7} />
+                  <circle cx={C} cy={C} r={229} fill="none" stroke={PAL.cavity} strokeWidth={1.4} opacity={0.8} />
+                  {/* recessed screws on rim */}
                   {Array.from({ length: 12 }).map((_, i) => {
-                    const [x, y] = polar(241, i * 30 + 15);
+                    const [x, y] = polar(238, i * 30 + 15);
                     return <Bolt key={i} x={x} y={y} deg={i * 30} />;
                   })}
-                  {/* panel breaks */}
-                  {[70, 190, 310].map((deg) => {
-                    const [x1, y1] = polar(228, deg);
-                    const [x2, y2] = polar(250, deg);
-                    return <line key={deg} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--core-line)" strokeWidth={1.2} opacity={0.5} />;
+                  {/* panel seams + machining marks */}
+                  {[45, 135, 225, 315].map((deg) => {
+                    const [x1, y1] = polar(229, deg);
+                    const [x2, y2] = polar(247, deg);
+                    return <line key={deg} x1={x1} y1={y1} x2={x2} y2={y2} stroke={PAL.cavity} strokeWidth={1.2} opacity={0.6} />;
                   })}
-                  {/* recessed cavity + back plate */}
-                  <circle cx={C} cy={C} r={198} fill="var(--core-deep)" />
-                  <circle cx={C} cy={C} r={198} fill="none" stroke="rgba(0,0,0,0.45)" strokeWidth={7} opacity={0.5} />
-                  <circle cx={C} cy={C} r={190} fill="none" stroke="rgba(0,0,0,0.22)" strokeWidth={3} />
-                  {/* recessed mechanical plate with machined channels */}
-                  <circle cx={C} cy={C} r={182} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={0.8} opacity={0.9} />
-                  {[30, 105, 255, 330].map((deg) => {
-                    const [x1, y1] = polar(176, deg);
-                    const [x2, y2] = polar(96, deg);
-                    return <line key={deg} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(0,0,0,0.25)" strokeWidth={5} strokeLinecap="round" />;
-                  })}
-                  <circle cx={C} cy={C} r={120} fill="none" stroke="var(--core-line)" strokeWidth={0.7} opacity={0.35} />
-                </g>
 
-                {/* ---- LEVEL 1 · SHAFTS (vertical drive + branches) ---- */}
-                <g ref={gShafts}>
-                  {/* central vertical drive shaft */}
-                  <rect x={295.5} y={150} width={9} height={252} rx={4} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.2} />
-                  <rect x={297.5} y={154} width={1.8} height={244} fill="var(--core-inv)" opacity={0.25} />
-                  {[210, 350].map((y) => (
-                    <rect key={y} x={292} y={y - 3.5} width={16} height={7} rx={2} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
-                  ))}
-                  {/* branch to cam (lower-left) + branch to output (lower-right) */}
-                  <Shaft x1={300} y1={395} x2={CAM.x} y2={CAM.y} w={7} />
-                  <Shaft x1={300} y1={395} x2={OUT.x} y2={OUT.y} w={7} />
-                  {/* secondary gear shaft + bearing housing (upper-left) */}
-                  <Shaft x1={SEC.x + 10} y1={SEC.y + 10} x2={PRI.x - PRI.r + 8} y2={PRI.y - PRI.r + 8} w={6} />
-                  {/* bottom shaft bearing */}
-                  <Bearing x={300} y={404} r={8} />
-                </g>
-
-                {/* ---- LEVEL 2 · SECONDARY TRANSMISSION GEAR (upper-left) ---- */}
-                <g ref={gSecondary}>
-                  <circle cx={SEC.x} cy={SEC.y + 3} r={SEC.r + 4} fill="rgba(0,0,0,0.26)" />
-                  <g ref={secG}>
-                    <Gear r={SEC.r} teeth={20} fill="var(--core-gear)" stroke="var(--core-line)" spokes={5} />
-                  </g>
-                  <Bearing x={SEC.x} y={SEC.y} r={10} />
-                </g>
-
-                {/* ---- LEVEL 2 · ESCAPEMENT (upper-right) ---- */}
-                <g ref={gEscape}>
-                  <g ref={escWG}>
-                    {Array.from({ length: 15 }).map((_, i) => {
-                      const a = (i / 15) * 2 * Math.PI;
+                  {/* ---- 13 · segmented index ring (very slow CW) ---- */}
+                  <circle cx={C} cy={C} r={227} fill={PAL.sec} />
+                  <g ref={ringIndexG}>
+                    {Array.from({ length: 36 }).map((_, k) => {
+                      const [x, y] = polar(212, k * 10);
+                      const major = k % 3 === 0;
                       return (
-                        <polygon key={i}
-                          points={`${Math.cos(a) * ESC.r},${Math.sin(a) * ESC.r} ${Math.cos(a + 0.28) * (ESC.r - 6)},${Math.sin(a + 0.28) * (ESC.r - 6)} ${Math.cos(a + 0.1) * (ESC.r - 6)},${Math.sin(a + 0.1) * (ESC.r - 6)}`}
-                          fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={0.7} />
+                        <g key={k} transform={`translate(${x} ${y}) rotate(${k * 10})`}>
+                          <rect x={major ? -9 : -7} y={-13} width={major ? 18 : 14} height={26} rx={2}
+                            fill={PAL.cavity} />
+                          <rect x={major ? -9 : -7} y={-13} width={major ? 18 : 14} height={major ? 24 : 22} rx={2}
+                            fill={major ? PAL.raised : PAL.sec} stroke={PAL.edge} strokeWidth={0.8} />
+                          <rect x={major ? -9 : -7} y={-13} width={major ? 18 : 14} height={3} rx={1}
+                            fill={PAL.edge} opacity={0.55} />
+                        </g>
                       );
                     })}
-                    <circle r={ESC.r - 6} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.2} />
-                    <circle r={3.5} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
                   </g>
-                  {/* locking anchor + pivot + small regulator */}
-                  <g ref={anchorG}>
-                    <path d="M-11 8 L0 -2 L11 8 M0 -2 L0 10" fill="none" stroke="var(--core-mid)" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" />
-                    <circle r={2.6} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
-                  </g>
-                  <circle cx={ESC.x + 26} cy={ESC.y - 16} r={7} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.2} />
-                  <circle cx={ESC.x + 26} cy={ESC.y - 16} r={2} fill="var(--core-mid)" />
-                </g>
+                  <circle cx={C} cy={C} r={199} fill="none" stroke={PAL.cavity} strokeWidth={1.6} />
 
-                {/* ---- LEVEL 3 · GOVERNOR (top) ---- */}
-                <g ref={gGovernor}>
-                  <g ref={govSpinG}><Gear r={13} teeth={9} fill="var(--core-gear)" stroke="var(--core-line)" hub={false} /></g>
-                  <circle cx={GOV.x} cy={GOV.y} r={4.5} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1.2} />
-                  {/* articulated arms + weighted balls */}
-                  <line ref={armL} x1={GOV.x - 4} y1={GOV.y} x2={GOV.x - 16} y2={GOV.y + 38} stroke="var(--core-mid)" strokeWidth={4.5} strokeLinecap="round" />
-                  <line ref={armR} x1={GOV.x + 4} y1={GOV.y} x2={GOV.x + 16} y2={GOV.y + 38} stroke="var(--core-mid)" strokeWidth={4.5} strokeLinecap="round" />
-                  {/* lower links to sleeve */}
-                  <line ref={linkL} x1={GOV.x - 16} y1={GOV.y + 38} x2={GOV.x - 5} y2={GOV.y + 50} stroke="var(--core-plate)" strokeWidth={3} strokeLinecap="round" />
-                  <line ref={linkR} x1={GOV.x + 16} y1={GOV.y + 38} x2={GOV.x + 5} y2={GOV.y + 50} stroke="var(--core-plate)" strokeWidth={3} strokeLinecap="round" />
-                  <circle ref={ballL} cx={GOV.x - 16} cy={GOV.y + 38} r={8.5} fill="var(--core-gear)" stroke="var(--core-line)" strokeWidth={1.4} />
-                  <circle ref={hlL} cx={GOV.x - 18.5} cy={GOV.y + 35.5} r={2.6} fill="var(--core-inv)" opacity={0.28} />
-                  <circle ref={ballR} cx={GOV.x + 16} cy={GOV.y + 38} r={8.5} fill="var(--core-gear)" stroke="var(--core-line)" strokeWidth={1.4} />
-                  <circle ref={hlR} cx={GOV.x + 13.5} cy={GOV.y + 35.5} r={2.6} fill="var(--core-inv)" opacity={0.28} />
-                  {/* adjustable collar / sleeve on the spindle */}
-                  <g ref={sleeveG}>
-                    <rect x={GOV.x - 11} y={-5} width={22} height={10} rx={3} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.2} />
-                    <circle ref={govLamp} cx={GOV.x} cy={0} r={2.4} fill="var(--core-crimson)" opacity={0.25} />
-                  </g>
-                </g>
-
-                {/* ---- LEVEL 3 · PRIMARY DRIVE GEAR (center, on shaft) ---- */}
-                <g ref={gPrimary}>
-                  <circle cx={PRI.x} cy={PRI.y + 3} r={PRI.r + 4} fill="rgba(0,0,0,0.28)" />
-                  <g ref={primaryG}>
-                    <Gear r={PRI.r} teeth={16} fill="var(--core-gear)" stroke="var(--core-line)" spokes={4} />
-                  </g>
-                </g>
-
-                {/* ---- LEVEL 2 · ECCENTRIC CAM + LINKAGE (lower-left) ---- */}
-                <g ref={gCam}>
-                  {/* vertical guide rail for the slider */}
-                  <rect x={CAM.x - 4} y={336} width={8} height={30} rx={2} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
-                  {/* cam base + eccentric lobe */}
-                  <circle cx={CAM.x} cy={CAM.y + 2.5} r={CAM.r + 2} fill="rgba(0,0,0,0.26)" />
-                  <g ref={camG}>
-                    <circle r={CAM.r} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.5} />
-                    <circle cx={4.5} cy={0} r={9} fill="var(--core-gear)" stroke="var(--core-line)" strokeWidth={1.3} />
-                    <circle r={4} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1.1} />
-                    <circle cx={4.5} cy={0} r={2.4} fill="var(--core-deep)" />
-                  </g>
-                  {/* follower roller + push-rod */}
-                  <circle ref={camRoller} cx={CAM.x} cy={CAM.y - CAM.r - 5} r={5} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.3} />
-                  <line ref={camRod} x1={CAM.x} y1={CAM.y - CAM.r - 9} x2={CAM.x} y2={CAM.y - CAM.r - 29} stroke="var(--core-mid)" strokeWidth={4} strokeLinecap="round" />
-                  {/* slider block in the rail */}
-                  <g ref={camSliderG}>
-                    <rect x={CAM.x - 9} y={-6} width={18} height={12} rx={2.5} fill="var(--core-gear)" stroke="var(--core-line)" strokeWidth={1.3} />
-                    <circle cx={CAM.x} r={2.6} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
-                  </g>
-                </g>
-
-                {/* ---- LEVEL 2 · OUTPUT GEAR + CRANK (lower-right) ---- */}
-                <g ref={gOutput}>
-                  <circle cx={OUT.x} cy={OUT.y + 3} r={OUT.r + 3} fill="rgba(0,0,0,0.26)" />
-                  <g ref={outG}>
-                    <circle r={OUT.r} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={2} />
-                    <circle r={OUT.r - 5} fill="none" stroke="var(--core-line)" strokeWidth={1} opacity={0.6} />
-                    {[0, 1, 2, 3, 4, 5].map((i) => {
-                      const a = (i / 6) * 2 * Math.PI;
-                      return <rect key={i} x={-3} y={-OUT.r + 7} width={6} height={OUT.r - 14} rx={2.5}
-                        transform={`rotate(${(a * 180) / Math.PI})`} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={0.9} />;
+                  {/* ---- 14 · inner perimeter track (slow CCW) ---- */}
+                  <circle cx={C} cy={C} r={197} fill={PAL.main} />
+                  <g ref={perimG}>
+                    <circle cx={C} cy={C} r={188} fill="none" stroke={PAL.edge} strokeWidth={1} strokeDasharray="3 5" opacity={0.7} />
+                    {Array.from({ length: 48 }).map((_, k) => {
+                      const [x, y] = polar(182, k * 7.5);
+                      return <circle key={k} cx={x} cy={y} r={k % 4 === 0 ? 1.8 : 1} fill={k % 4 === 0 ? PAL.edge : PAL.line} opacity={0.8} />;
                     })}
-                    <circle r={9} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1.2} />
-                    <circle cx={13} cy={0} r={4} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.1} />
+                    {Array.from({ length: 12 }).map((_, k) => {
+                      const [x1, y1] = polar(194, k * 30);
+                      const [x2, y2] = polar(190, k * 30);
+                      return <line key={k} x1={x1} y1={y1} x2={x2} y2={y2} stroke={PAL.edge} strokeWidth={1.4} />;
+                    })}
                   </g>
-                  <Bearing x={OUT.x} y={OUT.y} r={6} />
-                  {/* crank → connecting rod → slider on delivery rail */}
-                  <rect x={408} y={OUT.y - 2.5} width={52} height={5} rx={2.5} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
-                  <line ref={crankRod} x1={OUT.x + 13} y1={OUT.y} x2={430} y2={OUT.y} stroke="var(--core-mid)" strokeWidth={5} strokeLinecap="round" />
-                  <g ref={outSliderG}>
-                    <rect x={-8} y={-7} width={16} height={14} rx={3} fill="var(--core-gear)" stroke="var(--core-line)" strokeWidth={1.3} />
-                    <circle r={2.6} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
-                  </g>
-                </g>
+                  <circle cx={C} cy={C} r={176} fill="none" stroke={PAL.cavity} strokeWidth={2} />
 
-                {/* ---- LEVEL 4 · CENTRAL DRIVE HUB (front) ---- */}
-                <g ref={gHub}>
-                  <circle cx={PRI.x} cy={PRI.y + 3} r={30} fill="rgba(0,0,0,0.3)" />
-                  <circle cx={PRI.x} cy={PRI.y} r={30} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.8} />
-                  {[0, 1, 2, 3].map((i) => {
-                    const a = (i / 4) * 2 * Math.PI + 0.78;
-                    return <Bolt key={i} x={PRI.x + 23 * Math.cos(a)} y={PRI.y + 23 * Math.sin(a)} deg={(a * 180) / Math.PI} />;
+                  {/* ---- 15 · recessed engine chamber ---- */}
+                  <circle cx={C} cy={C} r={175} fill={PAL.cavity} />
+                  <circle cx={C} cy={C} r={175} fill="none" stroke="rgba(0,0,0,0.6)" strokeWidth={7} opacity={0.5} />
+                  {Array.from({ length: 8 }).map((_, k) => {
+                    const [x1, y1] = polar(172, k * 45 + 22);
+                    const [x2, y2] = polar(120, k * 45 + 22);
+                    return <line key={k} x1={x1} y1={y1} x2={x2} y2={y2} stroke={PAL.main} strokeWidth={2.4} opacity={0.7} strokeLinecap="round" />;
                   })}
-                  {/* toothed drive collar (rotating) */}
-                  <g ref={hubCollarG}>
-                    <Gear r={18} teeth={11} fill="var(--core-gear)" stroke="var(--core-line)" hub={false} />
-                  </g>
-                  {/* retaining ring + bearing + layered cap */}
-                  <circle cx={PRI.x} cy={PRI.y} r={13.5} fill="none" stroke="var(--core-mid)" strokeWidth={1.6} strokeDasharray="4 2.6" opacity={0.85} />
-                  <Bearing x={PRI.x} y={PRI.y} r={9} />
-                  {/* reserved central mount — future pointer attaches here */}
-                  <circle cx={PRI.x} cy={PRI.y} r={6} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.2} />
-                  <rect x={PRI.x - 1.6} y={PRI.y - 8.5} width={3.2} height={5.5} fill="var(--core-deep)" />
-                  <circle ref={hubLamp} cx={PRI.x} cy={PRI.y} r={2.4} fill="var(--core-crimson)" opacity={0.15} />
-                </g>
-              </svg>
+                  <circle cx={C} cy={C} r={118} fill="none" stroke={PAL.main} strokeWidth={1} opacity={0.8} />
 
-              {/* ================= NINE DISCIPLINE NODES + INPUT COUPLINGS ================= */}
-              <svg viewBox="0 0 600 600" className="absolute inset-0 w-full h-full pointer-events-none">
-                {disciplines.map((dis, i) => {
-                  const [x1, y1] = polar(250, i * (360 / N));
-                  const [x2, y2] = polar(226, i * (360 / N));
-                  const [bx3, by3] = polar(226, i * (360 / N));
-                  const awake = hoverIdx === i;
-                  return (
-                    <g key={dis.id}>
-                      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--core-line)" strokeWidth={4.5} strokeLinecap="round" />
-                      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--core-mid)" strokeWidth={1.6} strokeLinecap="round" opacity={0.7} />
-                      <g className={awake && !reduced ? "coupling-spin" : undefined} style={{ transformBox: "fill-box", transformOrigin: "center" }}>
-                        <circle cx={bx3} cy={by3} r={6.5} fill="var(--core-deep)" stroke={awake ? "var(--core-crimson)" : "var(--core-line)"} strokeWidth={1.3}
-                          strokeDasharray="3 2.2" style={{ transition: "stroke .3s ease" }} />
+                  {/* ---- 16 · radial internal structures ---- */}
+                  <g>
+                    {[18, 92, 158, 236, 306].map((deg, k) => {
+                      const [x1, y1] = polar(170, deg);
+                      const [x2, y2] = polar(k % 2 === 0 ? 112 : 126, deg);
+                      return (
+                        <g key={deg}>
+                          <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={PAL.sec} strokeWidth={k % 2 === 0 ? 10 : 6} strokeLinecap="round" />
+                          <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={PAL.raised} strokeWidth={k % 2 === 0 ? 4 : 2.4} strokeLinecap="round" opacity={0.8} />
+                        </g>
+                      );
+                    })}
+                  </g>
+
+                  {/* ---- 17–18 · secondary inner track + red active segments ---- */}
+                  <circle cx={C} cy={C} r={166} fill={PAL.sec} />
+                  <g ref={secTrackG}>
+                    {Array.from({ length: 60 }).map((_, k) => {
+                      const [x, y] = polar(152, k * 6);
+                      const major = k % 5 === 0;
+                      return (
+                        <rect key={k} x={major ? -4.5 : -3} y={-10} width={major ? 9 : 6} height={20} rx={1.5}
+                          transform={`translate(${x} ${y}) rotate(${k * 6})`}
+                          fill={major ? PAL.raised : PAL.main} stroke={PAL.edge} strokeWidth={0.6} />
+                      );
+                    })}
+                  </g>
+                  <circle cx={C} cy={C} r={141} fill="none" stroke={PAL.cavity} strokeWidth={2} />
+                  <circle cx={C} cy={C} r={163} fill="none" stroke={PAL.cavity} strokeWidth={1.4} />
+                  {/* red active segments (static at active angle; fade in with signal) */}
+                  <g ref={sigInner} opacity={0}>
+                    {[-12, -6, 0, 6].map((off, k) => {
+                      const [x, y] = polar(152, activeAngle + off);
+                      return (
+                        <rect key={k} x={-4} y={-10} width={8} height={20} rx={1.5}
+                          transform={`translate(${x} ${y}) rotate(${activeAngle + off})`}
+                          fill={k === 2 ? PAL.redBright : PAL.red} opacity={k === 2 ? 1 : 0.75} />
+                      );
+                    })}
+                  </g>
+                  <g ref={sigOuter} opacity={0}>
+                    {[-5, 0, 5].map((off, k) => {
+                      const [x, y] = polar(212, activeAngle + off);
+                      return (
+                        <rect key={k} x={-7} y={-12} width={14} height={24} rx={2}
+                          transform={`translate(${x} ${y}) rotate(${activeAngle + off})`}
+                          fill={PAL.red} opacity={k === 1 ? 0.95 : 0.6} />
+                      );
+                    })}
+                  </g>
+
+                  {/* ---- 19 · secondary gear assembly (upper-left) ---- */}
+                  <circle cx={230} cy={224} r={40} fill={PAL.main} opacity={0.55} />
+                  <g ref={gearLgG}><Gear r={30} teeth={14} fill={PAL.raised} stroke={PAL.edge} spokes={4} /></g>
+                  <g ref={gearSm1G}><Gear r={14} teeth={9} fill={PAL.sec} stroke={PAL.edge} /></g>
+                  <g ref={gearSm2G}><Gear r={11} teeth={8} fill={PAL.sec} stroke={PAL.edge} /></g>
+                  {/* escapement lever above the large gear */}
+                  <g ref={escG}>
+                    <path d="M-9 6 L0 -4 L9 6 M0 -4 L0 9" fill="none" stroke={PAL.edge} strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" />
+                    <circle r={2.4} fill={PAL.raised} stroke={PAL.edge} strokeWidth={1} />
+                  </g>
+
+                  {/* ---- 20–21 · central chamber + gear cluster ---- */}
+                  <circle cx={C} cy={C + 3} r={104} fill="rgba(0,0,0,0.4)" />
+                  <circle cx={C} cy={C} r={104} fill={PAL.main} stroke={PAL.edge} strokeWidth={1.6} />
+                  <circle cx={C} cy={C} r={96} fill="none" stroke={PAL.edge} strokeWidth={1} strokeDasharray="5 4" opacity={0.6} />
+                  {Array.from({ length: 8 }).map((_, k) => {
+                    const [x, y] = polar(86, k * 45 + 22);
+                    return <Bolt key={k} x={x} y={y} deg={k * 45} />;
+                  })}
+                  {/* central cluster gears */}
+                  <g ref={cGear1G}><Gear r={13} teeth={9} fill={PAL.raised} stroke={PAL.edge} /></g>
+                  <g ref={cGear2G}><Gear r={10} teeth={8} fill={PAL.sec} stroke={PAL.edge} /></g>
+                  <g ref={cGear3G}><Gear r={8} teeth={7} fill={PAL.sec} stroke={PAL.edge} /></g>
+
+                  {/* ---- 31 · lower secondary gear + drive shaft linkage ---- */}
+                  <line x1={C} y1={C + 30} x2={C} y2={398} stroke={PAL.raised} strokeWidth={7} strokeLinecap="round" />
+                  <line x1={C} y1={C + 30} x2={C} y2={398} stroke={PAL.edge} strokeWidth={2} strokeLinecap="round" opacity={0.6} />
+                  <g ref={lowerGearG}><Gear r={19} teeth={11} fill={PAL.raised} stroke={PAL.edge} spokes={3} /></g>
+                  <circle cx={C} cy={398} r={4} fill={PAL.cavity} stroke={PAL.edge} strokeWidth={1.2} />
+
+                  {/* ---- 22 · central mechanical arm (measurement hand) ---- */}
+                  <g ref={armG}>
+                    <rect x={-3} y={-166} width={6} height={140} rx={3} fill={PAL.raised} stroke={PAL.edge} strokeWidth={1} />
+                    <rect x={-1.2} y={-160} width={2.4} height={126} fill={PAL.edge} opacity={0.5} />
+                    <circle cy={-166} r={6} fill={PAL.sec} stroke={PAL.edge} strokeWidth={1.4} />
+                    <circle cy={-166} r={2.4} fill={PAL.redBright} />
+                  </g>
+
+                  {/* ---- 24 · core heart ---- */}
+                  <g ref={heartG}>
+                    <circle cx={C} cy={C + 3} r={31} fill="rgba(0,0,0,0.45)" />
+                    <circle cx={C} cy={C} r={31} fill={PAL.cavity} stroke={PAL.edge} strokeWidth={1.6} />
+                    <circle cx={C} cy={C} r={25} fill="none" stroke={PAL.raised} strokeWidth={4} />
+                    <circle cx={C} cy={C} r={17} fill={PAL.sec} stroke={PAL.edge} strokeWidth={1.3} />
+                    <circle cx={C} cy={C} r={11} fill={PAL.main} stroke={PAL.edge} strokeWidth={1} />
+                    <circle ref={heartRed} cx={C} cy={C} r={6.5} fill={PAL.red} opacity={0.5} />
+                    <circle cx={C} cy={C} r={2.2} fill={PAL.redBright} />
+                  </g>
+
+                  {/* ---- 26 · outward response pulse ---- */}
+                  <circle ref={pulseG} cx={C} cy={C} r={34} fill="none" stroke={PAL.red} strokeWidth={1.6} opacity={0} />
+                </svg>
+
+                {/* ---- node mechanical connectors + radial transmission paths ---- */}
+                <svg viewBox="0 0 600 600" className="absolute inset-0 w-full h-full pointer-events-none">
+                  {disciplines.map((dis, i) => {
+                    const ang = nodeAngle(i, dis.name);
+                    const [x1, y1] = polar(262, ang);
+                    const [x2, y2] = polar(250, ang);
+                    const [jx, jy] = polar(256, ang);
+                    const isSel = i === sel;
+                    return (
+                      <g key={dis.id}>
+                        {/* radial transmission path */}
+                        <line x1={polar(248, ang)[0]} y1={polar(248, ang)[1]} x2={polar(176, ang)[0]} y2={polar(176, ang)[1]}
+                          stroke={PAL.line} strokeWidth={1.4} opacity={0.5} />
+                        {/* connector joint + coupling + short shaft */}
+                        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={PAL.raised} strokeWidth={6} strokeLinecap="round" />
+                        <circle cx={jx} cy={jy} r={7} fill={PAL.sec} stroke={PAL.edge} strokeWidth={1.4} />
+                        <circle cx={jx} cy={jy} r={3} fill={PAL.raised} stroke={PAL.edge} strokeWidth={1} />
+                        {isSel && (
+                          <g ref={i === sel ? sigConn : undefined} opacity={0}>
+                            <line x1={x1} y1={y1} x2={polar(180, ang)[0]} y2={polar(180, ang)[1]}
+                              stroke={PAL.red} strokeWidth={2.2} strokeLinecap="round" />
+                            <circle cx={jx} cy={jy} r={4.5} fill={PAL.redBright} />
+                          </g>
+                        )}
                       </g>
-                      <circle cx={bx3} cy={by3} r={2.2} fill="var(--core-crimson)" opacity={awake ? 0.95 : 0.15} style={{ transition: "opacity .3s ease" }} />
-                    </g>
+                    );
+                  })}
+                </svg>
+
+                {/* ---- 05–07 · nine discipline modules + labels ---- */}
+                {disciplines.map((dis, i) => {
+                  const Icon = disciplineIcons[dis.icon] ?? disciplineIcons.direction;
+                  const isActive = i === sel;
+                  const isHover = i === hoverIdx;
+                  const { x, y, deg } = nodePos(i, dis.name, 46.5);
+                  const ang = nodeAngle(i, dis.name);
+                  const lb = LBL[dis.name] ?? { lines: LBL_FALLBACK[i % LBL_FALLBACK.length], side: "above" as const };
+                  const labelWrap =
+                    lb.side === "above" ? "absolute -top-11 inset-x-0 flex flex-col items-center" :
+                    lb.side === "below" ? "absolute -bottom-11 inset-x-0 flex flex-col items-center" :
+                    lb.side === "left" ? "absolute right-full top-1/2 -translate-y-1/2 pr-3 flex flex-col items-end" :
+                    "absolute left-full top-1/2 -translate-y-1/2 pl-3 flex flex-col items-start";
+                  const num = posNum(ang);
+                  return (
+                    <button key={dis.id}
+                      onMouseEnter={() => setHoverIdx(i)}
+                      onMouseLeave={() => setHoverIdx(null)}
+                      onClick={() => pick(i)}
+                      className="absolute -translate-x-1/2 -translate-y-1/2 group"
+                      style={{ left: `${x}%`, top: `${y}%` }}
+                      aria-label={dis.name}>
+                      {/* precision-machined control cartridge */}
+                      <span className="relative grid place-items-center transition-all duration-300"
+                        style={{
+                          width: 74, height: 74,
+                          clipPath: "polygon(0 12px, 12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)",
+                          background: PAL.main,
+                          boxShadow: `0 6px 16px -6px rgba(21,24,28,0.6), inset 0 1px 0 ${PAL.edge}, inset 0 0 0 1px ${isHover || isActive ? PAL.red : PAL.sec}`,
+                          color: PAL.white,
+                          transform: isHover && !isActive ? "translateY(-2px)" : "none",
+                        }}>
+                        {/* recessed icon area */}
+                        <span className="grid place-items-center rounded-[6px]"
+                          style={{ width: 44, height: 44, background: PAL.cavity, boxShadow: `inset 0 2px 5px rgba(0,0,0,0.7), inset 0 -1px 0 ${PAL.sec}` }}>
+                          <Icon size={26} strokeWidth={1.6} />
+                        </span>
+                        {/* corner screws */}
+                        <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{ background: PAL.raised, boxShadow: `inset 0 0 0 0.5px ${PAL.edge}` }} />
+                        <span className="absolute bottom-1 left-1 w-1.5 h-1.5 rounded-full" style={{ background: PAL.raised, boxShadow: `inset 0 0 0 0.5px ${PAL.edge}` }} />
+                        {/* number plate */}
+                        <span className="absolute top-1 left-1.5 f-mono text-[8px] tracking-widest" style={{ color: isActive || isHover ? PAL.redBright : PAL.line }}>
+                          {num}
+                        </span>
+                        {/* lower indicator */}
+                        <span className="absolute bottom-1.5 right-1.5 w-2.5 h-[3px] rounded-sm transition-colors duration-300"
+                          style={{ background: isActive ? PAL.red : isHover ? PAL.redBright : PAL.raised }} />
+                      </span>
+                      <span className={`${labelWrap} pointer-events-none`}>
+                        {lb.lines.map((ln) => (
+                          <span key={ln}
+                            className={`f-tech font-medium text-[11.5px] tracking-[0.14em] leading-[1.35] whitespace-nowrap transition-colors duration-300 ${lb.side === "left" ? "text-right" : "text-left"}`}
+                            style={{ color: isActive ? PAL.red : PAL.main }}>
+                            {ln}
+                          </span>
+                        ))}
+                      </span>
+                    </button>
                   );
                 })}
-              </svg>
+              </div>
 
-              {disciplines.map((dis, i) => {
-                const Icon = disciplineIcons[dis.icon] ?? disciplineIcons.direction;
-                const isActive = i === sel;
-                const isHover = i === hoverIdx;
-                const { x, y } = nodePos(i, 44.5);
-                const lb = LBL[i % LBL.length];
-                const labelWrap =
-                  lb.side === "above" ? "absolute -top-11 inset-x-0 flex flex-col items-center" :
-                  lb.side === "below" ? "absolute -bottom-11 inset-x-0 flex flex-col items-center" :
-                  lb.side === "left" ? "absolute right-full top-1/2 -translate-y-1/2 pr-3 flex flex-col items-end" :
-                  "absolute left-full top-1/2 -translate-y-1/2 pl-3 flex flex-col items-start";
-                const nodeFill = isActive || isHover ? "#e72241" : "var(--outer-bg)";
-                const iconColor = isActive || isHover ? "#ddddd8" : "var(--outer-ink)";
-                const nodeBorder = isActive || isHover
-                  ? "1.5px solid #e72241"
-                  : "1.5px solid color-mix(in srgb, var(--outer-ink) 30%, transparent)";
-
-                return (
-                  <button key={dis.id}
-                    onMouseEnter={() => setHoverIdx(i)}
-                    onMouseLeave={() => setHoverIdx(null)}
-                    onClick={() => pick(i)}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 group"
-                    style={{ left: `${x}%`, top: `${y}%` }}
-                    aria-label={dis.name}>
-                    <span className="relative grid place-items-center transition-all duration-300 mat-texture"
-                      style={{
-                        width: 74, height: 74,
-                        clipPath: "polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px)",
-                        backgroundColor: nodeFill,
-                        color: iconColor,
-                        border: nodeBorder,
-                        transform: isHover && !isActive ? "translateY(-2px) scale(1.04)" : "none",
-                      }}>
-                      <Icon size={30} strokeWidth={1.8} />
-                      <span className={`absolute -top-2 -left-2 f-mono text-[9px] tracking-widest px-1.5 py-0.5 rounded-sm ${isActive || isHover ? "bg-[#e72241] text-[#ddddd8]" : ""}`}
-                        style={isActive || isHover ? undefined : { background: "var(--outer-bg)", color: "var(--outer-ink)" }}>
-                        {dis.num}
-                      </span>
-                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full transition-colors duration-300"
-                        style={{ background: isActive || isHover ? "#ddddd8" : "color-mix(in srgb, var(--outer-ink) 40%, transparent)" }} />
-                    </span>
-                    <span className={`${labelWrap} pointer-events-none`}>
-                      {lb.lines.map((ln) => (
-                        <span key={ln} className={`f-tech font-bold text-[12px] tracking-[0.12em] leading-[1.3] whitespace-nowrap transition-colors duration-300 ${lb.side === "left" ? "text-right" : "text-left"}`}
-                          style={{ color: isActive ? "var(--crimson-rough)" : "var(--ink2)" }}>
-                          {ln}
-                        </span>
-                      ))}
-                    </span>
-                  </button>
-                );
-              })}
-
-              <div className="absolute -bottom-7 inset-x-0 flex items-center justify-center gap-3 f-mono text-[9px] tracking-[0.3em] text-[var(--ink2)]">
-                <span className="w-8 h-px bg-[var(--line)]" />
-                {hoverIdx !== null || locked
-                  ? `TRANSMISSION — CORE/${d.num}`
-                  : "ON STANDBY — PICK A NODE TO DISCOVER"}
-                <span className="w-8 h-px bg-[var(--line)]" />
+              {/* bottom technical identifier */}
+              <div className="relative pb-8 pt-3 flex items-center justify-center gap-4 px-6">
+                <span className="h-px w-16 sm:w-24" style={{ background: PAL.line, opacity: 0.6 }} />
+                <span className="f-mono text-[9px] sm:text-[10px] tracking-[0.34em]" style={{ color: PAL.main }}>
+                  RADIAL ENGINE — CORE/{locked ? "LOCK" : hoverIdx !== null ? "ATTN" : "FUSION"}
+                </span>
+                <span className="h-px w-16 sm:w-24" style={{ background: PAL.line, opacity: 0.6 }} />
               </div>
             </div>
           </Reveal>
 
-          {/* ================= DETAIL CARD ================= */}
+          {/* ================= DETAIL CARD (preserved) ================= */}
           <Reveal delay={0.1}>
             <div className="mat-outer mat-texture rounded-xl p-6 sm:p-8 relative overflow-hidden"
               style={{ boxShadow: "inset 0 0 0 1.5px color-mix(in srgb, var(--outer-ink) 18%, transparent)" }}>
