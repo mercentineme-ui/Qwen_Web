@@ -81,13 +81,14 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
    so the three joints open (and close) sequentially, not together */
 const seg = (m: number, s: number, e: number) => clamp01((m - s) / (e - s));
 
-/* 3-point folding pointer geometry — local "up" is the pointing direction */
-const L1 = 44;   // pivot A → joint B
-const L2 = 40;   // joint B → joint C
-const HEAD = 26; // joint C → tip
-const FOLD_A1 = 138; // arm1 folded angle (tucked back)
-const FOLD_A2 = 148; // arm2 folded angle
-const FOLD_TIP = 70; // head folded angle
+/* single-piece folding gear-pointer geometry — local "up" is the pointing direction.
+   One continuous body: base gear hub → inner sleeve → hinge → tapered hand → tip.
+   It folds at ONE hinge and telescopes, collapsing into the base gear when idle. */
+const HUB_R = 26;      // base gear radius (the pointer's compact gear identity)
+const HINGE_R = 60;    // hub center → hinge (inner sleeve length)
+const HAND_LEN = 165;  // hinge → tip at full extension (tip reaches the connector ring)
+const FOLD_ANG = 150;  // outer hand folded angle at the hinge (tucked back)
+const FOLD_SCALE = 0.4;// outer hand telescoped length when folded (collapses into hub)
 
 /* one physical connector, drawn pointing "up"; caller rotates to capability angle */
 function Connector({ on, sigKey, reduced }: { on: boolean; sigKey: number; reduced: boolean }) {
@@ -143,26 +144,12 @@ export default function CreativeCore() {
   const N = disciplines.length;
   const reduced = useReducedMotion();
 
-  /* ---- state: auto-demonstration + hover preview + click lock ---- */
-  const [autoIdx, setAutoIdx] = useState(0);
-  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
-  const [lockedIdx, setLockedIdx] = useState<number | null>(null);
-  const locked = lockedIdx !== null;
-  const sel = hoverIdx ?? lockedIdx ?? autoIdx;
-  const d = disciplines[sel];
+  /* ---- pointer-driven selection: approach (highlight) vs. mechanical lock (selected) ---- */
+  const [approachNode, setApproachNode] = useState<number | null>(null);
+  const [lockedNode, setLockedNode] = useState<number | null>(null);
+  const sel = lockedNode;                     // career info follows the mechanical lock only
+  const d = sel !== null ? disciplines[sel] : null;
   const nodeAngle = (i: number) => i * (360 / N);
-
-  /* 20s automatic demonstration — pauses while the user hovers or locks */
-  useEffect(() => {
-    if (reduced || locked || hoverIdx !== null) return;
-    const iv = window.setInterval(() => setAutoIdx((a) => (a + 1) % N), 20000);
-    return () => clearInterval(iv);
-  }, [reduced, locked, hoverIdx, N]);
-
-  const pick = (i: number) => {
-    if (locked && lockedIdx === i) { setLockedIdx(null); setAutoIdx(i); }
-    else setLockedIdx(i);
-  };
 
   /* signal key — re-triggers the connector travel pulse on every selection change */
   const [sigKey, setSigKey] = useState(0);
@@ -174,7 +161,7 @@ export default function CreativeCore() {
     if (reduced) return;
     const iv = window.setInterval(() => {
       let g = Math.floor(Math.random() * SEG_COUNT);
-      if (g === sel * 4) g = (g + 6) % SEG_COUNT;
+      if (sel !== null && g === sel * 4) g = (g + 6) % SEG_COUNT;
       setGlintSeg(g);
       window.setTimeout(() => setGlintSeg(null), 900);
     }, 5200);
@@ -219,15 +206,16 @@ export default function CreativeCore() {
   const gearBoostG = useRef<SVGGElement>(null);
   const heartbeatG = useRef<SVGGElement>(null);
 
-  /* pointer refs — the 3-point folding arm */
-  const ptrAimG = useRef<SVGGElement>(null);     // whole assembly: rotates about pivot A
-  const ptrJointAG = useRef<SVGGElement>(null);  // joint A fold (arm1)
-  const ptrJointBG = useRef<SVGGElement>(null);  // joint B fold (arm2)
-  const ptrJointCG = useRef<SVGGElement>(null);  // joint C fold (head)
-  const ptrBaseGearG = useRef<SVGGElement>(null);// pivot gear — the pointer's gear identity
-  const ptrMidG = useRef<SVGGElement>(null);     // joint-B mesh gear (counter-rotates)
-  const ptrTipGear = useRef<SVGGElement>(null);  // joint-C mesh gear
-  const ptrCollarG = useRef<SVGGElement>(null);  // rotating collar + lock
+  /* pointer refs — the single-piece folding gear-pointer */
+  const ptrAimG = useRef<SVGGElement>(null);     // whole pointer: rotates about the central pivot
+  const ptrHubGearG = useRef<SVGGElement>(null); // base gear (spins — the compact gear identity)
+  const ptrHingeG = useRef<SVGGElement>(null);   // hinge fold (outer hand rotates here)
+  const ptrHandG = useRef<SVGGElement>(null);    // outer hand telescope (scales length)
+  const ptrLockG = useRef<SVGGElement>(null);    // lock collar around the pivot
+  /* lock / approach detection (drives React selection state) */
+  const lockedRef = useRef<number | null>(null);
+  const approachRef = useRef<number | null>(null);
+  const targetOverride = useRef<number | null>(null); // click/tap sends the pointer to a node
   /* bottom output transmission refs */
   const outputGearG = useRef<SVGGElement>(null); // output gear (rAF rotation)
   const outputRingG = useRef<SVGGElement>(null); // segmented output ring (counter-rotates)
@@ -257,14 +245,22 @@ export default function CreativeCore() {
   };
   const onDiscLeave = () => { insideRef.current = false; };
 
-  /* reduced motion: park the pointer extended toward the selected capability */
+  /* reduced motion: park the pointer folded at the center; selection is driven by
+     node hover/click instead of the tracking pointer */
   useEffect(() => {
     if (!reduced) return;
-    ptrAimG.current?.setAttribute("transform", `rotate(${nodeAngle(sel)} ${C} ${C})`);
-    ptrJointAG.current?.setAttribute("transform", "rotate(0)");
-    ptrJointBG.current?.setAttribute("transform", `translate(0 ${-L1}) rotate(0)`);
-    ptrJointCG.current?.setAttribute("transform", `translate(0 ${-L2}) rotate(0)`);
-  }, [reduced, sel]);
+    ptrAimG.current?.setAttribute("transform", `rotate(0 ${C} ${C})`);
+    ptrHingeG.current?.setAttribute("transform", `translate(0 ${-HINGE_R}) rotate(${FOLD_ANG})`);
+    ptrHandG.current?.setAttribute("transform", `scale(1 ${FOLD_SCALE})`);
+  }, [reduced]);
+
+  /* clicking/tapping a node sends the pointer to it (mechanical engage);
+     under reduced motion the node is simply locked directly */
+  const engageNode = (i: number) => {
+    if (reduced) { setLockedNode(i); return; }
+    targetOverride.current = nodeAngle(i);
+    insideRef.current = true;
+  };
 
   useEffect(() => {
     if (reduced) return;
@@ -309,39 +305,50 @@ export default function CreativeCore() {
       s.morph = Math.max(0, Math.min(1.03, s.morph + s.morphV * dt));
       const morph = Math.min(1, s.morph);
 
-      /* angle: track mouse while in contact; free gear-spin when parked */
+      /* angle: track the mouse (or a click/tap target) while inside; else hold */
       if (tracking) {
-        const dA = wrap(s.mouseAng - s.rot);
+        const tgt = targetOverride.current !== null ? targetOverride.current : s.mouseAng;
+        const dA = wrap(tgt - s.rot);
         s.rotV += (dA * 42 - s.rotV * 9.5) * dt;      // weighted, slight overshoot
         s.rot += s.rotV * dt;
+        if (targetOverride.current !== null && Math.abs(dA) < 1) targetOverride.current = null;
       } else {
-        /* idle: the folded mechanism spins as a working gear assembly */
-        s.rot += 26 * (1 - morph) * dt;
+        /* idle: the folded gear-pointer continues a slow mechanical rotation */
+        s.rot += 18 * (1 - morph) * dt;
         s.rotV = 0;
       }
 
-      /* ---------- 3-point folding: joints open/close sequentially ---------- */
-      const ext1 = easeInOut(seg(morph, 0.00, 0.50)); // pivot arm unfolds first
-      const ext2 = easeInOut(seg(morph, 0.22, 0.72)); // then the second arm
-      const ext3 = easeInOut(seg(morph, 0.45, 1.00)); // then the head settles
-      const a1 = lerp(FOLD_A1, 0, ext1);
-      const a2 = lerp(FOLD_A2, 0, ext2);
-      const tipA = lerp(FOLD_TIP, 0, ext3);
+      /* ---------- single-piece fold: hinge rotates + hand telescopes together ---------- */
+      const ext = easeInOut(morph);
+      const foldAng = lerp(FOLD_ANG, 0, ext);
+      const handScale = lerp(FOLD_SCALE, 1, ext);
 
       ptrAimG.current?.setAttribute("transform", `rotate(${s.rot.toFixed(2)} ${C} ${C})`);
-      ptrJointAG.current?.setAttribute("transform", `rotate(${a1.toFixed(2)})`);
-      ptrJointBG.current?.setAttribute("transform", `translate(0 ${-L1}) rotate(${a2.toFixed(2)})`);
-      ptrJointCG.current?.setAttribute("transform", `translate(0 ${-L2}) rotate(${tipA.toFixed(2)})`);
+      ptrHingeG.current?.setAttribute("transform", `translate(0 ${-HINGE_R}) rotate(${foldAng.toFixed(2)})`);
+      ptrHandG.current?.setAttribute("transform", `scale(1 ${handScale.toFixed(3)})`);
 
-      /* pivot gear teeth spin — fast when parked (gear identity), slow when driving */
+      /* base gear teeth spin — fast when folded (gear identity), slow when driving */
       s.gearSpin += ((1 - morph) * 120 + 24 + burst * 200) * dt;
-      ptrBaseGearG.current?.setAttribute("transform", `rotate(${(s.gearSpin % 360).toFixed(1)})`);
-      /* joint gears counter-mesh against the arms */
-      ptrMidG.current?.setAttribute("transform", `rotate(${(-s.gearSpin * 1.5 % 360).toFixed(1)})`);
-      ptrTipGear.current?.setAttribute("transform", `rotate(${(s.gearSpin * 1.2 % 360).toFixed(1)})`);
-      /* rotating collar + lock — seats down as the pointer engages */
-      ptrCollarG.current?.setAttribute("transform",
+      ptrHubGearG.current?.setAttribute("transform", `rotate(${(s.gearSpin % 360).toFixed(1)})`);
+      /* lock collar seats down as the pointer engages */
+      ptrLockG.current?.setAttribute("transform",
         `rotate(${(s.rot * 0.35 % 360).toFixed(1)} ${C} ${C}) translate(0 ${(2.5 * morph).toFixed(1)})`);
+
+      /* ---------- mechanical lock / approach detection (drives selection) ---------- */
+      let newLocked: number | null = null;
+      let newApproach: number | null = null;
+      if (morph > 0.75) {
+        const ang = ((s.rot % 360) + 360) % 360;
+        let best = 0, bestD = 999;
+        for (let i = 0; i < N; i++) {
+          const dd = Math.abs(wrap(ang - nodeAngle(i)));
+          if (dd < bestD) { bestD = dd; best = i; }
+        }
+        if (bestD < 12) newLocked = best;          // pointer has reached + locked the node
+        else if (bestD < 24) newApproach = best;   // pointer is approaching the node
+      }
+      if (newLocked !== lockedRef.current) { lockedRef.current = newLocked; setLockedNode(newLocked); }
+      if (newApproach !== approachRef.current) { approachRef.current = newApproach; setApproachNode(newApproach); }
 
       /* ---------- bottom output transmission: medium speed, surge + load ---------- */
       const outSpeed = 30 + burst * 190 + (tracking ? 26 : 0);
@@ -443,7 +450,7 @@ export default function CreativeCore() {
                     {/* FIRST INNER INDEXING RING — rotates continuously clockwise, carrying the crimson marker */}
                     <g className={spin("idx-ring-spin")}>
                     {Array.from({ length: SEG_COUNT }).map((_, k) => {
-                      const isActive = k === sel * 4;
+                      const isActive = sel !== null && k === sel * 4;
                       const isGlint = k === glintSeg;
                       const [x, y] = polar(C, C, (IDX_OUT + IDX_IN) / 2, k * (360 / SEG_COUNT));
                       return (
@@ -607,68 +614,38 @@ export default function CreativeCore() {
                   <g className="rb-f">
                     <g ref={ptrAimG}>
                       <g transform={`translate(${C} ${C})`}>
-                        {/* ---- JOINT A fold: primary arm (A → B), tapered + machined ---- */}
-                        <g ref={ptrJointAG}>
-                          {/* contact shadow — arm floats above the dial */}
-                          <polygon points={`-5.5,2 -3.4,${-L1} 3.4,${-L1} 5.5,2`} fill="#000" opacity="0.14" transform="translate(1.6 2.6)" />
-                          {/* arm body */}
-                          <polygon points={`-5.5,2 -3.4,${-L1} 3.4,${-L1} 5.5,2`}
-                            fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.1} />
-                          {/* bright machined edge */}
-                          <line x1={-2.3} y1={-5} x2={-1.4} y2={-L1 + 4} stroke="var(--core-inv)" strokeWidth={0.9} opacity={0.3} />
-                          {/* recessed drive groove */}
-                          <line x1={0.6} y1={-7} x2={0.4} y2={-L1 + 6} stroke="var(--core-deep)" strokeWidth={1.6} opacity={0.55} />
-                          {/* rack teeth along the trailing edge */}
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <rect key={i} x={3.1} y={-L1 + 8 + i * 7} width={2.3} height={3.2} rx={0.7} fill="var(--core-line)" opacity={0.9} />
-                          ))}
-
-                          {/* ---- JOINT B fold: secondary arm (B → C) ---- */}
-                          <g transform={`translate(0 ${-L1})`}>
-                            <g ref={ptrJointBG}>
-                              <polygon points={`-3.4,2 -2.1,${-L2} 2.1,${-L2} 3.4,2`} fill="#000" opacity="0.13" transform="translate(1.4 2.2)" />
-                              <polygon points={`-3.4,2 -2.1,${-L2} 2.1,${-L2} 3.4,2`}
-                                fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1} />
-                              <line x1={-1.3} y1={-4} x2={-0.8} y2={-L2 + 3} stroke="var(--core-inv)" strokeWidth={0.8} opacity={0.28} />
-                              {/* joint-B mesh gear (counter-rotates against the arm) */}
-                              <g ref={ptrMidG}>
-                                <GearShape r={8.5} teeth={8} fill="var(--core-plate)" stroke="var(--core-line)" hub={false} />
-                              </g>
-
-                              {/* ---- JOINT C fold: pointer head ---- */}
-                              <g transform={`translate(0 ${-L2})`}>
-                                <g ref={ptrJointCG}>
-                                  {/* head contact shadow */}
-                                  <polygon points={`0,${-HEAD} 3.9,${-HEAD + 12} 2.4,-5 -2.4,-5 -3.9,${-HEAD + 12}`}
-                                    fill="#000" opacity="0.14" transform="translate(1.3 2)" />
-                                  {/* tapered needle body — narrow, elegant */}
-                                  <polygon points={`0,${-HEAD} 3.9,${-HEAD + 12} 2.4,-5 -2.4,-5 -3.9,${-HEAD + 12}`}
-                                    fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1} />
-                                  <line x1={-1.5} y1={-7} x2={-0.7} y2={-HEAD + 10} stroke="var(--core-inv)" strokeWidth={0.7} opacity={0.3} />
-                                  {/* mechanical collar at the head base */}
-                                  <rect x={-4.2} y={-10.5} width={8.4} height={4} rx={1.4} fill="var(--core-line)" />
-                                  {/* articulation gear where the head folds */}
-                                  <g ref={ptrTipGear}>
-                                    <GearShape r={5.6} teeth={7} fill="var(--core-deep)" stroke="var(--core-mid)" hub={false} />
-                                  </g>
-                                  {/* crimson tip + tiny indicator */}
-                                  <polygon points={`0,${-HEAD - 6} 2.8,${-HEAD + 2.5} -2.8,${-HEAD + 2.5}`} fill="var(--core-crimson)" />
-                                  <circle cy={-HEAD + 5} r={1.1} fill="var(--core-crimson)" />
-                                </g>
-                                {/* joint C bearing (recessed) */}
-                                <circle r={3} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
-                                <circle cx={-0.8} cy={-0.8} r={0.7} fill="var(--core-inv)" opacity={0.6} />
-                              </g>
-                            </g>
-                            {/* joint B bearing (recessed) */}
-                            <circle r={3.4} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1.1} />
-                            <circle cx={-0.9} cy={-0.9} r={0.8} fill="var(--core-inv)" opacity={0.6} />
-                          </g>
+                        {/* ---- base gear: the pointer's compact gear identity (spins when idle) ---- */}
+                        <g ref={ptrHubGearG}>
+                          <GearShape r={HUB_R} teeth={12} fill="var(--core-deep)" stroke="var(--core-mid)" />
                         </g>
 
-                        {/* ---- pivot gear: the pointer's gear identity when parked (spins) ---- */}
-                        <g ref={ptrBaseGearG}>
-                          <GearShape r={20} teeth={12} fill="var(--core-deep)" stroke="var(--core-mid)" />
+                        {/* ---- single continuous pointer body, part 1: inner sleeve (hub → hinge) ---- */}
+                        <polygon points={`-5.5,4 -4,${-HINGE_R} 4,${-HINGE_R} 5.5,4`} fill="#000" opacity="0.13" transform="translate(1.5 2.4)" />
+                        <polygon points={`-5.5,4 -4,${-HINGE_R} 4,${-HINGE_R} 5.5,4`}
+                          fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.1} />
+                        <line x1={-2.4} y1={-4} x2={-1.6} y2={-HINGE_R + 4} stroke="var(--core-inv)" strokeWidth={0.9} opacity={0.3} />
+                        {/* integrated rack teeth at the base — the gear-driven section */}
+                        {Array.from({ length: 4 }).map((_, i) => (
+                          <rect key={i} x={4} y={-HINGE_R + 10 + i * 10} width={2.4} height={3.4} rx={0.8} fill="var(--core-line)" opacity={0.85} />
+                        ))}
+
+                        {/* ---- hinge fold group: outer hand rotates + telescopes at ONE axis ---- */}
+                        <g ref={ptrHingeG} transform={`translate(0 ${-HINGE_R}) rotate(${FOLD_ANG})`}>
+                          <g ref={ptrHandG} transform={`scale(1 ${FOLD_SCALE})`}>
+                            {/* single tapered hand: hinge → tip (one continuous piece with the sleeve) */}
+                            <polygon points={`0,${-HAND_LEN} 4.2,${-HAND_LEN + 15} 2.8,-8 -2.8,-8 -4.2,${-HAND_LEN + 15}`} fill="#000" opacity="0.13" transform="translate(1.4 2.2)" />
+                            <polygon points={`0,${-HAND_LEN} 4.2,${-HAND_LEN + 15} 2.8,-8 -2.8,-8 -4.2,${-HAND_LEN + 15}`}
+                              fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.1} />
+                            <line x1={-1.4} y1={-14} x2={-0.8} y2={-HAND_LEN + 13} stroke="var(--core-inv)" strokeWidth={0.8} opacity={0.28} />
+                            {/* mechanical collar at the tip base */}
+                            <rect x={-4} y={-16} width={8} height={4.2} rx={1.4} fill="var(--core-line)" />
+                            {/* crimson pointer tip + bearing */}
+                            <polygon points={`0,${-HAND_LEN - 7} 3,${-HAND_LEN + 2.5} -3,${-HAND_LEN + 2.5}`} fill="var(--core-crimson)" />
+                            <circle cy={-HAND_LEN + 4} r={1.7} fill="var(--core-inv)" />
+                          </g>
+                          {/* hinge bearing — the single articulation axis (always attached) */}
+                          <circle r={4.2} fill="var(--core-deep)" stroke="var(--core-mid)" strokeWidth={1.2} />
+                          <circle r={1.5} fill="var(--core-mid)" />
                         </g>
                       </g>
                     </g>
@@ -683,7 +660,7 @@ export default function CreativeCore() {
                     })}
 
                     {/* ---- rotating locking collar around the bearing (seats on engagement) ---- */}
-                    <g ref={ptrCollarG}>
+                    <g ref={ptrLockG}>
                       <circle cx={C} cy={C} r={27} fill="none" stroke="var(--core-mid)" strokeWidth={1.4} strokeDasharray="8 6" opacity={0.9} />
                       <rect x={C - 2.6} y={C - 30.5} width={5.2} height={3.6} rx={1.1} fill="var(--core-line)" />
                       <rect x={C - 2.6} y={C + 26.9} width={5.2} height={3.6} rx={1.1} fill="var(--core-line)" />
@@ -703,8 +680,8 @@ export default function CreativeCore() {
               {/* ============ NINE CAPABILITY MODULES — radially mounted ============ */}
               {disciplines.map((dis, i) => {
                 const Icon = disciplineIcons[dis.icon] ?? disciplineIcons.direction;
-                const isActive = i === sel;
-                const isHover = i === hoverIdx;
+                const isActive = i === lockedNode;      // mechanically locked → selected
+                const isHover = i === approachNode;     // pointer approaching → highlight only
                 const deg = nodeAngle(i);
                 const [x, y] = polar(50, 50, 44.5, deg);
                 const lb = LBL[i % LBL.length];
@@ -714,9 +691,9 @@ export default function CreativeCore() {
                   "absolute left-full top-1/2 -translate-y-1/2 pl-3 flex flex-col items-start";
                 return (
                   <button key={dis.id}
-                    onMouseEnter={() => setHoverIdx(i)}
-                    onMouseLeave={() => setHoverIdx(null)}
-                    onClick={() => pick(i)}
+                    onMouseEnter={() => { if (reduced) { setApproachNode(i); setLockedNode(i); } }}
+                    onMouseLeave={() => { if (reduced) { setApproachNode(null); setLockedNode(null); } }}
+                    onClick={() => engageNode(i)}
                     className="absolute -translate-x-1/2 -translate-y-1/2 group"
                     style={{ left: `${x}%`, top: `${y}%` }}
                     aria-label={dis.name}>
@@ -762,7 +739,7 @@ export default function CreativeCore() {
 
               <div className="absolute -bottom-7 inset-x-0 flex items-center justify-center gap-3 f-mono text-[9px] tracking-[0.3em] text-[var(--ink2)]">
                 <span className="w-8 h-px bg-[var(--line)]" />
-                RADIAL ENGINE — {`CORE/${disciplines[sel].num}`}
+                RADIAL ENGINE — {sel !== null ? `CORE/${disciplines[sel].num}` : "STANDBY"}
                 <span className="w-8 h-px bg-[var(--line)]" />
               </div>
             </div>
@@ -773,30 +750,53 @@ export default function CreativeCore() {
             <div className="mat-outer mat-texture rounded-xl p-6 sm:p-8 relative overflow-hidden"
               style={{ boxShadow: "inset 0 0 0 1.5px color-mix(in srgb, var(--outer-ink) 18%, transparent)" }}>
               <span className="absolute top-0 left-0 h-[3px] bg-[var(--crim-panel)] scan-pass" style={{ width: "42%" }} aria-hidden />
-              <div key={d.id} className="dossier-swap">
-                <div className="flex items-center justify-between">
-                  <span className="f-mono text-[11px] tracking-[0.3em] text-[var(--crim-panel)]">{d.num} / 09</span>
-                  <span className="f-mono text-[9px] tracking-[0.26em] flex items-center gap-2" style={{ color: "var(--m-sub)" }}>
-                    <span className="w-1.5 h-1.5 bg-[var(--crim-panel)] live-blink" />
-                    {hoverIdx !== null ? "PREVIEW" : locked ? "LOCKED" : "UNLOCKED"}
-                  </span>
-                </div>
-                <h3 className="f-display text-[clamp(1.6rem,2.6vw,2.3rem)] leading-tight mt-3" style={{ color: "var(--outer-ink)" }}>{d.name}</h3>
-                <p className="mt-4 text-[13.5px] sm:text-[14px] leading-relaxed" style={{ color: "var(--outer-ink)", opacity: 0.92 }}>{d.blurb}</p>
-                <div className="mt-6 flex flex-wrap gap-2.5">
-                  {d.tags.map((t) => (
-                    <span key={t} className="inline-block rounded-[6px] px-3 py-1.5 f-tech font-bold text-[10.5px] tracking-[0.14em]"
-                      style={{ backgroundColor: "var(--outer-ink)", color: "var(--outer-bg)" }}>
-                      {t}
+              {d ? (
+                <div key={d.id} className="dossier-swap">
+                  <div className="flex items-center justify-between">
+                    <span className="f-mono text-[11px] tracking-[0.3em] text-[var(--crim-panel)]">{d.num} / 09</span>
+                    <span className="f-mono text-[9px] tracking-[0.26em] flex items-center gap-2" style={{ color: "var(--m-sub)" }}>
+                      <span className="w-1.5 h-1.5 bg-[var(--crim-panel)] live-blink" />
+                      {lockedNode !== null ? "LOCKED" : "APPROACH"}
                     </span>
-                  ))}
+                  </div>
+                  <h3 className="f-display text-[clamp(1.6rem,2.6vw,2.3rem)] leading-tight mt-3" style={{ color: "var(--outer-ink)" }}>{d.name}</h3>
+                  <p className="mt-4 text-[13.5px] sm:text-[14px] leading-relaxed" style={{ color: "var(--outer-ink)", opacity: 0.92 }}>{d.blurb}</p>
+                  <div className="mt-6 flex flex-wrap gap-2.5">
+                    {d.tags.map((t) => (
+                      <span key={t} className="inline-block rounded-[6px] px-3 py-1.5 f-tech font-bold text-[10.5px] tracking-[0.14em]"
+                        style={{ backgroundColor: "var(--outer-ink)", color: "var(--outer-bg)" }}>
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-6 pt-4 f-mono text-[9px] tracking-[0.24em] flex justify-between"
+                    style={{ borderTop: "1px solid var(--m-line)", color: "var(--m-sub)" }}>
+                    <span>POINTER LOCK — CAREER LINKED</span>
+                    <span className="text-[var(--crim-panel)]">CORE/{d.num}</span>
+                  </div>
                 </div>
-                <div className="mt-6 pt-4 f-mono text-[9px] tracking-[0.24em] flex justify-between"
-                  style={{ borderTop: "1px solid var(--m-line)", color: "var(--m-sub)" }}>
-                  <span>HOVER — PREVIEW · CLICK — LOCK · AGAIN — RELEASE</span>
-                  <span className="text-[var(--crim-panel)]">CORE/{d.num}</span>
+              ) : (
+                <div key="standby" className="dossier-swap">
+                  <div className="flex items-center justify-between">
+                    <span className="f-mono text-[11px] tracking-[0.3em]" style={{ color: "var(--m-sub)" }}>-- / 09</span>
+                    <span className="f-mono text-[9px] tracking-[0.26em] flex items-center gap-2" style={{ color: "var(--m-sub)" }}>
+                      <span className="w-1.5 h-1.5 rounded-full live-blink" style={{ background: "var(--m-sub)" }} />
+                      IDLE
+                    </span>
+                  </div>
+                  <h3 className="f-display text-[clamp(1.6rem,2.6vw,2.3rem)] leading-tight mt-3" style={{ color: "var(--outer-ink)", opacity: 0.92 }}>
+                    On Stand by
+                  </h3>
+                  <p className="mt-4 text-[13.5px] sm:text-[14px] leading-relaxed" style={{ color: "var(--outer-ink)", opacity: 0.75 }}>
+                    Pick a node to discover.
+                  </p>
+                  <div className="mt-7 pt-4 f-mono text-[9px] tracking-[0.24em] flex justify-between"
+                    style={{ borderTop: "1px solid var(--m-line)", color: "var(--m-sub)" }}>
+                    <span>MOVE POINTER ONTO A NODE TO ENGAGE</span>
+                    <span>CORE/--</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </Reveal>
         </div>

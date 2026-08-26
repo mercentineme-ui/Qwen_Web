@@ -42,12 +42,13 @@
   --machine-crimson-hot: #E72241;
   --machine-shadow: #59232F;
 
-  /* CORE — LIGHT: matte-white machine, warm-grey recesses, charcoal structure */
-  --core-plate: #DDDDD8;
-  --core-deep: #C3C1BC;
-  --core-line: #222328;
-  --core-mid: #59595B;
-  --core-inv: #222328;
+  /* CORE — LIGHT page: DARK machine (matte black housing, graphite rings, dark grey
+     components, restrained off-white edges) — the machine pops on the light page */
+  --core-plate: #222328;
+  --core-deep: #3C3D42;
+  --core-line: #59595B;
+  --core-mid: #A6A6A4;
+  --core-inv: #DDDDD8;
   --core-crimson: #E72241;
 
   /* capability node materials — LIGHT: graphite idle, black+off-white active */
@@ -98,12 +99,13 @@
   --machine-line: #222328;
   --machine-inv: #222328;
 
-  /* CORE — DARK: matte-black machine, graphite recesses, sparing off-white edges */
-  --core-plate: #222328;
-  --core-deep: #3C3D42;
-  --core-line: #59595B;
-  --core-mid: #A6A6A4;
-  --core-inv: #DDDDD8;
+  /* CORE — DARK page: LIGHT machine (matte white surfaces, light grey layers,
+     graphite recessed mechanisms, black internal components) — pops on the dark page */
+  --core-plate: #DDDDD8;
+  --core-deep: #C3C1BC;
+  --core-line: #222328;
+  --core-mid: #59595B;
+  --core-inv: #222328;
   --core-crimson: #E72241;
 
   /* capability node materials — DARK: graphite idle, off-white structural active */
