@@ -25,50 +25,58 @@ const SIDE: ("above" | "right" | "below" | "left")[] = [
   "above", "right", "right", "right", "below", "below", "left", "left", "left",
 ];
 
-/* ---- orbital radii (viewBox 600, centre 300) ---- */
-const R_OUTER = 272; /* outer calibration orbit          */
-const R_NODE = 204;  /* node ring (pct 34)               */
-const R_SEG = 148;   /* segmented interactive ring       */
-const R_INNER = 112; /* inner orbit                      */
-const R_NUC = 58;    /* nucleus                          */
-const SEG_COUNT = 24;
+/* ---- radial geometry (viewBox 600, centre 300) ---- */
+const R_NODE = 204;        /* node ring (pct 34)                        */
+const R_WALL = 184;        /* outer structural wall                     */
+const R_FACE = 177;        /* housing front face                        */
+const R_INDEX_OUT = 162;   /* index ring outer                          */
+const R_INDEX_IN = 148;    /* index ring inner                          */
+const R_PRI_OUT = 142;     /* primary rotating ring outer track         */
+const R_PRI_IN = 120;      /* primary rotating ring inner track         */
+const R_PRI_MID = 131;     /* primary ring track bed / marker radius    */
+const R_SEC_OUT = 114;     /* secondary transmission ring outer         */
+const R_SEC_IN = 102;      /* secondary transmission ring inner         */
+const R_PLATE = 98;        /* recessed engine plate                     */
+const R_HUB = 58;          /* hub mounting plate                        */
+
+/* central gear train */
+const G_MAIN = { r: 40, teeth: 18 };                       /* dominant central gear   */
+const G_SMALL = { r: 16, teeth: 8 };                       /* offset transmission gear*/
+const G_OFF = 56;                                          /* mesh distance 40+16     */
+const GA = { a: 45 };                                      /* offset gear A angle     */
+const GB = { a: 160 };                                     /* offset gear B angle     */
+const LOWER = { a: 215, d: 76, r: 14, housing: 24 };       /* lower regulator         */
 
 const angleOf = (i: number) => i * (360 / N);
 const pt = (r: number, deg: number) => [C + r * Math.sin(deg * DEG), C - r * Math.cos(deg * DEG)] as const;
 const pct = (i: number, r: number) => ({ x: 50 + r * Math.sin(angleOf(i) * DEG), y: 50 - r * Math.cos(angleOf(i) * DEG) });
+const ptOf = (cx: number, cy: number, r: number, deg: number) =>
+  [cx + r * Math.sin(deg * DEG), cy - r * Math.cos(deg * DEG)] as const;
 
-const wrap = (d: number) => ((d + 180) % 360 + 360) % 360 - 180;
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
-const easeOutCubic = (x: number) => 1 - Math.pow(1 - x, 3);
 
-/* arc path between two angles (0 = up, clockwise) */
-const arcPath = (r: number, a0: number, a1: number) => {
-  const [x0, y0] = pt(r, a0);
-  const [x1, y1] = pt(r, a1);
-  return `M${x0.toFixed(1)} ${y0.toFixed(1)} A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`;
-};
-/* stroke-dash values to reveal `deg` of arc on a circle of radius r */
-const dashFor = (r: number, deg: number) => {
-  const circ = 2 * Math.PI * r;
-  const d = (deg / 360) * circ;
-  return `${d.toFixed(1)} ${(circ - d).toFixed(1)}`;
-};
-
-/* engraved clockwork gear — teeth + machined face + hub, drawn at origin */
-function MiniGear({ r, teeth, opacity = 0.9 }: { r: number; teeth: number; opacity?: number }) {
+/* engraved clockwork gear drawn at origin — teeth + machined face + centre hole */
+function Gear({ r, teeth, fill = "var(--core-gear)", rim = "var(--core-line)", hole = true, opacity = 1 }: {
+  r: number; teeth: number; fill?: string; rim?: string; hole?: boolean; opacity?: number;
+}) {
   return (
     <g opacity={opacity}>
       {Array.from({ length: teeth }).map((_, i) => {
-        const a = (i / teeth) * 2 * Math.PI;
+        const a = (i / teeth) * 360;
         return (
-          <rect key={i} x={-r * 0.2} y={-r * 0.24} width={r * 0.4} height={r * 0.48} rx={r * 0.06}
-            transform={`translate(${(r * Math.cos(a)).toFixed(1)} ${(r * Math.sin(a)).toFixed(1)}) rotate(${((a * 180) / Math.PI).toFixed(1)})`}
-            fill="var(--ink2)" opacity={0.5} />
+          <rect key={i} x={-r * 0.16} y={-r} width={r * 0.32} height={r * 0.3} rx={r * 0.05}
+            transform={`rotate(${a})`} fill={fill} stroke={rim} strokeWidth={0.8} />
         );
       })}
-      <circle r={r * 0.78} fill="var(--page)" stroke="var(--ink2)" strokeWidth={1} />
-      <circle r={r * 0.3} fill="none" stroke="var(--ink2)" strokeWidth={0.9} opacity={0.6} />
-      <circle r={r * 0.1} fill="var(--ink2)" opacity={0.7} />
+      <circle r={r * 0.8} fill={fill} stroke={rim} strokeWidth={1.1} />
+      <circle r={r * 0.8} fill="none" stroke="var(--core-inv)" strokeWidth={0.7} opacity={0.14} />
+      <circle r={r * 0.5} fill="none" stroke={rim} strokeWidth={0.8} opacity={0.5} />
+      {hole && (
+        <>
+          <circle r={r * 0.22} fill="var(--core-deep)" stroke={rim} strokeWidth={1} />
+          <circle r={r * 0.22} fill="none" stroke="var(--core-inv)" strokeWidth={0.6} opacity={0.2} />
+        </>
+      )}
     </g>
   );
 }
@@ -91,36 +99,35 @@ export default function CreativeCore() {
   const themeRef = useRef(theme);
   themeRef.current = theme;
 
-  /* ---------- refs: orbital layers driven by rAF ---------- */
+  /* ---------- refs: mechanical assemblies driven by rAF ---------- */
   const containerRef = useRef<HTMLDivElement>(null);
   const orbitalG = useRef<SVGGElement>(null);
-  const outerTicksG = useRef<SVGGElement>(null);
-  const arcOuterG = useRef<SVGGElement>(null);
-  const arcMidG = useRef<SVGGElement>(null);
-  const arcInnerG = useRef<SVGGElement>(null);
-  const dashRingG = useRef<SVGGElement>(null);
-  const markerG = useRef<SVGGElement>(null);
-  const pulseC = useRef<SVGCircleElement>(null);
+  const primaryRingG = useRef<SVGGElement>(null);
+  const secondaryRingG = useRef<SVGGElement>(null);
+  const centralGearG = useRef<SVGGElement>(null);
+  const gearAG = useRef<SVGGElement>(null);
+  const gearBG = useRef<SVGGElement>(null);
+  const lowerGearG = useRef<SVGGElement>(null);
+  const indicatorC = useRef<SVGRectElement>(null);
   const glowC = useRef<SVGCircleElement>(null);
-  const dotA = useRef<SVGCircleElement>(null);
-  const dotB = useRef<SVGCircleElement>(null);
-  const dotC = useRef<SVGCircleElement>(null);
-  const segRefs = useRef<(SVGPathElement | null)[]>([]);
+  const pulseC = useRef<SVGCircleElement>(null);
   const signalLine = useRef<SVGLineElement>(null);
   const signalDot = useRef<SVGCircleElement>(null);
   const nodeWrapRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const couplingExtRefs = useRef<(SVGGElement | null)[]>([]);
+  const couplingJointRefs = useRef<(SVGGElement | null)[]>([]);
+  const couplingLightRefs = useRef<(SVGCircleElement | null)[]>([]);
 
   const mouse = useRef({ x: 0, y: 0, in: false });
   const box = useRef({ cx: 0, cy: 0, w: 0, h: 0 });
   const sig = useRef({ idx: -1, t: 1 });
   const pulse = useRef({ p: 1, intensity: 0, next: 2.5 });
+
   const eng = useRef({
-    t: 0, last: 0, raf: 0,
-    outerTicks: 0, arcOuter: 0, arcMid: 0, arcInner: 0, dashRot: 0,
-    dA: 0, dB: 120, dC: 240,
-    markerAngle: 0, markerPresence: 0,
+    t: 0, last: 0, raf: 0, mult: 1,
+    primary: 0, secondary: 0, central: 0, gearA: 0, gearB: 0, lower: 0,
+    ext: Array(N).fill(0), joint: Array(N).fill(0), prox: Array(N).fill(0),
     recT: -1, lastTheme: "",
-    prox: Array(N).fill(0),
   });
 
   const pick = (i: number) => {
@@ -158,103 +165,93 @@ export default function CreativeCore() {
       e.last = t; e.t += dt;
       const rm = reduced ? 0 : 1;
 
-      /* theme recalibration — layers gently separate, opacity dips, materials swap, re-settle */
+      /* theme recalibration — layers gently separate then re-seat */
       if (themeRef.current !== e.lastTheme) { e.lastTheme = themeRef.current; e.recT = 0.0001; }
       let recal = 1;
       if (e.recT > 0) {
         e.recT += dt;
-        recal = e.recT < 1 ? 1 - 0.55 * Math.sin(Math.PI * Math.min(1, e.recT)) : 1;
+        recal = e.recT < 1 ? 1 - 0.5 * Math.sin(Math.PI * Math.min(1, e.recT)) : 1;
         if (e.recT >= 1) e.recT = -1;
       }
-      orbitalG.current?.setAttribute("opacity", (0.35 + 0.65 * recal).toFixed(3));
+      orbitalG.current?.setAttribute("opacity", (0.4 + 0.6 * recal).toFixed(3));
       orbitalG.current?.setAttribute("transform",
-        `translate(${C} ${C}) scale(${(1 + 0.03 * (1 - recal)).toFixed(4)}) translate(${-C} ${-C})`);
+        `translate(${C} ${C}) scale(${(1 + 0.025 * (1 - recal)).toFixed(4)}) translate(${-C} ${-C})`);
 
-      /* ---- continuous ambient motion (multiple slow layers, never synchronized) ---- */
-      e.outerTicks += dt * 2.4 * rm;
-      e.arcOuter += dt * 3.6 * rm;
-      e.arcMid -= dt * 6.5 * rm;
-      e.arcInner += dt * 9.5 * rm;
-      e.dashRot -= dt * 13 * rm;
-      e.dA += dt * 4.5 * rm;
-      e.dB -= dt * 8 * rm;
-      e.dC += dt * 12.5 * rm;
+      /* ---- mechanical surge: ~every 10s, ~1s power impulse ---- */
+      const phase = e.t % 10;
+      let target = 1;
+      if (phase >= 8.2) {
+        const u = phase - 8.2;
+        if (u < 0.4) target = 1 + 1.8 * (u / 0.4);
+        else if (u < 1.0) target = 2.8;
+        else target = 2.8 - 1.8 * ((u - 1.0) / 0.8);
+      }
+      e.mult += (target - e.mult) * Math.min(1, dt * 7);
+      const m = e.mult * rm;
 
-      outerTicksG.current?.setAttribute("transform", `rotate(${(e.outerTicks % 360).toFixed(2)} ${C} ${C})`);
-      arcOuterG.current?.setAttribute("transform", `rotate(${(e.arcOuter % 360).toFixed(2)} ${C} ${C})`);
-      arcMidG.current?.setAttribute("transform", `rotate(${(e.arcMid % 360).toFixed(2)} ${C} ${C})`);
-      arcInnerG.current?.setAttribute("transform", `rotate(${(e.arcInner % 360).toFixed(2)} ${C} ${C})`);
-      dashRingG.current?.setAttribute("transform", `rotate(${(e.dashRot % 360).toFixed(2)} ${C} ${C})`);
+      /* ---- independent rotation (believable gear logic) ---- */
+      e.primary += dt * 6 * m;                 /* primary ring: slow CW        */
+      e.secondary -= dt * 9 * m;               /* secondary ring: slow CCW     */
+      e.central += dt * 14 * m;                /* central gear: CW             */
+      e.gearA -= dt * 35 * m;                  /* meshed small gears: CCW fast */
+      e.gearB -= dt * 35 * m;
+      e.lower -= dt * 10 * m;                  /* lower regulator: independent */
 
-      /* orbiting satellite dots */
-      const setDot = (g: React.RefObject<SVGCircleElement>, r: number, a: number) => {
-        const [x, y] = pt(r, a % 360);
-        g.current?.setAttribute("cx", x.toFixed(1));
-        g.current?.setAttribute("cy", y.toFixed(1));
-      };
-      setDot(dotA, R_OUTER, e.dA);
-      setDot(dotB, R_SEG, e.dB);
-      setDot(dotC, R_INNER, e.dC);
+      primaryRingG.current?.setAttribute("transform", `rotate(${(e.primary % 360).toFixed(2)} ${C} ${C})`);
+      secondaryRingG.current?.setAttribute("transform", `rotate(${(e.secondary % 360).toFixed(2)} ${C} ${C})`);
+      centralGearG.current?.setAttribute("transform", `translate(${C} ${C}) rotate(${(e.central % 360).toFixed(2)})`);
+      const [gax, gay] = ptOf(C, C, G_OFF, GA.a);
+      const [gbx, gby] = ptOf(C, C, G_OFF, GB.a);
+      gearAG.current?.setAttribute("transform", `translate(${gax} ${gay}) rotate(${(e.gearA % 360).toFixed(2)})`);
+      gearBG.current?.setAttribute("transform", `translate(${gbx} ${gby}) rotate(${(e.gearB % 360).toFixed(2)})`);
+      const [lx, ly] = ptOf(C, C, LOWER.d, LOWER.a);
+      lowerGearG.current?.setAttribute("transform", `translate(${lx} ${ly}) rotate(${(e.lower % 360).toFixed(2)})`);
 
-      /* ---- mouse field: focus angle + node proximity + cursor glow ---- */
-      const m = mouse.current;
-      const mAng = Math.atan2(m.x, -m.y) / DEG;
-      let focus: number | null = null;
-      if (hoverRef.current !== null) focus = angleOf(hoverRef.current);
-      else if (lockRef.current !== null) focus = angleOf(lockRef.current);
-      else if (m.in && !reduced) focus = mAng;
+      /* crimson timing indicator strengthens with the surge */
+      const boost = clamp01((e.mult - 1) / 1.8);
+      indicatorC.current?.setAttribute("opacity", (0.8 + 0.2 * boost).toFixed(2));
+      indicatorC.current?.setAttribute("width", (6 + 2.5 * boost).toFixed(1));
+      indicatorC.current?.setAttribute("x", (-(3 + 1.25 * boost)).toFixed(1));
 
-      /* segmented ring brightens toward the focus angle */
-      for (let i = 0; i < SEG_COUNT; i++) {
-        const segAng = i * (360 / SEG_COUNT) + 360 / SEG_COUNT / 2;
-        let b = 0;
-        if (focus !== null) {
-          const d = Math.abs(wrap(segAng - focus));
-          b = Math.exp(-(d * d) / (2 * 24 * 24));
-        }
-        const el = segRefs.current[i];
-        if (el) {
-          el.setAttribute("opacity", (0.22 + 0.78 * b).toFixed(3));
-          el.setAttribute("stroke", b > 0.45 ? "var(--crimson)" : "var(--ink2)");
-        }
+      /* ---- node couplings: hover / lock mechanically engages ---- */
+      for (let i = 0; i < N; i++) {
+        const activeNode = hoverRef.current === i || lockRef.current === i;
+        e.ext[i] += ((activeNode ? 1 : 0) - e.ext[i]) * Math.min(1, dt * 7);
+        e.joint[i] += e.ext[i] * (activeNode ? 160 : 60) * m * dt;
+        const ex = e.ext[i];
+        couplingExtRefs.current[i]?.setAttribute("transform", `translate(0 ${(-6 * ex).toFixed(1)})`);
+        couplingJointRefs.current[i]?.setAttribute("transform", `rotate(${(e.joint[i] % 360).toFixed(1)})`);
+        couplingLightRefs.current[i]?.setAttribute("opacity", (ex * (0.5 + 0.5 * boost)).toFixed(2));
       }
 
-      /* node proximity shift toward cursor */
+      /* ---- node proximity shift toward cursor ---- */
       if (box.current.w > 0) {
         const scale = 600 / box.current.w;
         for (let i = 0; i < N; i++) {
           const nx = (pct(i, 34).x / 100 - 0.5) * box.current.w;
           const ny = (pct(i, 34).y / 100 - 0.5) * box.current.h;
-          const dist = Math.hypot(m.x - nx, m.y - ny);
-          const target = m.in && !reduced ? clamp01(1 - dist / 170) : 0;
+          const dist = Math.hypot(mouse.current.x - nx, mouse.current.y - ny);
+          const target = mouse.current.in && !reduced ? clamp01(1 - dist / 170) : 0;
           e.prox[i] += (target - e.prox[i]) * Math.min(1, dt * 8);
           const p = e.prox[i];
           let dx = 0, dy = 0;
-          if (dist > 1) { dx = ((m.x - nx) / dist) * p * 4.5; dy = ((m.y - ny) / dist) * p * 4.5; }
+          if (dist > 1) { dx = ((mouse.current.x - nx) / dist) * p * 4; dy = ((mouse.current.y - ny) / dist) * p * 4; }
           const w = nodeWrapRefs.current[i];
           if (w) w.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
         }
-        /* cursor glow field */
         if (glowC.current) {
-          glowC.current.setAttribute("cx", (C + m.x * scale).toFixed(1));
-          glowC.current.setAttribute("cy", (C + m.y * scale).toFixed(1));
-          glowC.current.setAttribute("opacity", (m.in && !reduced ? 0.5 : 0).toFixed(2));
+          glowC.current.setAttribute("cx", (C + mouse.current.x * scale).toFixed(1));
+          glowC.current.setAttribute("cy", (C + mouse.current.y * scale).toFixed(1));
+          glowC.current.setAttribute("opacity", (mouse.current.in && !reduced ? 0.4 : 0).toFixed(2));
         }
       }
-
-      /* ---- central directional marker — follows cursor, returns to centre ---- */
-      const mTarget = m.in && !reduced ? mAng : 0;
-      e.markerAngle += wrap(mTarget - e.markerAngle) * Math.min(1, dt * 6);
-      e.markerPresence += (((m.in && !reduced) ? 1 : 0) - e.markerPresence) * Math.min(1, dt * 5);
-      markerG.current?.setAttribute("transform", `rotate(${e.markerAngle.toFixed(1)} ${C} ${C})`);
-      markerG.current?.setAttribute("opacity", (e.markerPresence * 0.9).toFixed(3));
 
       /* ---- lock signal: node → centre ---- */
       if (sig.current.t < 1.4) {
         sig.current.t += dt / 0.65;
         const a = angleOf(sig.current.idx);
-        const rr = R_NODE - (R_NODE - (R_NUC + 8)) * easeOutCubic(clamp01(sig.current.t));
-        const [nx, ny] = pt(R_NODE - 6, a);
+        const rr = R_NODE - (R_NODE - (R_HUB - 4)) * (1 - Math.pow(1 - clamp01(sig.current.t), 3));
+        const [nx, ny] = pt(R_NODE - 8, a);
         const [sx, sy] = pt(rr, a);
         signalLine.current?.setAttribute("x1", nx.toFixed(1));
         signalLine.current?.setAttribute("y1", ny.toFixed(1));
@@ -275,13 +272,13 @@ export default function CreativeCore() {
         pulse.current.p += dt / 1.5;
       } else if (e.t > pulse.current.next && !reduced) {
         pulse.current.p = 0;
-        pulse.current.intensity = 0.4;
+        pulse.current.intensity = 0.35;
         pulse.current.next = e.t + 4.5 + Math.random() * 2.5;
       }
       if (pulse.current.p < 1) {
         const p = pulse.current.p;
-        pulseC.current?.setAttribute("r", (R_NUC + p * 165).toFixed(1));
-        pulseC.current?.setAttribute("opacity", ((1 - p) * 0.4 * pulse.current.intensity).toFixed(3));
+        pulseC.current?.setAttribute("r", (R_HUB + p * 150).toFixed(1));
+        pulseC.current?.setAttribute("opacity", ((1 - p) * 0.35 * pulse.current.intensity).toFixed(3));
       } else {
         pulseC.current?.setAttribute("opacity", "0");
       }
@@ -297,133 +294,225 @@ export default function CreativeCore() {
     };
   }, [reduced]);
 
+  const [gaxS, gayS] = ptOf(C, C, G_OFF, GA.a);
+  const [gbxS, gbyS] = ptOf(C, C, G_OFF, GB.a);
+  const [lxS, lyS] = ptOf(C, C, LOWER.d, LOWER.a);
+
   return (
     <section id="core" className="relative py-20 lg:py-28 scroll-mt-20">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8">
         <SectionHead
           label="02 — WHAT I DO"
           title="WHAT I DO"
-          desc="Nine disciplines orbit one field — direction, generation and story held in a single creative system."
-          meta="09 MODULES · ONE FIELD"
+          desc="Nine disciplines drive one machine — direction, generation and story transmitted through a single radial clockwork engine."
+          meta="09 MODULES · ONE ENGINE"
         />
 
         <div className="mt-12 grid lg:grid-cols-[1.22fr_0.78fr] gap-12 lg:gap-14 xl:gap-16 items-center">
-          {/* ================= THE ORBITAL FIELD ================= */}
+          {/* ================= THE RADIAL CLOCKWORK TRANSMISSION CORE ================= */}
           <Reveal>
             <div ref={containerRef} className="relative mx-auto w-full max-w-[620px] aspect-square select-none cursor-crosshair">
               <svg viewBox="0 0 600 600" className="absolute inset-0 w-full h-full">
                 <defs>
-                  <radialGradient id="orbGlow" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="var(--crimson)" stopOpacity="0.10" />
+                  <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="var(--crimson)" stopOpacity="0.09" />
                     <stop offset="60%" stopColor="var(--crimson)" stopOpacity="0.03" />
                     <stop offset="100%" stopColor="var(--crimson)" stopOpacity="0" />
                   </radialGradient>
-                  <radialGradient id="orbBg" cx="50%" cy="46%" r="60%">
-                    <stop offset="0%" stopColor="var(--ink)" stopOpacity="0.045" />
+                  <radialGradient id="coreBg" cx="50%" cy="46%" r="62%">
+                    <stop offset="0%" stopColor="var(--ink)" stopOpacity="0.05" />
                     <stop offset="70%" stopColor="var(--ink)" stopOpacity="0.015" />
                     <stop offset="100%" stopColor="var(--ink)" stopOpacity="0" />
                   </radialGradient>
                 </defs>
 
-                {/* soft ambient field behind the system */}
-                <circle cx={C} cy={C} r={292} fill="url(#orbBg)" />
+                {/* soft ambient field behind the machine */}
+                <circle cx={C} cy={C} r={292} fill="url(#coreBg)" />
                 {/* cursor glow (follows the mouse inside the field) */}
-                <circle ref={glowC} cx={C} cy={C} r={95} fill="url(#orbGlow)" opacity={0} />
+                <circle ref={glowC} cx={C} cy={C} r={92} fill="url(#coreGlow)" opacity={0} />
 
                 <g ref={orbitalG}>
-                  {/* ---- OUTER CALIBRATION ORBIT ---- */}
-                  <circle cx={C} cy={C} r={R_OUTER} fill="none" stroke="var(--line)" strokeWidth={1} />
-                  <g ref={outerTicksG}>
-                    {Array.from({ length: 60 }).map((_, i) => {
-                      const major = i % 5 === 0;
-                      const [x1, y1] = pt(R_OUTER - (major ? 9 : 5), i * 6);
-                      const [x2, y2] = pt(R_OUTER + (major ? 3 : 1), i * 6);
-                      return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
-                        stroke="var(--ink2)" strokeWidth={major ? 1.2 : 0.7} opacity={major ? 0.55 : 0.3} />;
-                    })}
-                  </g>
-                  {/* travelling outer arc */}
-                  <g ref={arcOuterG}>
-                    <circle cx={C} cy={C} r={R_OUTER} fill="none" stroke="var(--ink2)" strokeWidth={1.6}
-                      strokeDasharray={dashFor(R_OUTER, 38)} strokeLinecap="round" opacity={0.4} />
-                  </g>
-                  <circle ref={dotA} r={2.6} fill="var(--ink2)" opacity={0.7} />
-
-                  {/* ---- TOOTHED CLOCK RING (slow, machined into the outer structure) ---- */}
-                  <g ref={gearToothG} opacity={0.85}>
-                    <circle cx={C} cy={C} r={252} fill="none" stroke="var(--ink2)" strokeWidth={0.8} opacity={0.35} />
-                    <circle cx={C} cy={C} r={238} fill="none" stroke="var(--ink2)" strokeWidth={0.8} opacity={0.35} />
-                    {Array.from({ length: 48 }).map((_, i) => {
-                      const [x, y] = pt(245, i * 7.5);
-                      return (
-                        <rect key={i} x={-2.2} y={-7} width={4.4} height={14} rx={1}
-                          transform={`translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${(i * 7.5).toFixed(1)})`}
-                          fill="var(--ink2)" opacity={0.45} />
-                      );
-                    })}
-                  </g>
-
-                  {/* ---- NODE RING GUIDE ---- */}
-                  <circle cx={C} cy={C} r={R_NODE} fill="none" stroke="var(--line)" strokeWidth={1} opacity={0.7} />
-                  {Array.from({ length: N }).map((_, i) => {
-                    const [x, y] = pt(R_NODE, angleOf(i));
-                    return <circle key={i} cx={x} cy={y} r={2.4} fill="var(--ink2)" opacity={0.5} />;
+                  {/* ---- LEVEL 1 · OUTER HOUSING (static, thick machined casing) ---- */}
+                  <circle cx={C} cy={C + 4} r={R_WALL} fill="rgba(0,0,0,0.3)" />
+                  <circle cx={C} cy={C} r={R_WALL} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={2} />
+                  <circle cx={C} cy={C} r={R_WALL} fill="none" stroke="var(--core-inv)" strokeWidth={0.9} opacity={0.16} />
+                  <circle cx={C} cy={C} r={R_FACE} fill="none" stroke="var(--core-line)" strokeWidth={1} opacity={0.6} />
+                  {/* recessed channel */}
+                  <circle cx={C} cy={C} r={R_FACE - 3} fill="none" stroke="var(--core-deep)" strokeWidth={4} opacity={0.7} />
+                  <circle cx={C} cy={C} r={R_INDEX_OUT + 3} fill="none" stroke="var(--core-line)" strokeWidth={0.8} opacity={0.4} />
+                  {/* segmented mechanical sections + radial divisions */}
+                  {Array.from({ length: 12 }).map((_, i) => {
+                    const [x1, y1] = pt(R_INDEX_OUT + 3, i * 30);
+                    const [x2, y2] = pt(R_WALL, i * 30);
+                    return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--core-line)" strokeWidth={1} opacity={0.5} />;
                   })}
-
-                  {/* ---- SEGMENTED INTERACTIVE RING ---- */}
-                  {Array.from({ length: SEG_COUNT }).map((_, i) => {
-                    const span = 360 / SEG_COUNT;
+                  {/* fastening points */}
+                  {Array.from({ length: 12 }).map((_, i) => {
+                    const [x, y] = pt((R_WALL + R_INDEX_OUT) / 2 + 4, i * 30 + 15);
                     return (
-                      <path key={i} ref={(el) => { segRefs.current[i] = el; }}
-                        d={arcPath(R_SEG, i * span + 3, (i + 1) * span - 3)}
-                        fill="none" stroke="var(--ink2)" strokeWidth={7} strokeLinecap="round" opacity={0.22} />
+                      <g key={i} transform={`translate(${x.toFixed(1)} ${y.toFixed(1)})`}>
+                        <circle r={3.2} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={0.8} />
+                        <rect x={-1.8} y={-0.7} width={3.6} height={1.4} fill="var(--core-deep)" transform={`rotate(${i * 30})`} />
+                      </g>
                     );
                   })}
-                  {/* travelling mid arc (opposite direction) */}
-                  <g ref={arcMidG}>
-                    <circle cx={C} cy={C} r={R_SEG} fill="none" stroke="var(--ink2)" strokeWidth={1.4}
-                      strokeDasharray={dashFor(R_SEG, 52)} strokeLinecap="round" opacity={0.35} />
-                  </g>
-                  <circle ref={dotB} r={2.2} fill="var(--crimson)" opacity={0.8} />
 
-                  {/* ---- INNER ORBIT ---- */}
-                  <circle cx={C} cy={C} r={R_INNER} fill="none" stroke="var(--line)" strokeWidth={1} opacity={0.8} />
-                  <g ref={arcInnerG}>
-                    <circle cx={C} cy={C} r={R_INNER} fill="none" stroke="var(--ink2)" strokeWidth={1.3}
-                      strokeDasharray={dashFor(R_INNER, 44)} strokeLinecap="round" opacity={0.4} />
-                  </g>
-                  <circle ref={dotC} r={2} fill="var(--ink2)" opacity={0.6} />
+                  {/* ---- LEVEL 2 · OUTER INDEX RING (static, structural teeth) ---- */}
+                  <circle cx={C} cy={C} r={R_INDEX_OUT} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
+                  {Array.from({ length: 36 }).map((_, i) => {
+                    const [x, y] = pt((R_INDEX_OUT + R_INDEX_IN) / 2, i * 10);
+                    return (
+                      <g key={i} transform={`translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${i * 10})`}>
+                        <rect x={-4.2} y={-7.5} width={8.4} height={15} rx={1.4}
+                          fill={i % 9 === 0 ? "var(--core-mid)" : "var(--core-plate)"} stroke="var(--core-line)" strokeWidth={0.8} />
+                        <rect x={-4.2} y={-7.5} width={8.4} height={3} rx={1.2} fill="var(--core-inv)" opacity={0.12} />
+                      </g>
+                    );
+                  })}
+                  <circle cx={C} cy={C} r={R_INDEX_IN} fill="none" stroke="var(--core-line)" strokeWidth={1} opacity={0.7} />
 
-                  {/* ---- LOCK SIGNAL (node → centre) ---- */}
-                  <line ref={signalLine} stroke="var(--crimson)" strokeWidth={1.4} opacity={0} />
+                  {/* ---- LEVEL 3 · PRIMARY ROTATING RING (slow CW) ---- */}
+                  <g ref={primaryRingG}>
+                    <circle cx={C} cy={C} r={R_PRI_MID} fill="none" stroke="var(--core-deep)" strokeWidth={16} opacity={0.85} />
+                    <circle cx={C} cy={C} r={R_PRI_OUT} fill="none" stroke="var(--core-line)" strokeWidth={1.2} />
+                    <circle cx={C} cy={C} r={R_PRI_IN} fill="none" stroke="var(--core-line)" strokeWidth={1.2} />
+                    {/* precision timing marks */}
+                    {Array.from({ length: 48 }).map((_, i) => {
+                      const major = i % 6 === 0;
+                      const [x1, y1] = pt(R_PRI_OUT - 2, i * 7.5);
+                      const [x2, y2] = pt(R_PRI_OUT - (major ? 8 : 4.5), i * 7.5);
+                      return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
+                        stroke="var(--core-mid)" strokeWidth={major ? 1.3 : 0.7} opacity={major ? 0.65 : 0.35} />;
+                    })}
+                    {/* mechanical segment divisions */}
+                    {Array.from({ length: 12 }).map((_, i) => {
+                      const [x1, y1] = pt(R_PRI_IN + 2, i * 30 + 15);
+                      const [x2, y2] = pt(R_PRI_OUT - 2, i * 30 + 15);
+                      return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--core-deep)" strokeWidth={2.4} opacity={0.8} />;
+                    })}
+                    {/* crimson timing marker — travels with the ring */}
+                    <g transform={`translate(${C} ${C - R_PRI_MID})`}>
+                      <rect x={-7.5} y={-9} width={15} height={18} rx={2.5} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1} />
+                      <rect ref={indicatorC} x={-3} y={-5.5} width={6} height={11} rx={1.2} fill="var(--crimson)" />
+                    </g>
+                  </g>
+
+                  {/* ---- secondary transmission ring (slow CCW) ---- */}
+                  <g ref={secondaryRingG}>
+                    <circle cx={C} cy={C} r={R_SEC_OUT} fill="none" stroke="var(--core-mid)" strokeWidth={1.4} opacity={0.8} />
+                    <circle cx={C} cy={C} r={R_SEC_IN} fill="none" stroke="var(--core-mid)" strokeWidth={1} opacity={0.6} />
+                    <circle cx={C} cy={C} r={(R_SEC_OUT + R_SEC_IN) / 2} fill="none" stroke="var(--core-mid)"
+                      strokeWidth={5} strokeDasharray="4 9" opacity={0.4} />
+                  </g>
+
+                  {/* ---- LEVEL 4 · RECESSED ENGINE PLATE ---- */}
+                  <circle cx={C} cy={C} r={R_PLATE} fill="var(--core-deep)" />
+                  <circle cx={C} cy={C} r={R_PLATE} fill="none" stroke="rgba(0,0,0,0.4)" strokeWidth={5} opacity={0.5} />
+                  <circle cx={C} cy={C} r={R_PLATE - 5} fill="none" stroke="var(--core-line)" strokeWidth={0.8} opacity={0.4} />
+                  {/* faint circular machining + radial construction lines */}
+                  <circle cx={C} cy={C} r={86} fill="none" stroke="var(--core-line)" strokeWidth={0.6} opacity={0.3} />
+                  <circle cx={C} cy={C} r={74} fill="none" stroke="var(--core-line)" strokeWidth={0.6} opacity={0.25} />
+                  {Array.from({ length: 12 }).map((_, i) => {
+                    const [x1, y1] = pt(62, i * 30 + 15);
+                    const [x2, y2] = pt(R_PLATE - 6, i * 30 + 15);
+                    return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--core-line)" strokeWidth={0.5} opacity={0.16} />;
+                  })}
+                  {/* mounting points */}
+                  {Array.from({ length: 8 }).map((_, i) => {
+                    const [x, y] = pt(90, i * 45 + 22.5);
+                    return <circle key={i} cx={x.toFixed(1)} cy={y.toFixed(1)} r={1.8} fill="var(--core-mid)" opacity={0.5} />;
+                  })}
+
+                  {/* ---- four radial structural arms (clockwork bridges) ---- */}
+                  {[0, 90, 180, 270].map((deg, k) => {
+                    const len = k % 2 === 0 ? 40 : 34;
+                    return (
+                      <g key={deg} transform={`rotate(${deg} ${C} ${C})`}>
+                        <rect x={C - 4.5} y={C - R_PLATE + 4} width={9} height={len} rx={4}
+                          fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1} />
+                        <rect x={C - 1.5} y={C - R_PLATE + 6} width={3} height={len - 4} rx={1.5}
+                          fill="var(--core-inv)" opacity={0.18} />
+                        <circle cx={C} cy={C - R_PLATE + 6} r={2.6} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={0.9} />
+                        <circle cx={C} cy={C - R_PLATE + 4 + len - 2} r={2.6} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={0.9} />
+                      </g>
+                    );
+                  })}
+
+                  {/* ---- LEVEL 5 · CENTRAL CLOCKWORK HUB ---- */}
+                  {/* recessed mounting plate */}
+                  <circle cx={C} cy={C} r={R_HUB} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.4} />
+                  <circle cx={C} cy={C} r={R_HUB} fill="none" stroke="var(--core-inv)" strokeWidth={0.7} opacity={0.14} />
+                  {/* segmented gear housing */}
+                  <circle cx={C} cy={C} r={R_HUB - 7} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
+                  {Array.from({ length: 12 }).map((_, i) => {
+                    const [x1, y1] = pt(R_HUB - 11, i * 30);
+                    const [x2, y2] = pt(R_HUB - 7, i * 30);
+                    return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--core-mid)" strokeWidth={1.4} opacity={0.6} />;
+                  })}
+
+                  {/* lower secondary regulator (offset, independent) */}
+                  <g>
+                    <circle cx={lxS} cy={lyS + 2.5} r={LOWER.housing} fill="rgba(0,0,0,0.25)" />
+                    <circle cx={lxS} cy={lyS} r={LOWER.housing} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.2} />
+                    <circle cx={lxS} cy={lyS} r={LOWER.housing - 5} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={0.9} />
+                    {/* short connecting shaft back to the hub */}
+                    <line x1={lxS} y1={lyS} x2={ptOf(C, C, R_HUB - 4, LOWER.a)[0]} y2={ptOf(C, C, R_HUB - 4, LOWER.a)[1]}
+                      stroke="var(--core-mid)" strokeWidth={5} strokeLinecap="round" opacity={0.85} />
+                    <g ref={lowerGearG}><Gear r={LOWER.r} teeth={9} /></g>
+                    <circle cx={lxS} cy={lyS} r={4.5} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1} />
+                    <circle cx={lxS} cy={lyS} r={1.6} fill="var(--core-mid)" />
+                  </g>
+
+                  {/* central gear train: dominant gear + two meshed offset gears */}
+                  <g ref={centralGearG}><Gear r={G_MAIN.r} teeth={G_MAIN.teeth} /></g>
+                  <g ref={gearAG}><Gear r={G_SMALL.r} teeth={G_SMALL.teeth} /></g>
+                  <g ref={gearBG}><Gear r={G_SMALL.r} teeth={G_SMALL.teeth} /></g>
+
+                  {/* central bearing + axle */}
+                  <circle cx={C} cy={C} r={13} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.3} />
+                  <circle cx={C} cy={C} r={13} fill="none" stroke="var(--core-inv)" strokeWidth={0.7} opacity={0.2} />
+                  <circle cx={C} cy={C} r={7} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1} />
+                  <rect x={C - 1.4} y={C - 11} width={2.8} height={22} rx={1.2} fill="var(--core-deep)" opacity={0.8} />
+                  <rect x={C - 11} y={C - 1.4} width={22} height={2.8} rx={1.2} fill="var(--core-deep)" opacity={0.8} />
+                  {/* tiny crimson status indicator at the axle */}
+                  <circle cx={C} cy={C} r={3} fill="var(--crimson)" />
+                  <circle cx={C} cy={C} r={3} fill="none" stroke="var(--crimson)" strokeWidth={0.8} opacity={0.5} />
+
+                  {/* ---- radial pulse ---- */}
+                  <circle ref={pulseC} cx={C} cy={C} r={R_HUB} fill="none" stroke="var(--crimson)" strokeWidth={1.1} opacity={0} />
+
+                  {/* ---- lock signal (node → centre) ---- */}
+                  <line ref={signalLine} stroke="var(--crimson)" strokeWidth={1.3} opacity={0} />
                   <circle ref={signalDot} r={4} fill="var(--crimson)" opacity={0} />
 
-                  {/* ---- RADIAL PULSE ---- */}
-                  <circle ref={pulseC} cx={C} cy={C} r={R_NUC} fill="none" stroke="var(--crimson)" strokeWidth={1.2} opacity={0} />
-
-                  {/* ---- NUCLEUS (creative field seed — not a reactor) ---- */}
-                  <circle cx={C} cy={C} r={R_NUC} fill="none" stroke="var(--ink2)" strokeWidth={1.1} opacity={0.5} />
-                  <circle cx={C} cy={C} r={44} fill="none" stroke="var(--ink2)" strokeWidth={0.8} opacity={0.35} />
-                  <circle cx={C} cy={C} r={30} fill="none" stroke="var(--ink2)" strokeWidth={0.8} opacity={0.3} />
-                  {/* rotating dashed ring */}
-                  <g ref={dashRingG}>
-                    <circle cx={C} cy={C} r={36} fill="none" stroke="var(--ink2)" strokeWidth={1}
-                      strokeDasharray="3 7" opacity={0.55} />
-                  </g>
-                  {/* centre point */}
-                  <circle cx={C} cy={C} r={3.4} fill="var(--crimson)" />
-                  <circle cx={C} cy={C} r={7} fill="none" stroke="var(--crimson)" strokeWidth={0.9} opacity={0.5} />
-
-                  {/* ---- DIRECTIONAL MARKER (anchored wedge, follows cursor) ---- */}
-                  <g ref={markerG} opacity={0}>
-                    <path d={`M${C} ${C - 53} L${C + 5} ${C - 40} L${C} ${C - 44} L${C - 5} ${C - 40} Z`}
-                      fill="var(--crimson)" />
-                    <line x1={C} y1={C - 38} x2={C} y2={C - 30} stroke="var(--crimson)" strokeWidth={1.2} opacity={0.7} />
-                  </g>
+                  {/* ---- nine node couplings (housing → shaft → joint → mount) ---- */}
+                  {Array.from({ length: N }).map((_, i) => (
+                    <g key={i} transform={`rotate(${angleOf(i)} ${C} ${C})`}>
+                      {/* core mounting point */}
+                      <rect x={C - 8} y={C - R_WALL + 1} width={16} height={6} rx={2}
+                        fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={0.9} />
+                      {/* extending shaft + joint (moves outward on hover/lock) */}
+                      <g ref={(el) => { couplingExtRefs.current[i] = el; }}>
+                        <rect x={C - 3} y={C - R_WALL - 12} width={6} height={14} rx={2.5}
+                          fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={0.9} />
+                        <g transform={`translate(${C} ${C - R_WALL - 14})`}>
+                          <g ref={(el) => { couplingJointRefs.current[i] = el; }}>
+                            <circle r={6} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.1} />
+                            {Array.from({ length: 6 }).map((_, k) => (
+                              <rect key={k} x={-1.4} y={-7.6} width={2.8} height={3.4} rx={0.8}
+                                transform={`rotate(${k * 60})`} fill="var(--core-mid)" />
+                            ))}
+                            <circle r={2} fill="var(--core-deep)" />
+                          </g>
+                          <circle ref={(el) => { couplingLightRefs.current[i] = el; }} r={2} fill="var(--crimson)" opacity={0} />
+                        </g>
+                      </g>
+                    </g>
+                  ))}
                 </g>
               </svg>
 
-              {/* ================= NINE DISCIPLINE NODES ================= */}
+              {/* ================= NINE DISCIPLINE NODES (mechanical input modules) ================= */}
               {disciplines.map((dis, i) => {
                 const { x, y } = pct(i, 34);
                 const Icon = disciplineIcons[dis.icon] ?? disciplineIcons.direction;
@@ -431,10 +520,10 @@ export default function CreativeCore() {
                 const locked = lockedIdx === i;
                 const side = SIDE[i];
                 const titleStyle: React.CSSProperties =
-                  side === "above" ? { left: 0, bottom: 52, transform: "translateX(-50%)", textAlign: "center" } :
-                  side === "below" ? { left: 0, top: 52, transform: "translateX(-50%)", textAlign: "center" } :
-                  side === "left" ? { right: 52, top: 0, transform: "translateY(-50%)", textAlign: "right" } :
-                  { left: 52, top: 0, transform: "translateY(-50%)", textAlign: "left" };
+                  side === "above" ? { left: 0, bottom: 54, transform: "translateX(-50%)", textAlign: "center" } :
+                  side === "below" ? { left: 0, top: 54, transform: "translateX(-50%)", textAlign: "center" } :
+                  side === "left" ? { right: 54, top: 0, transform: "translateY(-50%)", textAlign: "right" } :
+                  { left: 54, top: 0, transform: "translateY(-50%)", textAlign: "left" };
                 return (
                   <div key={dis.id} ref={(el) => { nodeWrapRefs.current[i] = el; }}
                     className="absolute" style={{ left: `${x}%`, top: `${y}%` }}>
@@ -461,11 +550,15 @@ export default function CreativeCore() {
                               : "inset 0 0 0 1px color-mix(in srgb, var(--outer-ink) 22%, transparent), 0 4px 14px -10px rgba(0,0,0,0.25)",
                           transform: hovered || locked ? "scale(1.07)" : "none",
                         }}>
+                        {/* mechanical mounting point */}
+                        <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full border"
+                          style={{ borderColor: "color-mix(in srgb, var(--outer-ink) 40%, transparent)" }} />
                         <Icon size={26} strokeWidth={1.6} />
                         <span className="absolute top-1.5 left-2 f-mono text-[8px] tracking-[0.1em] transition-colors duration-300"
                           style={{ color: locked || hovered ? "var(--crimson)" : "color-mix(in srgb, var(--outer-ink) 55%, transparent)" }}>
                           {dis.num}
                         </span>
+                        {/* technical indicator */}
                         <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 h-[3px] rounded-sm transition-all duration-300"
                           style={{ width: locked ? 20 : hovered ? 14 : 8, background: locked ? "var(--crimson)" : "color-mix(in srgb, var(--outer-ink) 35%, transparent)" }} />
                       </span>
@@ -484,7 +577,7 @@ export default function CreativeCore() {
               {/* bottom technical identifier */}
               <div className="absolute -bottom-9 inset-x-0 flex items-center justify-center gap-3 f-mono text-[9px] tracking-[0.3em] text-[var(--ink2)]">
                 <span className="w-9 h-px bg-[var(--line)]" />
-                ORBITAL FIELD — CORE/09
+                RADIAL ENGINE — CORE/09
                 <span className="w-9 h-px bg-[var(--line)]" />
               </div>
             </div>
@@ -494,14 +587,12 @@ export default function CreativeCore() {
           <Reveal delay={0.12}>
             <div className="relative rounded-xl overflow-hidden"
               style={{ background: "var(--sup1)", boxShadow: "inset 0 0 0 1px var(--line)" }}>
-              {/* thin orbital accent */}
               <span className="absolute top-0 left-0 h-[3px] w-16" style={{ background: "var(--crim-panel)" }} aria-hidden />
 
               <div className="p-6 sm:p-8">
                 <div key={selected !== null ? disciplines[selected].id : "standby"} className="career-wipe-in">
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-2.5">
-                      {/* orbital glyph */}
                       <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden>
                         <circle cx="10" cy="10" r="7.5" fill="none" stroke="var(--ink2)" strokeWidth="1" opacity="0.6" />
                         <circle cx="10" cy="10" r="2.4" fill="var(--crim-panel)" />
@@ -549,7 +640,7 @@ export default function CreativeCore() {
 
                 <div className="mt-6 pt-4 f-mono text-[8.5px] tracking-[0.26em] flex items-center justify-between"
                   style={{ borderTop: "1px solid var(--line)", color: "var(--m-sub)" }}>
-                  <span>CLICK A NODE — THE FIELD RESPONDS</span>
+                  <span>CLICK A NODE — THE ENGINE RESPONDS</span>
                   <span style={{ color: "var(--crim-panel)" }}>SYS/09</span>
                 </div>
               </div>
