@@ -54,6 +54,25 @@ const dashFor = (r: number, deg: number) => {
   return `${d.toFixed(1)} ${(circ - d).toFixed(1)}`;
 };
 
+/* engraved clockwork gear — teeth + machined face + hub, drawn at origin */
+function MiniGear({ r, teeth, opacity = 0.9 }: { r: number; teeth: number; opacity?: number }) {
+  return (
+    <g opacity={opacity}>
+      {Array.from({ length: teeth }).map((_, i) => {
+        const a = (i / teeth) * 2 * Math.PI;
+        return (
+          <rect key={i} x={-r * 0.2} y={-r * 0.24} width={r * 0.4} height={r * 0.48} rx={r * 0.06}
+            transform={`translate(${(r * Math.cos(a)).toFixed(1)} ${(r * Math.sin(a)).toFixed(1)}) rotate(${((a * 180) / Math.PI).toFixed(1)})`}
+            fill="var(--ink2)" opacity={0.5} />
+        );
+      })}
+      <circle r={r * 0.78} fill="var(--page)" stroke="var(--ink2)" strokeWidth={1} />
+      <circle r={r * 0.3} fill="none" stroke="var(--ink2)" strokeWidth={0.9} opacity={0.6} />
+      <circle r={r * 0.1} fill="var(--ink2)" opacity={0.7} />
+    </g>
+  );
+}
+
 export default function CreativeCore() {
   const { data, theme } = useStore();
   const disciplines = data.core;
@@ -329,6 +348,20 @@ export default function CreativeCore() {
                       strokeDasharray={dashFor(R_OUTER, 38)} strokeLinecap="round" opacity={0.4} />
                   </g>
                   <circle ref={dotA} r={2.6} fill="var(--ink2)" opacity={0.7} />
+
+                  {/* ---- TOOTHED CLOCK RING (slow, machined into the outer structure) ---- */}
+                  <g ref={gearToothG} opacity={0.85}>
+                    <circle cx={C} cy={C} r={252} fill="none" stroke="var(--ink2)" strokeWidth={0.8} opacity={0.35} />
+                    <circle cx={C} cy={C} r={238} fill="none" stroke="var(--ink2)" strokeWidth={0.8} opacity={0.35} />
+                    {Array.from({ length: 48 }).map((_, i) => {
+                      const [x, y] = pt(245, i * 7.5);
+                      return (
+                        <rect key={i} x={-2.2} y={-7} width={4.4} height={14} rx={1}
+                          transform={`translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${(i * 7.5).toFixed(1)})`}
+                          fill="var(--ink2)" opacity={0.45} />
+                      );
+                    })}
+                  </g>
 
                   {/* ---- NODE RING GUIDE ---- */}
                   <circle cx={C} cy={C} r={R_NODE} fill="none" stroke="var(--line)" strokeWidth={1} opacity={0.7} />
