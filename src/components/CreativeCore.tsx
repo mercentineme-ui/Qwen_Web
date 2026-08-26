@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useReducedMotion, useStore } from "../lib/store";
-import { Reveal } from "./ui";
+import { Reveal, SectionHead } from "./ui";
+
+/* the system chain rendered in the right card */
+const SYSTEM_CHAIN = ["DIRECT", "GENERATE", "DEVELOP", "BUILD", "DELIVER"];
 
 const C = 300;
 const N = 9;
@@ -164,6 +167,15 @@ export default function CreativeCore() {
   return (
     <section id="core" className="relative py-20 lg:py-28 scroll-mt-20">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8">
+        <SectionHead
+          label="02 — WHAT I DO"
+          title="WHAT I DO"
+          desc="Nine disciplines feed one machine — direction, generation and story transmitted through a single clockwork engine."
+          meta="09 MODULES · ONE ENGINE"
+        />
+
+        {/* ============ TWO-COLUMN SYSTEM — machine left, explanation right ============ */}
+        <div className="mt-12 grid lg:grid-cols-[1.22fr_0.78fr] gap-12 lg:gap-14 xl:gap-16 items-center">
         <Reveal>
           <div className="relative mx-auto w-full max-w-[620px] aspect-square select-none">
             {/* ================= THE CLOCKWORK RADIAL ENGINE ================= */}
@@ -453,6 +465,96 @@ export default function CreativeCore() {
             </div>
           </div>
         </Reveal>
+
+        {/* ============ RIGHT — WHAT I DO EDITORIAL CARD ============ */}
+        <Reveal delay={0.12}>
+          <div className="mat-outer mat-texture relative overflow-hidden"
+            style={{
+              clipPath: "polygon(22px 0, 100% 0, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%, 0 22px)",
+              boxShadow: "inset 0 0 0 1.5px color-mix(in srgb, var(--outer-ink) 20%, transparent)",
+            }}>
+            {/* registration marks */}
+            <span className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2" style={{ borderColor: "var(--crim-panel)" }} aria-hidden />
+            <span className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2" style={{ borderColor: "var(--crim-panel)" }} aria-hidden />
+
+            <div className="p-6 sm:p-8">
+              {/* editorial opening */}
+              <span className="f-mono text-[10px] tracking-[0.3em]" style={{ color: "var(--m-sub)" }}>WHAT I DO</span>
+              <h3 className="f-display leading-[1.02] mt-3 text-[clamp(1.7rem,2.6vw,2.4rem)]" style={{ color: "var(--outer-ink)" }}>
+                Nine disciplines.<br />
+                <span style={{ color: "var(--crim-panel)" }}>One connected creative system.</span>
+              </h3>
+              <p className="mt-4 text-[13.5px] sm:text-[14px] leading-relaxed max-w-[52ch]" style={{ color: "var(--outer-ink)", opacity: 0.88 }}>
+                I work across creative direction, visual development, generative AI, cinematic storytelling and
+                AI-assisted production — connecting strategy, visual thinking and execution into structured creative workflows.
+              </p>
+
+              {/* disciplines — synced to the machine */}
+              <div className="mt-7 pt-5" style={{ borderTop: "1px solid var(--m-line)" }}>
+                <div className="flex items-center justify-between mb-3.5">
+                  <span className="f-mono text-[9px] tracking-[0.3em]" style={{ color: "var(--m-sub)" }}>DISCIPLINES</span>
+                  <span className="f-mono text-[9px] tracking-[0.22em]" style={{ color: hoverIdx !== null ? "var(--crim-panel)" : "var(--m-sub)" }}>
+                    {hoverIdx !== null ? `ENGAGED — ${disciplines[hoverIdx].num}` : "09 / STANDBY"}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-x-4 gap-y-1">
+                  {disciplines.map((dis, i) => {
+                    const on = hoverIdx === i;
+                    return (
+                      <div key={dis.id}
+                        onMouseEnter={() => setHoverIdx(i)}
+                        onMouseLeave={() => setHoverIdx(null)}
+                        className="group flex items-center gap-2.5 py-1.5 cursor-default transition-all duration-300"
+                        style={{ transform: on ? "translateX(3px)" : "none" }}>
+                        <span className="f-mono text-[8.5px] tracking-[0.14em] w-6 shrink-0 transition-colors duration-300"
+                          style={{ color: on ? "var(--crim-panel)" : "var(--m-sub)" }}>{dis.num}</span>
+                        <span className="h-px w-3 shrink-0 transition-all duration-300"
+                          style={{ background: on ? "var(--crim-panel)" : "color-mix(in srgb, var(--m-sub) 40%, transparent)", width: on ? 16 : 10 }} />
+                        <span className="f-tech font-bold text-[10.5px] sm:text-[11px] tracking-[0.13em] leading-snug transition-colors duration-300"
+                          style={{ color: on ? "var(--outer-ink)" : "color-mix(in srgb, var(--outer-ink) 62%, transparent)" }}>
+                          {dis.name}
+                        </span>
+                        <span className="ml-auto w-1.5 h-1.5 rotate-45 shrink-0 transition-all duration-300"
+                          style={{ background: on ? "var(--crim-panel)" : "color-mix(in srgb, var(--m-sub) 35%, transparent)", transform: on ? "rotate(225deg) scale(1.25)" : "rotate(45deg)" }} />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* system chain */}
+              <div className="mt-7 pt-5" style={{ borderTop: "1px solid var(--m-line)" }}>
+                <span className="f-mono text-[9px] tracking-[0.3em] block mb-4" style={{ color: "var(--m-sub)" }}>SYSTEM</span>
+                <div className="flex flex-wrap items-center gap-y-3">
+                  {SYSTEM_CHAIN.map((step, i) => (
+                    <React.Fragment key={step}>
+                      <span className="flex items-center gap-2.5">
+                        <span className="f-mono text-[8.5px] tracking-[0.12em] w-5 h-5 grid place-items-center shrink-0"
+                          style={{ background: "color-mix(in srgb, var(--outer-ink) 12%, transparent)", color: "var(--m-sub)", border: "1px solid var(--m-line)" }}>
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <span className="f-tech font-bold text-[11.5px] tracking-[0.18em]" style={{ color: "var(--outer-ink)" }}>{step}</span>
+                      </span>
+                      {i < SYSTEM_CHAIN.length - 1 && (
+                        <svg width="18" height="10" viewBox="0 0 18 10" className="mx-2 shrink-0" style={{ color: "var(--crim-panel)" }} aria-hidden>
+                          <path d="M0 5h13M10 1.5 14.5 5 10 8.5" fill="none" stroke="currentColor" strokeWidth="1.4" />
+                        </svg>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+
+              {/* card footer */}
+              <div className="mt-7 pt-4 f-mono text-[8.5px] tracking-[0.26em] flex items-center justify-between"
+                style={{ borderTop: "1px solid var(--m-line)", color: "var(--m-sub)" }}>
+                <span>HOVER A DISCIPLINE — THE ENGINE RESPONDS</span>
+                <span style={{ color: "var(--crim-panel)" }}>SYS/09</span>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+        </div>
       </div>
     </section>
   );
