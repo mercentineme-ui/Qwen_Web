@@ -89,14 +89,15 @@
   --ct-card-sub: #a6a6a4;
   --crim-panel: #9e2237;
 
-  /* creative core machine — DARK: light machine on dark page */
-  --core-plate: #ddddd8;
-  --core-deep: #c3c1bc;
-  --core-line: #222328;
-  --core-mid: #59595b;
-  --core-inv: #222328;
-  --core-ring: #a6a6a4;
-  --core-gear: #ddddd8;
+  /* creative core machine — DARK: dark precision machine on dark page,
+     kept visible through grey linework + a few off-white edges + crimson */
+  --core-plate: #2b2c31;
+  --core-deep: #1e1f24;
+  --core-line: #5a5b60;
+  --core-mid: #94958f;
+  --core-inv: #d9d9d4;
+  --core-ring: #3a3b40;
+  --core-gear: #33343a;
   --core-crimson: #e72241;
 }
 
