@@ -26,7 +26,7 @@ const SIDE: ("above" | "right" | "below" | "left")[] = [
 ];
 
 /* ---- radial geometry (viewBox 600, centre 300) ---- */
-const R_NODE = 204;        /* node ring (pct 34)                        */
+const NODE_PCT = 39;       /* node orbit (% of container) — sits clear of the housing */
 const R_WALL = 184;        /* outer structural wall                     */
 const R_FACE = 177;        /* housing front face                        */
 const R_INDEX_OUT = 162;   /* index ring outer                          */
@@ -54,6 +54,7 @@ const ptOf = (cx: number, cy: number, r: number, deg: number) =>
   [cx + r * Math.sin(deg * DEG), cy - r * Math.cos(deg * DEG)] as const;
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+const wrap = (d: number) => ((d + 180) % 360 + 360) % 360 - 180;
 
 /* engraved clockwork gear drawn at origin — teeth + machined face + centre hole */
 function Gear({ r, teeth, fill = "var(--core-gear)", rim = "var(--core-line)", hole = true, opacity = 1 }: {
@@ -81,20 +82,45 @@ function Gear({ r, teeth, fill = "var(--core-gear)", rim = "var(--core-line)", h
   );
 }
 
+/* three meshed gears — CONTROL / REPEATABILITY / SYSTEM (AI IMAGE + VIDEO card) */
+function GearTrio({ reduced }: { reduced: boolean }) {
+  const spin = (dur: number, ccw = false): React.CSSProperties =>
+    reduced ? {} : {
+      animation: `${ccw ? "coreSpinCCW" : "coreSpinCW"} ${dur}s linear infinite`,
+      transformBox: "fill-box",
+      transformOrigin: "center",
+    };
+  return (
+    <div className="mt-5 flex items-end gap-4">
+      {[
+        { r: 17, teeth: 9, dur: 9, ccw: false, label: "CONTROL" },
+        { r: 12.5, teeth: 8, dur: 6.4, ccw: true, label: "REPEATABILITY" },
+        { r: 9, teeth: 7, dur: 4.6, ccw: false, label: "SYSTEM" },
+      ].map((g) => (
+        <div key={g.label} className="flex flex-col items-center gap-1.5">
+          <svg width={g.r * 2 + 8} height={g.r * 2 + 8} viewBox={`${-g.r - 4} ${-g.r - 4} ${(g.r + 4) * 2} ${(g.r + 4) * 2}`}>
+            <g style={spin(g.dur, g.ccw)}>
+              <Gear r={g.r} teeth={g.teeth} fill="currentColor" rim="currentColor" opacity={0.55} />
+            </g>
+          </svg>
+          <span className="f-mono text-[7.5px] tracking-[0.18em] opacity-60">{g.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function CreativeCore() {
   const { data, theme } = useStore();
   const disciplines = data.core;
   const reduced = useReducedMotion();
 
-  /* selection — hover previews only; click locks; second click unlocks */
+  /* active node is fully hover-driven — nothing stays selected once the cursor leaves */
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
-  const [lockedIdx, setLockedIdx] = useState<number | null>(null);
-  const selected = lockedIdx;
+  const active = hoverIdx;
 
   const hoverRef = useRef<number | null>(null);
-  const lockRef = useRef<number | null>(null);
   hoverRef.current = hoverIdx;
-  lockRef.current = lockedIdx;
 
   const themeRef = useRef(theme);
   themeRef.current = theme;
@@ -109,6 +135,7 @@ export default function CreativeCore() {
   const gearBG = useRef<SVGGElement>(null);
   const lowerGearG = useRef<SVGGElement>(null);
   const indicatorC = useRef<SVGRectElement>(null);
+  const surgeArcG = useRef<SVGGElement>(null);
   const glowC = useRef<SVGCircleElement>(null);
   const pulseC = useRef<SVGCircleElement>(null);
   const signalLine = useRef<SVGLineElement>(null);
@@ -117,6 +144,12 @@ export default function CreativeCore() {
   const couplingExtRefs = useRef<(SVGGElement | null)[]>([]);
   const couplingJointRefs = useRef<(SVGGElement | null)[]>([]);
   const couplingLightRefs = useRef<(SVGCircleElement | null)[]>([]);
+  /* articulated pointer */
+  const ptrRotG = useRef<SVGGElement>(null);
+  const ptrGearG = useRef<SVGGElement>(null);
+  const ptrLink2 = useRef<SVGRectElement>(null);
+  const ptrJoint2 = useRef<SVGCircleElement>(null);
+  const ptrTipG = useRef<SVGGElement>(null);
 
   const mouse = useRef({ x: 0, y: 0, in: false });
   const box = useRef({ cx: 0, cy: 0, w: 0, h: 0 });
@@ -127,19 +160,15 @@ export default function CreativeCore() {
     t: 0, last: 0, raf: 0, mult: 1,
     primary: 0, secondary: 0, central: 0, gearA: 0, gearB: 0, lower: 0,
     ext: Array(N).fill(0), joint: Array(N).fill(0), prox: Array(N).fill(0),
+    ptrAngle: 0, ptrExt: 0, ptrSpin: 0,
     recT: -1, lastTheme: "",
   });
 
-  const pick = (i: number) => {
-    if (lockedIdx === i) {
-      setLockedIdx(null);
-      sig.current = { idx: -1, t: 1 };
-    } else {
-      setLockedIdx(i);
-      sig.current = { idx: i, t: 0 };
-      pulse.current.p = 0;
-      pulse.current.intensity = 1;
-    }
+  /* click fires a mechanical pulse + lock signal (feedback only — never persists state) */
+  const firePulse = (i: number) => {
+    sig.current = { idx: i, t: 0 };
+    pulse.current.p = 0;
+    pulse.current.intensity = 1;
   };
 
   useEffect(() => {
@@ -165,57 +194,63 @@ export default function CreativeCore() {
       e.last = t; e.t += dt;
       const rm = reduced ? 0 : 1;
 
-      /* theme recalibration — layers gently separate then re-seat */
+      /* theme recalibration — machine disassembles in depth, swaps material, reassembles */
       if (themeRef.current !== e.lastTheme) { e.lastTheme = themeRef.current; e.recT = 0.0001; }
-      let recal = 1;
+      let dis = 0;
       if (e.recT > 0) {
         e.recT += dt;
-        recal = e.recT < 1 ? 1 - 0.5 * Math.sin(Math.PI * Math.min(1, e.recT)) : 1;
-        if (e.recT >= 1) e.recT = -1;
+        dis = e.recT < 1.4 ? Math.sin(Math.PI * Math.min(1, e.recT / 1.4)) : 0;
+        if (e.recT >= 1.4) e.recT = -1;
       }
-      orbitalG.current?.setAttribute("opacity", (0.4 + 0.6 * recal).toFixed(3));
+      orbitalG.current?.setAttribute("opacity", (1 - 0.5 * dis).toFixed(3));
       orbitalG.current?.setAttribute("transform",
-        `translate(${C} ${C}) scale(${(1 + 0.025 * (1 - recal)).toFixed(4)}) translate(${-C} ${-C})`);
+        `translate(${C} ${C}) rotate(${(4 * dis).toFixed(2)}) translate(${-C} ${-C})`);
 
-      /* ---- mechanical surge: ~every 10s, ~1s power impulse ---- */
-      const phase = e.t % 10;
+      /* ---- mechanical surge: every 20s, ~1s impulse (emphasises the secondary ring) ---- */
+      const phase = e.t % 20;
       let target = 1;
-      if (phase >= 8.2) {
-        const u = phase - 8.2;
-        if (u < 0.4) target = 1 + 1.8 * (u / 0.4);
-        else if (u < 1.0) target = 2.8;
-        else target = 2.8 - 1.8 * ((u - 1.0) / 0.8);
+      if (phase >= 18.2) {
+        const u = phase - 18.2;
+        if (u < 0.4) target = 1 + 1.6 * (u / 0.4);
+        else if (u < 1.0) target = 2.6;
+        else target = 2.6 - 1.6 * ((u - 1.0) / 0.8);
       }
       e.mult += (target - e.mult) * Math.min(1, dt * 7);
       const m = e.mult * rm;
+      const boost = clamp01((e.mult - 1) / 1.6);
 
-      /* ---- independent rotation (believable gear logic) ---- */
-      e.primary += dt * 6 * m;                 /* primary ring: slow CW        */
-      e.secondary -= dt * 9 * m;               /* secondary ring: slow CCW     */
-      e.central += dt * 14 * m;                /* central gear: CW             */
-      e.gearA -= dt * 35 * m;                  /* meshed small gears: CCW fast */
+      /* ---- independent rotation (believable gear logic) + per-layer theme separation ---- */
+      e.primary += dt * 6 * m;
+      e.secondary -= dt * 9 * m * (1 + 1.2 * boost);
+      e.central += dt * 14 * m;
+      e.gearA -= dt * 35 * m;
       e.gearB -= dt * 35 * m;
-      e.lower -= dt * 10 * m;                  /* lower regulator: independent */
+      e.lower -= dt * 10 * m;
 
-      primaryRingG.current?.setAttribute("transform", `rotate(${(e.primary % 360).toFixed(2)} ${C} ${C})`);
-      secondaryRingG.current?.setAttribute("transform", `rotate(${(e.secondary % 360).toFixed(2)} ${C} ${C})`);
-      centralGearG.current?.setAttribute("transform", `translate(${C} ${C}) rotate(${(e.central % 360).toFixed(2)})`);
-      const [gax, gay] = ptOf(C, C, G_OFF, GA.a);
-      const [gbx, gby] = ptOf(C, C, G_OFF, GB.a);
+      primaryRingG.current?.setAttribute("transform",
+        `translate(${C} ${C}) scale(${(1 + 0.09 * dis).toFixed(4)}) rotate(${(e.primary % 360).toFixed(2)}) translate(${-C} ${-C})`);
+      secondaryRingG.current?.setAttribute("transform",
+        `translate(${C} ${C}) scale(${(1 + 0.05 * dis).toFixed(4)}) rotate(${(e.secondary % 360).toFixed(2)}) translate(${-C} ${-C})`);
+      centralGearG.current?.setAttribute("transform",
+        `translate(${C} ${C + 9 * dis}) scale(${(1 - 0.05 * dis).toFixed(4)}) rotate(${(e.central % 360).toFixed(2)})`);
+      const [gax, gay] = ptOf(C, C, G_OFF + 10 * dis, GA.a);
+      const [gbx, gby] = ptOf(C, C, G_OFF + 10 * dis, GB.a);
       gearAG.current?.setAttribute("transform", `translate(${gax} ${gay}) rotate(${(e.gearA % 360).toFixed(2)})`);
       gearBG.current?.setAttribute("transform", `translate(${gbx} ${gby}) rotate(${(e.gearB % 360).toFixed(2)})`);
-      const [lx, ly] = ptOf(C, C, LOWER.d, LOWER.a);
+      const [lx, ly] = ptOf(C, C, LOWER.d + 8 * dis, LOWER.a);
       lowerGearG.current?.setAttribute("transform", `translate(${lx} ${ly}) rotate(${(e.lower % 360).toFixed(2)})`);
 
       /* crimson timing indicator strengthens with the surge */
-      const boost = clamp01((e.mult - 1) / 1.8);
       indicatorC.current?.setAttribute("opacity", (0.8 + 0.2 * boost).toFixed(2));
       indicatorC.current?.setAttribute("width", (6 + 2.5 * boost).toFixed(1));
       indicatorC.current?.setAttribute("x", (-(3 + 1.25 * boost)).toFixed(1));
+      /* faint crimson surge arc riding the secondary ring */
+      surgeArcG.current?.setAttribute("opacity", (boost * 0.55).toFixed(2));
+      surgeArcG.current?.setAttribute("transform", `rotate(${(e.secondary % 360).toFixed(2)} ${C} ${C})`);
 
-      /* ---- node couplings: hover / lock mechanically engages ---- */
+      /* ---- node couplings: hover mechanically engages ---- */
       for (let i = 0; i < N; i++) {
-        const activeNode = hoverRef.current === i || lockRef.current === i;
+        const activeNode = hoverRef.current === i;
         e.ext[i] += ((activeNode ? 1 : 0) - e.ext[i]) * Math.min(1, dt * 7);
         e.joint[i] += e.ext[i] * (activeNode ? 160 : 60) * m * dt;
         const ex = e.ext[i];
@@ -224,15 +259,32 @@ export default function CreativeCore() {
         couplingLightRefs.current[i]?.setAttribute("opacity", (ex * (0.5 + 0.5 * boost)).toFixed(2));
       }
 
+      /* ---- articulated pointer: folds into the hub when idle, extends toward the hovered node ---- */
+      const ptrTarget = hoverRef.current !== null ? 1 : 0;
+      e.ptrExt += (ptrTarget - e.ptrExt) * Math.min(1, dt * (ptrTarget ? 5 : 6.5));
+      const ptrAngTarget = hoverRef.current !== null ? angleOf(hoverRef.current) : 0;
+      e.ptrAngle += wrap(ptrAngTarget - e.ptrAngle) * Math.min(1, dt * 6) * rm;
+      e.ptrSpin += dt * (26 + 90 * e.ptrExt) * m;
+
+      ptrRotG.current?.setAttribute("transform", `rotate(${e.ptrAngle.toFixed(2)} ${C} ${C})`);
+      ptrGearG.current?.setAttribute("transform", `translate(${C} ${C}) rotate(${(e.ptrSpin % 360).toFixed(2)})`);
+      const ext = e.ptrExt;
+      const link2H = 12 + 34 * ext;                 /* telescoping second link  */
+      const joint2Y = -(38 + 34 * ext);             /* second folding joint (relative to centre) */
+      ptrLink2.current?.setAttribute("y", (C - 26 - link2H).toFixed(1));
+      ptrLink2.current?.setAttribute("height", link2H.toFixed(1));
+      ptrJoint2.current?.setAttribute("cy", (C + joint2Y).toFixed(1));
+      ptrTipG.current?.setAttribute("transform", `translate(${C} ${(C + joint2Y).toFixed(1)})`);
+
       /* ---- node proximity shift toward cursor ---- */
       if (box.current.w > 0) {
         const scale = 600 / box.current.w;
         for (let i = 0; i < N; i++) {
-          const nx = (pct(i, 34).x / 100 - 0.5) * box.current.w;
-          const ny = (pct(i, 34).y / 100 - 0.5) * box.current.h;
+          const nx = (pct(i, NODE_PCT).x / 100 - 0.5) * box.current.w;
+          const ny = (pct(i, NODE_PCT).y / 100 - 0.5) * box.current.h;
           const dist = Math.hypot(mouse.current.x - nx, mouse.current.y - ny);
-          const target = mouse.current.in && !reduced ? clamp01(1 - dist / 170) : 0;
-          e.prox[i] += (target - e.prox[i]) * Math.min(1, dt * 8);
+          const tgt = mouse.current.in && !reduced ? clamp01(1 - dist / 170) : 0;
+          e.prox[i] += (tgt - e.prox[i]) * Math.min(1, dt * 8);
           const p = e.prox[i];
           let dx = 0, dy = 0;
           if (dist > 1) { dx = ((mouse.current.x - nx) / dist) * p * 4; dy = ((mouse.current.y - ny) / dist) * p * 4; }
@@ -246,12 +298,12 @@ export default function CreativeCore() {
         }
       }
 
-      /* ---- lock signal: node → centre ---- */
+      /* ---- lock signal: node → centre (click feedback) ---- */
       if (sig.current.t < 1.4) {
         sig.current.t += dt / 0.65;
         const a = angleOf(sig.current.idx);
-        const rr = R_NODE - (R_NODE - (R_HUB - 4)) * (1 - Math.pow(1 - clamp01(sig.current.t), 3));
-        const [nx, ny] = pt(R_NODE - 8, a);
+        const rr = R_WALL - (R_WALL - (R_HUB - 4)) * (1 - Math.pow(1 - clamp01(sig.current.t), 3));
+        const [nx, ny] = pt(R_WALL - 8, a);
         const [sx, sy] = pt(rr, a);
         signalLine.current?.setAttribute("x1", nx.toFixed(1));
         signalLine.current?.setAttribute("y1", ny.toFixed(1));
@@ -267,7 +319,7 @@ export default function CreativeCore() {
         signalDot.current?.setAttribute("opacity", "0");
       }
 
-      /* ---- radial pulse (ambient + lock reaction) ---- */
+      /* ---- radial pulse (ambient + click reaction) ---- */
       if (pulse.current.p < 1) {
         pulse.current.p += dt / 1.5;
       } else if (e.t > pulse.current.next && !reduced) {
@@ -298,12 +350,18 @@ export default function CreativeCore() {
   const [gbxS, gbyS] = ptOf(C, C, G_OFF, GB.a);
   const [lxS, lyS] = ptOf(C, C, LOWER.d, LOWER.a);
 
+  /* the AI IMAGE + VIDEO card flips its material with the page theme */
+  const activeVideo = active === 4;
+  const videoCardBg = theme === "light" ? "#222328" : "#e7e6e1";
+  const videoCardInk = theme === "light" ? "#e7e6e1" : "#222328";
+  const videoCardSub = theme === "light" ? "#9b9c96" : "#59595b";
+
   return (
     <section id="core" className="relative py-20 lg:py-28 scroll-mt-20">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8">
         <SectionHead
-          label="02 — WHAT I DO"
-          title="WHAT I DO"
+          label="02 — THE CORE"
+          title="THE CORE"
           desc="Nine disciplines drive one machine — direction, generation and story transmitted through a single radial clockwork engine."
           meta="09 MODULES · ONE ENGINE"
         />
@@ -397,12 +455,18 @@ export default function CreativeCore() {
                     </g>
                   </g>
 
-                  {/* ---- secondary transmission ring (slow CCW) ---- */}
+                  {/* ---- secondary transmission ring (slow CCW, receives the 20s surge) ---- */}
                   <g ref={secondaryRingG}>
                     <circle cx={C} cy={C} r={R_SEC_OUT} fill="none" stroke="var(--core-mid)" strokeWidth={1.4} opacity={0.8} />
                     <circle cx={C} cy={C} r={R_SEC_IN} fill="none" stroke="var(--core-mid)" strokeWidth={1} opacity={0.6} />
                     <circle cx={C} cy={C} r={(R_SEC_OUT + R_SEC_IN) / 2} fill="none" stroke="var(--core-mid)"
                       strokeWidth={5} strokeDasharray="4 9" opacity={0.4} />
+                  </g>
+                  {/* faint crimson surge arc riding the secondary ring */}
+                  <g ref={surgeArcG} opacity={0}>
+                    <circle cx={C} cy={C} r={(R_SEC_OUT + R_SEC_IN) / 2} fill="none" stroke="var(--crimson)"
+                      strokeWidth={3} strokeLinecap="round"
+                      strokeDasharray={`${(2 * Math.PI * ((R_SEC_OUT + R_SEC_IN) / 2) * 0.12).toFixed(1)} ${(2 * Math.PI * ((R_SEC_OUT + R_SEC_IN) / 2) * 0.88).toFixed(1)}`} />
                   </g>
 
                   {/* ---- LEVEL 4 · RECESSED ENGINE PLATE ---- */}
@@ -472,11 +536,31 @@ export default function CreativeCore() {
                   <circle cx={C} cy={C} r={13} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.3} />
                   <circle cx={C} cy={C} r={13} fill="none" stroke="var(--core-inv)" strokeWidth={0.7} opacity={0.2} />
                   <circle cx={C} cy={C} r={7} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1} />
-                  <rect x={C - 1.4} y={C - 11} width={2.8} height={22} rx={1.2} fill="var(--core-deep)" opacity={0.8} />
-                  <rect x={C - 11} y={C - 1.4} width={22} height={2.8} rx={1.2} fill="var(--core-deep)" opacity={0.8} />
-                  {/* tiny crimson status indicator at the axle */}
-                  <circle cx={C} cy={C} r={3} fill="var(--crimson)" />
-                  <circle cx={C} cy={C} r={3} fill="none" stroke="var(--crimson)" strokeWidth={0.8} opacity={0.5} />
+
+                  {/* ---- ARTICULATED POINTER (one continuous mechanism, folds into the hub) ---- */}
+                  <g ref={ptrRotG}>
+                    {/* telescoping second link + folding joint + pointer tip (extended part) */}
+                    <rect ref={ptrLink2} x={C - 3} y={-26 - 12 + C} width={6} height={12} rx={2.5}
+                      fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={0.9} />
+                    <circle ref={ptrJoint2} cx={C} cy={C - 38} r={4.4} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.1} />
+                    <g ref={ptrTipG} transform={`translate(${C} ${C - 38})`}>
+                      {/* mechanical pointed tip — stays inside the core, never reaches the nodes */}
+                      <path d="M0 -16 L6 -4 L2.4 -4 L2.4 2 L-2.4 2 L-2.4 -4 L-6 -4 Z"
+                        fill="var(--crimson)" stroke="var(--core-line)" strokeWidth={0.8} />
+                      <circle cy={-4} r={1.6} fill="var(--core-plate)" />
+                    </g>
+                    {/* fixed first link (short articulated link) */}
+                    <rect x={C - 4} y={C - 26} width={8} height={18} rx={3}
+                      fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1} />
+                    <circle cx={C} cy={C - 26} r={3.4} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1} />
+                    {/* primary gear joint mounted on the central axle */}
+                    <g ref={ptrGearG}>
+                      <Gear r={15} teeth={9} fill="var(--core-plate)" rim="var(--core-line)" />
+                    </g>
+                    {/* tiny crimson status indicator at the axle */}
+                    <circle cx={C} cy={C} r={3} fill="var(--crimson)" />
+                    <circle cx={C} cy={C} r={3} fill="none" stroke="var(--crimson)" strokeWidth={0.8} opacity={0.5} />
+                  </g>
 
                   {/* ---- radial pulse ---- */}
                   <circle ref={pulseC} cx={C} cy={C} r={R_HUB} fill="none" stroke="var(--crimson)" strokeWidth={1.1} opacity={0} />
@@ -488,14 +572,14 @@ export default function CreativeCore() {
                   {/* ---- nine node couplings (housing → shaft → joint → mount) ---- */}
                   {Array.from({ length: N }).map((_, i) => (
                     <g key={i} transform={`rotate(${angleOf(i)} ${C} ${C})`}>
-                      {/* core mounting point */}
+                      {/* core mounting point on the housing wall */}
                       <rect x={C - 8} y={C - R_WALL + 1} width={16} height={6} rx={2}
                         fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={0.9} />
-                      {/* extending shaft + joint (moves outward on hover/lock) */}
+                      {/* extending shaft + joint (bridges the gap, moves outward on hover) */}
                       <g ref={(el) => { couplingExtRefs.current[i] = el; }}>
-                        <rect x={C - 3} y={C - R_WALL - 12} width={6} height={14} rx={2.5}
+                        <rect x={C - 3} y={C - R_WALL - 18} width={6} height={20} rx={2.5}
                           fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={0.9} />
-                        <g transform={`translate(${C} ${C - R_WALL - 14})`}>
+                        <g transform={`translate(${C} ${C - R_WALL - 20})`}>
                           <g ref={(el) => { couplingJointRefs.current[i] = el; }}>
                             <circle r={6} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.1} />
                             {Array.from({ length: 6 }).map((_, k) => (
@@ -514,16 +598,18 @@ export default function CreativeCore() {
 
               {/* ================= NINE DISCIPLINE NODES (mechanical input modules) ================= */}
               {disciplines.map((dis, i) => {
-                const { x, y } = pct(i, 34);
+                const { x, y } = pct(i, NODE_PCT);
                 const Icon = disciplineIcons[dis.icon] ?? disciplineIcons.direction;
-                const hovered = hoverIdx === i;
-                const locked = lockedIdx === i;
+                const hovered = active === i;
                 const side = SIDE[i];
                 const titleStyle: React.CSSProperties =
                   side === "above" ? { left: 0, bottom: 54, transform: "translateX(-50%)", textAlign: "center" } :
                   side === "below" ? { left: 0, top: 54, transform: "translateX(-50%)", textAlign: "center" } :
-                  side === "left" ? { right: 54, top: 0, transform: "translateY(-50%)", textAlign: "right" } :
-                  { left: 54, top: 0, transform: "translateY(-50%)", textAlign: "left" };
+                  side === "left" ? { right: 52, top: 0, transform: "translateY(-50%)", textAlign: "right" } :
+                  { left: 52, top: 0, transform: "translateY(-50%)", textAlign: "left" };
+                /* pop-up sits just outside the node, radially outward */
+                const ox = Math.sin(angleOf(i) * DEG) * 52;
+                const oy = -Math.cos(angleOf(i) * DEG) * 52;
                 return (
                   <div key={dis.id} ref={(el) => { nodeWrapRefs.current[i] = el; }}
                     className="absolute" style={{ left: `${x}%`, top: `${y}%` }}>
@@ -532,43 +618,54 @@ export default function CreativeCore() {
                       onMouseLeave={() => setHoverIdx(null)}
                       onFocus={() => setHoverIdx(i)}
                       onBlur={() => setHoverIdx(null)}
-                      onClick={() => pick(i)}
+                      onClick={() => firePulse(i)}
                       className="absolute outline-none"
                       style={{ left: 0, top: 0, width: 74, height: 74, transform: "translate(-50%,-50%)" }}
                       aria-label={dis.name}
-                      aria-pressed={locked}>
+                      aria-pressed={hovered}>
                       <span
                         className="absolute inset-0 flex items-center justify-center transition-all duration-300"
                         style={{
                           clipPath: "polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px)",
-                          backgroundColor: "var(--outer-bg)",
-                          color: "var(--outer-ink)",
-                          boxShadow: locked
-                            ? "inset 0 0 0 1.5px var(--crimson), 0 10px 24px -10px rgba(0,0,0,0.4)"
-                            : hovered
-                              ? "inset 0 0 0 1.5px color-mix(in srgb, var(--crimson) 65%, transparent), 0 8px 20px -10px rgba(0,0,0,0.35)"
-                              : "inset 0 0 0 1px color-mix(in srgb, var(--outer-ink) 22%, transparent), 0 4px 14px -10px rgba(0,0,0,0.25)",
-                          transform: hovered || locked ? "scale(1.07)" : "none",
+                          backgroundColor: hovered ? "var(--crimson)" : "var(--outer-bg)",
+                          color: hovered ? "#f4f2ed" : "var(--outer-ink)",
+                          boxShadow: hovered
+                            ? "inset 0 0 0 1.5px var(--crimson), 0 12px 26px -10px rgba(0,0,0,0.45)"
+                            : "inset 0 0 0 1px color-mix(in srgb, var(--outer-ink) 22%, transparent), 0 4px 14px -10px rgba(0,0,0,0.25)",
+                          transform: hovered ? "scale(1.07)" : "none",
                         }}>
-                        {/* mechanical mounting point */}
+                        {/* mechanical mounting screw */}
                         <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full border"
-                          style={{ borderColor: "color-mix(in srgb, var(--outer-ink) 40%, transparent)" }} />
+                          style={{ borderColor: hovered ? "rgba(244,242,237,0.5)" : "color-mix(in srgb, var(--outer-ink) 40%, transparent)" }} />
                         <Icon size={26} strokeWidth={1.6} />
                         <span className="absolute top-1.5 left-2 f-mono text-[8px] tracking-[0.1em] transition-colors duration-300"
-                          style={{ color: locked || hovered ? "var(--crimson)" : "color-mix(in srgb, var(--outer-ink) 55%, transparent)" }}>
+                          style={{ color: hovered ? "#f4f2ed" : "color-mix(in srgb, var(--outer-ink) 55%, transparent)" }}>
                           {dis.num}
                         </span>
                         {/* technical indicator */}
                         <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 h-[3px] rounded-sm transition-all duration-300"
-                          style={{ width: locked ? 20 : hovered ? 14 : 8, background: locked ? "var(--crimson)" : "color-mix(in srgb, var(--outer-ink) 35%, transparent)" }} />
+                          style={{ width: hovered ? 20 : 8, background: hovered ? "#f4f2ed" : "color-mix(in srgb, var(--outer-ink) 35%, transparent)" }} />
                       </span>
                     </button>
                     {/* discipline title (outside the chip) */}
                     <span className="absolute pointer-events-none f-tech font-bold text-[11px] leading-[1.3] tracking-[0.1em] transition-colors duration-300"
-                      style={{ ...titleStyle, color: locked ? "var(--crimson)" : hovered ? "var(--ink)" : "var(--ink2)", width: side === "left" || side === "right" ? 110 : 120 }}>
+                      style={{ ...titleStyle, color: hovered ? "var(--crimson)" : "var(--ink2)", width: side === "left" || side === "right" ? 104 : 116 }}>
                       {SPLIT[i][0]}
                       <br />
                       {SPLIT[i][1]}
+                    </span>
+                    {/* contextual pop-up (mechanical info tag) */}
+                    <span
+                      className="absolute left-0 top-0 pointer-events-none f-mono text-[8px] tracking-[0.16em] px-2 py-1 whitespace-nowrap transition-all duration-300"
+                      style={{
+                        transform: `translate(-50%,-50%) translate(${ox.toFixed(0)}px, ${oy.toFixed(0)}px)`,
+                        background: "var(--outer-bg)",
+                        color: hovered ? "#f4f2ed" : "var(--outer-ink)",
+                        border: "1px solid color-mix(in srgb, var(--crimson) 60%, transparent)",
+                        opacity: hovered ? 1 : 0,
+                        clipPath: "polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)",
+                      }}>
+                      {dis.num} · {dis.tags[0]}
                     </span>
                   </div>
                 );
@@ -585,53 +682,61 @@ export default function CreativeCore() {
 
           {/* ================= RIGHT — DETAIL CARD ================= */}
           <Reveal delay={0.12}>
-            <div className="relative rounded-xl overflow-hidden"
-              style={{ background: "var(--sup1)", boxShadow: "inset 0 0 0 1px var(--line)" }}>
+            <div className="relative rounded-xl overflow-hidden transition-colors duration-500"
+              style={{
+                background: activeVideo ? videoCardBg : "var(--sup1)",
+                color: activeVideo ? videoCardInk : "var(--ink)",
+                boxShadow: "inset 0 0 0 1px var(--line)",
+              }}>
               <span className="absolute top-0 left-0 h-[3px] w-16" style={{ background: "var(--crim-panel)" }} aria-hidden />
 
               <div className="p-6 sm:p-8">
-                <div key={selected !== null ? disciplines[selected].id : "standby"} className="career-wipe-in">
+                <div key={active !== null ? disciplines[active].id : "standby"} className="career-wipe-in">
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-2.5">
                       <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden>
-                        <circle cx="10" cy="10" r="7.5" fill="none" stroke="var(--ink2)" strokeWidth="1" opacity="0.6" />
+                        <circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.45" />
                         <circle cx="10" cy="10" r="2.4" fill="var(--crim-panel)" />
-                        <circle cx="16.5" cy="6.5" r="1.6" fill="var(--ink2)" />
+                        <circle cx="16.5" cy="6.5" r="1.6" fill="currentColor" opacity="0.6" />
                       </svg>
-                      <span className="f-mono text-[10px] tracking-[0.3em]" style={{ color: "var(--m-sub)" }}>
-                        {selected !== null ? `MODULE ${disciplines[selected].num}` : "OUTPUT"}
+                      <span className="f-mono text-[10px] tracking-[0.3em]" style={{ color: activeVideo ? videoCardSub : "var(--m-sub)" }}>
+                        {active !== null ? `MODULE ${disciplines[active].num}` : "OUTPUT"}
                       </span>
                     </span>
                     <span className="f-mono text-[9px] tracking-[0.22em] flex items-center gap-2"
-                      style={{ color: selected !== null ? "var(--crim-panel)" : "var(--m-sub)" }}>
-                      <span className="w-1.5 h-1.5 rounded-full live-blink" style={{ background: selected !== null ? "var(--crim-panel)" : "var(--m-sub)" }} />
-                      {selected !== null ? "SELECTED" : "STANDING BY"}
+                      style={{ color: active !== null ? "var(--crim-panel)" : activeVideo ? videoCardSub : "var(--m-sub)" }}>
+                      <span className="w-1.5 h-1.5 rounded-full live-blink" style={{ background: active !== null ? "var(--crim-panel)" : "currentColor", opacity: active !== null ? 1 : 0.5 }} />
+                      {active !== null ? "SELECTED" : "STANDING BY"}
                     </span>
                   </div>
 
-                  {selected !== null ? (
+                  {active !== null ? (
                     <>
-                      <h3 className="f-display leading-[1.02] mt-3.5 text-[clamp(1.6rem,2.4vw,2.2rem)]" style={{ color: "var(--ink)" }}>
-                        {disciplines[selected].name}
+                      <h3 className="f-display leading-[1.02] mt-3.5 text-[clamp(1.6rem,2.4vw,2.2rem)]">
+                        {disciplines[active].name}
                       </h3>
-                      <p className="mt-3 text-[13px] sm:text-[13.5px] leading-relaxed" style={{ color: "var(--ink)", opacity: 0.85 }}>
-                        {disciplines[selected].blurb}
+                      <p className="mt-3 text-[13px] sm:text-[13.5px] leading-relaxed" style={{ opacity: 0.85 }}>
+                        {disciplines[active].blurb}
                       </p>
                       <div className="mt-4 flex flex-wrap gap-2">
-                        {disciplines[selected].tags.map((t) => (
+                        {disciplines[active].tags.map((t) => (
                           <span key={t} className="f-tech font-bold text-[9.5px] tracking-[0.14em] px-2.5 py-1 rounded-sm"
-                            style={{ background: "color-mix(in srgb, var(--ink) 8%, transparent)", border: "1px solid var(--line)", color: "var(--ink)" }}>
+                            style={{
+                              background: activeVideo ? "color-mix(in srgb, currentColor 12%, transparent)" : "color-mix(in srgb, var(--ink) 8%, transparent)",
+                              border: `1px solid ${activeVideo ? "color-mix(in srgb, currentColor 25%, transparent)" : "var(--line)"}`,
+                            }}>
                             {t}
                           </span>
                         ))}
                       </div>
+                      {activeVideo && <div style={{ color: videoCardInk }}><GearTrio reduced={reduced} /></div>}
                     </>
                   ) : (
                     <>
-                      <h3 className="f-display leading-[1.05] mt-3.5 text-[clamp(1.6rem,2.4vw,2.2rem)]" style={{ color: "var(--ink)" }}>
+                      <h3 className="f-display leading-[1.05] mt-3.5 text-[clamp(1.6rem,2.4vw,2.2rem)]">
                         Standing by
                       </h3>
-                      <p className="mt-3 text-[13px] sm:text-[13.5px]" style={{ color: "var(--ink2)" }}>
+                      <p className="mt-3 text-[13px] sm:text-[13.5px]" style={{ color: activeVideo ? videoCardSub : "var(--ink2)" }}>
                         Choose a node to explore.
                       </p>
                     </>
@@ -639,8 +744,8 @@ export default function CreativeCore() {
                 </div>
 
                 <div className="mt-6 pt-4 f-mono text-[8.5px] tracking-[0.26em] flex items-center justify-between"
-                  style={{ borderTop: "1px solid var(--line)", color: "var(--m-sub)" }}>
-                  <span>CLICK A NODE — THE ENGINE RESPONDS</span>
+                  style={{ borderTop: `1px solid ${activeVideo ? "color-mix(in srgb, currentColor 20%, transparent)" : "var(--line)"}`, color: activeVideo ? videoCardSub : "var(--m-sub)" }}>
+                  <span>HOVER A NODE — THE ENGINE RESPONDS</span>
                   <span style={{ color: "var(--crim-panel)" }}>SYS/09</span>
                 </div>
               </div>
