@@ -99,20 +99,18 @@ const Bearing = ({ x, y, r = 13 }: { x: number; y: number; r?: number }) => (
 );
 
 /* ================= fixed mechanical layout =================
-   Asymmetric transmission: large drive gear lower-left, transfer +
-   precision gears upper area, output stage lower-right, crank + piston
-   driven off the drive gear, pressure chamber + valve + gauge beside it. */
-const MAIN = { x: 234, y: 336, r: 36 };          // large drive gear
-const TRANS = { x: 281, y: 311, r: 22 };         // secondary transfer gear (meshes drive)
-const PREC = { x: 305, y: 289, r: 12 };          // small precision gear (meshes transfer)
-const OUT = { x: 348, y: 384, r: 26 };           // lower output gear
-const OUTW = { x: 372, y: 424, r: 16 };          // output wheel
-const CRANK_R = 15;                              // eccentric throw on drive gear
-const ROD = 58;                                  // connecting rod length
-const PISTON_X = MAIN.x;                         // vertical piston above the drive gear
-const CHAMBER = { x: 196, y: 244, w: 40, h: 30 };// pressure chamber
-const GAUGE = { x: 172, y: 300 };                // pressure gauge
-const HUB_R = 64;                                // central engine housing
+   Clean engineered train, deliberately spaced:
+   MAJOR drive gear (upper-left) --crank+rod--> PRECISION gear --mesh-->
+   CENTRAL drive --shaft--> TRANSFER gear (lower-right); CENTRAL --vertical
+   shaft--> LOWER OUTPUT gear. One eccentric crank, two structural braces.
+   Every gear transmits; nothing floats. */
+const MAIN = { x: 205, y: 300, r: 30 };          // major drive gear (left region)
+const PREC = { x: 258, y: 258, r: 13 };          // precision gear (upper-left, crank-driven, meshes central)
+const TRANS = { x: 352, y: 352, r: 24 };         // secondary transfer gear (lower-right)
+const OUT = { x: 300, y: 402, r: 21 };           // lower output gear
+const CRANK_R = 13;                              // eccentric throw on the major gear
+const HUB_R = 44;                                // central housing
+const GEAR_C = 46;                               // central main drive gear radius (teeth protrude past housing)
 
 export default function CreativeCore() {
   const { data } = useStore();
@@ -143,24 +141,20 @@ export default function CreativeCore() {
         central hub → output; drive gear crank → connecting rod → piston. ---- */
   const ring1G = useRef<SVGGElement>(null);   // primary indexing drum (CW, slow)
   const ring2G = useRef<SVGGElement>(null);   // secondary clockwork ring (CCW)
-  const mainG = useRef<SVGGElement>(null);    // large drive gear
-  const transG = useRef<SVGGElement>(null);   // transfer gear
-  const precG = useRef<SVGGElement>(null);    // precision gear
-  const hubG = useRef<SVGGElement>(null);     // central drive
-  const outG = useRef<SVGGElement>(null);     // output gear
-  const outWG = useRef<SVGGElement>(null);    // output wheel
-  const crankG = useRef<SVGGElement>(null);   // eccentric crank on drive gear
-  const rodL = useRef<SVGLineElement>(null);  // connecting rod
-  const rodH = useRef<SVGLineElement>(null);
-  const pistonG = useRef<SVGGElement>(null);  // piston body
-  const needleG = useRef<SVGGElement>(null);  // gauge needle
-  const valveG = useRef<SVGGElement>(null);   // surge valve lift
+  const mainG = useRef<SVGGElement>(null);    // major drive gear (upper-left)
+  const precG = useRef<SVGGElement>(null);    // precision gear (crank-driven)
+  const hubG = useRef<SVGGElement>(null);     // central main drive gear
+  const transG = useRef<SVGGElement>(null);   // secondary transfer gear (lower-right)
+  const outG = useRef<SVGGElement>(null);     // lower output gear
+  const crankG = useRef<SVGGElement>(null);   // eccentric crank on major gear
+  const rodL = useRef<SVGLineElement>(null);  // crank connecting rod (core)
+  const rodH = useRef<SVGLineElement>(null);  // crank connecting rod (highlight)
   const lampRef = useRef<SVGCircleElement>(null);
   const hubPulseG = useRef<SVGGElement>(null);
 
   const eng = useRef({
     t: 0, last: 0, raf: 0, surgeAt: 6, surge: -1, env: 0, energy: 0,
-    a: { ring1: 8, ring2: -14, main: 0, trans: 22, prec: 40, hub: 0, out: -30, wheel: 12 },
+    a: { ring1: 8, ring2: -14, main: 0, prec: 40, hub: 12, trans: 26, out: -20 },
   });
   const hoverRef = useRef<number | null>(null);
   hoverRef.current = hoverIdx;
@@ -172,16 +166,15 @@ export default function CreativeCore() {
 
   useEffect(() => {
     if (reduced) {
-      /* static assembled state */
+      /* static assembled state — every gear at a readable rest angle */
       setRing(ring1G, 8); setRing(ring2G, -14);
-      setLocal(mainG, 0, MAIN.x, MAIN.y); setLocal(transG, 22, TRANS.x, TRANS.y);
-      setLocal(precG, 40, PREC.x, PREC.y); setLocal(hubG, 0, C, C);
-      setLocal(outG, -30, OUT.x, OUT.y); setLocal(outWG, 12, OUTW.x, OUTW.y);
-      setLocal(crankG, 0, MAIN.x, MAIN.y);
-      const pinY = MAIN.y - CRANK_R - Math.sqrt(ROD * ROD - 0);
-      pistonG.current?.setAttribute("transform", `translate(${PISTON_X} ${pinY})`);
+      setLocal(mainG, 0, MAIN.x, MAIN.y); setLocal(precG, 40, PREC.x, PREC.y);
+      setLocal(hubG, 12, C, C); setLocal(transG, 26, TRANS.x, TRANS.y);
+      setLocal(outG, -20, OUT.x, OUT.y); setLocal(crankG, 0, MAIN.x, MAIN.y);
       rodL.current?.setAttribute("x1", String(MAIN.x)); rodL.current?.setAttribute("y1", String(MAIN.y - CRANK_R));
-      rodL.current?.setAttribute("x2", String(PISTON_X)); rodL.current?.setAttribute("y2", String(pinY));
+      rodL.current?.setAttribute("x2", String(PREC.x)); rodL.current?.setAttribute("y2", String(PREC.y));
+      rodH.current?.setAttribute("x1", String(MAIN.x)); rodH.current?.setAttribute("y1", String(MAIN.y - CRANK_R));
+      rodH.current?.setAttribute("x2", String(PREC.x)); rodH.current?.setAttribute("y2", String(PREC.y));
       return;
     }
     const loop = (t: number) => {
@@ -204,43 +197,34 @@ export default function CreativeCore() {
       const hover = hoverRef.current !== null ? 1 : 0;
       const mult = e.energy * (1 + 1.6 * env + 0.25 * hover);
 
-      /* independent mechanical speeds (deg/s) — never synchronized */
+      /* independent mechanical speeds (deg/s) — never synchronized.
+         large = slow, small = fast, opposing directions communicate transmission. */
       const a = e.a;
-      a.ring1 += 4 * mult * dt;
-      a.ring2 -= 7 * mult * dt;
-      a.main += 26 * mult * dt;
-      a.trans -= 42 * mult * dt;
-      a.prec += 96 * mult * dt;
-      a.hub += 12 * mult * dt;
-      a.out -= 20 * mult * dt;
-      a.wheel += 34 * mult * dt;
+      a.ring1 += 4 * mult * dt;    // primary indexing ring — slow CW
+      a.ring2 -= 7 * mult * dt;    // secondary ring — slow CCW
+      a.main += 24 * mult * dt;    // major drive gear — slow
+      a.prec -= 62 * mult * dt;    // precision gear — fast (crank-driven)
+      a.hub += 12 * mult * dt;     // central drive — slow
+      a.trans -= 30 * mult * dt;   // transfer gear — medium
+      a.out += 18 * mult * dt;     // lower output — independent
 
       setRing(ring1G, a.ring1);
       setRing(ring2G, a.ring2);
       setLocal(mainG, a.main, MAIN.x, MAIN.y);
-      setLocal(transG, a.trans, TRANS.x, TRANS.y);
       setLocal(precG, a.prec, PREC.x, PREC.y);
       setLocal(hubG, a.hub, C, C);
+      setLocal(transG, a.trans, TRANS.x, TRANS.y);
       setLocal(outG, a.out, OUT.x, OUT.y);
-      setLocal(outWG, a.wheel, OUTW.x, OUTW.y);
-      setLocal(crankG, a.main, MAIN.x, MAIN.y); // crank rides the drive gear
+      setLocal(crankG, a.main, MAIN.x, MAIN.y); // crank rides the major gear
 
-      /* crank → connecting rod → piston (true kinematics) */
+      /* eccentric crank → connecting rod → precision gear shaft (physical response) */
       const th = a.main * DEG;
       const pinX = MAIN.x + CRANK_R * Math.sin(th);
       const pinY = MAIN.y - CRANK_R * Math.cos(th);
-      const dxp = pinX - PISTON_X;
-      const pistonY = pinY - Math.sqrt(Math.max(ROD * ROD - dxp * dxp, 100));
-      pistonG.current?.setAttribute("transform", `translate(${PISTON_X} ${pistonY.toFixed(1)})`);
       rodL.current?.setAttribute("x1", pinX.toFixed(1)); rodL.current?.setAttribute("y1", pinY.toFixed(1));
-      rodL.current?.setAttribute("x2", String(PISTON_X)); rodL.current?.setAttribute("y2", pistonY.toFixed(1));
+      rodL.current?.setAttribute("x2", String(PREC.x)); rodL.current?.setAttribute("y2", String(PREC.y));
       rodH.current?.setAttribute("x1", pinX.toFixed(1)); rodH.current?.setAttribute("y1", pinY.toFixed(1));
-      rodH.current?.setAttribute("x2", String(PISTON_X)); rodH.current?.setAttribute("y2", pistonY.toFixed(1));
-
-      /* pressure gauge + surge valve respond to the surge envelope */
-      needleG.current?.setAttribute("transform",
-        `rotate(${(-46 + env * 92 + Math.sin(e.t * 2.2) * 3).toFixed(1)} ${GAUGE.x} ${GAUGE.y})`);
-      valveG.current?.setAttribute("transform", `translate(0 ${(-env * 3.4).toFixed(2)})`);
+      rodH.current?.setAttribute("x2", String(PREC.x)); rodH.current?.setAttribute("y2", String(PREC.y));
 
       lampRef.current?.setAttribute("opacity", (0.14 + env * 0.86).toFixed(2));
       hubPulseG.current?.setAttribute("transform",
@@ -387,42 +371,24 @@ export default function CreativeCore() {
                   <circle cx={C} cy={C} r={112} fill="none" stroke="var(--core-line)" strokeWidth={0.8} opacity={0.5} />
                 </g>
 
-                {/* ---- RADIAL TRANSMISSION ARMS — five different structural members ---- */}
+                {/* ---- TRANSMISSION SHAFTS (drawn under the gears/housing they link) ---- */}
+                <Shaft x1={C} y1={C} x2={TRANS.x} y2={TRANS.y} w={7} />                 {/* central → transfer */}
+                <Shaft x1={C} y1={C + HUB_R - 4} x2={OUT.x} y2={OUT.y - OUT.r - 2} w={7} /> {/* central → lower output */}
+                <Bearing x={(C + TRANS.x) / 2} y={(C + TRANS.y) / 2} r={9} />            {/* midpoint bearing */}
+
+                {/* ---- STRUCTURAL BRACES — mount the inner transmission to the plate ---- */}
                 <g>
-                  {/* thick drive arm (lower-left, toward the drive gear) */}
-                  <g transform={`rotate(205 ${C} ${C})`}>
-                    <rect x={C - 8} y={C - 138} width={16} height={66} rx={3} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.3} />
-                    <rect x={C - 8} y={C - 138} width={16} height={5} fill="var(--core-inv)" opacity={0.16} />
-                    <Bolt x={C} y={C - 130} /><Bolt x={C} y={C - 80} />
-                  </g>
-                  {/* recessed rail (right) */}
-                  <g transform={`rotate(115 ${C} ${C})`}>
-                    <rect x={C - 5} y={C - 136} width={10} height={62} rx={2} fill="rgba(0,0,0,0.3)" />
-                    <rect x={C - 3} y={C - 134} width={6} height={58} rx={2} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1} />
-                  </g>
-                  {/* T-brace (upper-right) */}
                   <g transform={`rotate(65 ${C} ${C})`}>
-                    <rect x={C - 6} y={C - 134} width={12} height={58} rx={2.5} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.2} />
-                    <rect x={C - 14} y={C - 82} width={28} height={9} rx={2.5} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.2} />
-                    <circle cx={C} cy={C - 77} r={3} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
+                    <rect x={C - 7} y={C - 134} width={14} height={62} rx={3} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.3} />
+                    <rect x={C - 7} y={C - 134} width={14} height={5} fill="var(--core-inv)" opacity={0.16} />
+                    <Bolt x={C} y={C - 126} /><Bolt x={C} y={C - 80} />
                   </g>
-                  {/* articulated joint arm (upper-left) */}
-                  <g transform={`rotate(290 ${C} ${C})`}>
-                    <rect x={C - 4.5} y={C - 132} width={9} height={52} rx={2} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.1} />
-                    <circle cx={C} cy={C - 80} r={6.5} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.3} />
-                    <circle cx={C} cy={C - 80} r={2.2} fill="var(--core-deep)" />
-                  </g>
-                  {/* thin timing arm (lower-right) */}
-                  <g transform={`rotate(155 ${C} ${C})`}>
-                    <rect x={C - 3} y={C - 134} width={6} height={60} rx={2} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1} />
-                    <rect x={C - 6} y={C - 100} width={12} height={5} rx={1.5} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={0.9} />
+                  <g transform={`rotate(245 ${C} ${C})`}>
+                    <rect x={C - 6} y={C - 132} width={12} height={58} rx={2.5} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.2} />
+                    <circle cx={C} cy={C - 78} r={6} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.2} />
+                    <circle cx={C} cy={C - 78} r={2} fill="var(--core-deep)" />
                   </g>
                 </g>
-
-                {/* ---- TRANSMISSION SHAFTS (drawn under the gears/housing they pass behind) ---- */}
-                <Shaft x1={TRANS.x} y1={TRANS.y} x2={OUT.x} y2={OUT.y} w={7} />
-                <Shaft x1={OUT.x} y1={OUT.y} x2={OUTW.x} y2={OUTW.y} w={6} />
-                <Bearing x={322} y={352} r={10} />
 
                 {/* ---- LAYER · CENTRAL ENGINE — housing → bearing → drive → shaft → core ---- */}
                 <g>
@@ -433,12 +399,14 @@ export default function CreativeCore() {
                     const [x, y] = polar(HUB_R - 12, i * 60 + 30);
                     return <Bolt key={i} x={x} y={y} deg={i * 60} />;
                   })}
-                  {/* main central drive gear */}
+                  {/* main central drive gear (teeth protrude past the housing to mesh the precision gear) */}
                   <g ref={hubG}>
                     <g transform={`translate(${C} ${C})`}>
-                      <Gear r={42} teeth={16} fill="var(--core-gear)" stroke="var(--core-line)" spokes={4} />
+                      <Gear r={GEAR_C} teeth={18} fill="var(--core-gear)" stroke="var(--core-line)" spokes={4} />
                     </g>
                   </g>
+                  {/* inner toothed collar around the shaft */}
+                  <circle cx={C} cy={C} r={21} fill="none" stroke="var(--core-line)" strokeWidth={1.2} strokeDasharray="3.5 3" opacity={0.75} />
                   {/* central shaft + bearing + keyway */}
                   <Bearing x={C} y={C} r={15} />
                   <circle cx={C} cy={C} r={6} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.2} />
@@ -451,9 +419,8 @@ export default function CreativeCore() {
                   </g>
                 </g>
 
-                {/* ---- LARGE DRIVE GEAR + CRANK + PISTON (lower-left) ---- */}
+                {/* ---- MAJOR DRIVE GEAR (left) + eccentric crank ---- */}
                 <g>
-                  {/* bearing housing behind the gear */}
                   <circle cx={MAIN.x} cy={MAIN.y + 3} r={MAIN.r + 8} fill="rgba(0,0,0,0.28)" />
                   <circle cx={MAIN.x} cy={MAIN.y} r={MAIN.r + 8} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1.3} />
                   <g ref={mainG}>
@@ -461,7 +428,7 @@ export default function CreativeCore() {
                       <Gear r={MAIN.r} teeth={15} fill="var(--core-gear)" stroke="var(--core-line)" spokes={5} />
                     </g>
                   </g>
-                  {/* eccentric crank riding the drive gear */}
+                  {/* eccentric crank riding the major gear */}
                   <g ref={crankG}>
                     <g transform={`translate(${MAIN.x} ${MAIN.y})`}>
                       <rect x={-4} y={-CRANK_R - 6} width={8} height={CRANK_R + 6} rx={3} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.2} />
@@ -470,71 +437,16 @@ export default function CreativeCore() {
                     </g>
                   </g>
                   <Bearing x={MAIN.x} y={MAIN.y} r={11} />
-
-                  {/* connecting rod — genuinely links crank pin to piston pin */}
-                  <line ref={rodL} x1={MAIN.x} y1={MAIN.y - CRANK_R} x2={PISTON_X} y2={MAIN.y - CRANK_R - ROD}
-                    stroke="var(--core-mid)" strokeWidth={7} strokeLinecap="round" />
-                  <line ref={rodH} x1={MAIN.x} y1={MAIN.y - CRANK_R} x2={PISTON_X} y2={MAIN.y - CRANK_R - ROD}
-                    stroke="var(--core-inv)" strokeWidth={1.6} strokeLinecap="round" opacity={0.25} />
-                  <circle cx={PISTON_X} cy={MAIN.y - CRANK_R - ROD} r={5} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.2} />
-
-                  {/* piston cylinder + body */}
-                  <g>
-                    {/* cylinder contains the full piston stroke (body spans ~252→304) */}
-                    <rect x={PISTON_X - 20} y={MAIN.y - CRANK_R - ROD - 17} width={40} height={64} rx={4}
-                      fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1.4} />
-                    <rect x={PISTON_X - 24} y={MAIN.y - CRANK_R - ROD - 21} width={48} height={9} rx={2.5}
-                      fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.2} />
-                    <g ref={pistonG}>
-                      <rect x={-16} y={-11} width={32} height={22} rx={3} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.4} />
-                      <rect x={-16} y={-5} width={32} height={2.4} fill="var(--core-deep)" opacity={0.7} />
-                      <rect x={-16} y={2} width={32} height={2.4} fill="var(--core-deep)" opacity={0.7} />
-                      <circle r={4} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.1} />
-                    </g>
-                  </g>
-
-                  {/* pressure chamber + pipe + valve + gauge (steam language) */}
-                  <g>
-                    <rect x={CHAMBER.x} y={CHAMBER.y + 2.5} width={CHAMBER.w} height={CHAMBER.h} rx={5} fill="rgba(0,0,0,0.26)" />
-                    <rect x={CHAMBER.x} y={CHAMBER.y} width={CHAMBER.w} height={CHAMBER.h} rx={5}
-                      fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1.3} />
-                    <circle cx={CHAMBER.x + 8} cy={CHAMBER.y + 8} r={1.6} fill="var(--core-deep)" />
-                    <circle cx={CHAMBER.x + CHAMBER.w - 8} cy={CHAMBER.y + 8} r={1.6} fill="var(--core-deep)" />
-                    <rect x={CHAMBER.x + 12} y={CHAMBER.y + 12} width={16} height={7} rx={2} fill="var(--core-deep)" opacity={0.75} />
-                    {/* pressure line to the gauge, with a lift valve */}
-                    <line x1={CHAMBER.x} y1={CHAMBER.y + 15} x2={GAUGE.x + 16} y2={GAUGE.y}
-                      stroke="var(--core-line)" strokeWidth={3.4} strokeLinecap="round" />
-                    <line x1={CHAMBER.x} y1={CHAMBER.y + 15} x2={GAUGE.x + 16} y2={GAUGE.y}
-                      stroke="var(--core-mid)" strokeWidth={1.6} strokeLinecap="round" />
-                    <g ref={valveG}>
-                      <rect x={200} y={262} width={10} height={12} rx={2} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.2} />
-                      <rect x={202.5} y={257} width={5} height={6} rx={1.5} fill="var(--core-crimson)" />
-                    </g>
-                    {/* gauge */}
-                    <circle cx={GAUGE.x} cy={GAUGE.y + 2} r={17} fill="rgba(0,0,0,0.26)" />
-                    <circle cx={GAUGE.x} cy={GAUGE.y} r={17} fill="var(--core-plate)" stroke="var(--core-line)" strokeWidth={1.5} />
-                    <circle cx={GAUGE.x} cy={GAUGE.y} r={13} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
-                    {[-60, -30, 0, 30, 60].map((a) => (
-                      <line key={a} x1={GAUGE.x} y1={GAUGE.y - 10} x2={GAUGE.x} y2={GAUGE.y - 12.5}
-                        stroke="var(--core-inv)" strokeWidth={1.1} opacity={0.7} transform={`rotate(${a} ${GAUGE.x} ${GAUGE.y})`} />
-                    ))}
-                    <g ref={needleG}>
-                      <line x1={GAUGE.x} y1={GAUGE.y + 2} x2={GAUGE.x} y2={GAUGE.y - 10.5}
-                        stroke="var(--core-crimson)" strokeWidth={1.8} strokeLinecap="round" />
-                    </g>
-                    <circle cx={GAUGE.x} cy={GAUGE.y} r={2.4} fill="var(--core-mid)" stroke="var(--core-line)" strokeWidth={1} />
-                  </g>
                 </g>
 
-                {/* ---- TRANSFER + PRECISION GEARS (upper area) ---- */}
+                {/* ---- crank connecting rod → precision gear shaft (physical response) ---- */}
+                <line ref={rodL} x1={MAIN.x} y1={MAIN.y - CRANK_R} x2={PREC.x} y2={PREC.y}
+                  stroke="var(--core-mid)" strokeWidth={7} strokeLinecap="round" />
+                <line ref={rodH} x1={MAIN.x} y1={MAIN.y - CRANK_R} x2={PREC.x} y2={PREC.y}
+                  stroke="var(--core-inv)" strokeWidth={1.6} strokeLinecap="round" opacity={0.25} />
+
+                {/* ---- PRECISION GEAR (crank-driven, meshes the central drive) ---- */}
                 <g>
-                  <circle cx={TRANS.x} cy={TRANS.y + 2.5} r={TRANS.r + 5} fill="rgba(0,0,0,0.24)" />
-                  <g ref={transG}>
-                    <g transform={`translate(${TRANS.x} ${TRANS.y})`}>
-                      <Gear r={TRANS.r} teeth={12} fill="var(--core-gear)" stroke="var(--core-line)" spokes={3} />
-                    </g>
-                  </g>
-                  <Bearing x={TRANS.x} y={TRANS.y} r={8} />
                   <g ref={precG}>
                     <g transform={`translate(${PREC.x} ${PREC.y})`}>
                       <Gear r={PREC.r} teeth={9} fill="var(--core-mid)" stroke="var(--core-line)" hub={false} />
@@ -543,7 +455,18 @@ export default function CreativeCore() {
                   <circle cx={PREC.x} cy={PREC.y} r={3} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
                 </g>
 
-                {/* ---- LOWER OUTPUT STAGE (independent rotation) ---- */}
+                {/* ---- SECONDARY TRANSFER GEAR (lower-right) ---- */}
+                <g>
+                  <circle cx={TRANS.x} cy={TRANS.y + 2.5} r={TRANS.r + 5} fill="rgba(0,0,0,0.24)" />
+                  <g ref={transG}>
+                    <g transform={`translate(${TRANS.x} ${TRANS.y})`}>
+                      <Gear r={TRANS.r} teeth={12} fill="var(--core-gear)" stroke="var(--core-line)" spokes={3} />
+                    </g>
+                  </g>
+                  <Bearing x={TRANS.x} y={TRANS.y} r={8} />
+                </g>
+
+                {/* ---- LOWER OUTPUT MECHANISM (independent rotation — power leaving the transmission) ---- */}
                 <g>
                   <circle cx={OUT.x} cy={OUT.y + 2.5} r={OUT.r + 5} fill="rgba(0,0,0,0.24)" />
                   <g ref={outG}>
@@ -552,12 +475,8 @@ export default function CreativeCore() {
                     </g>
                   </g>
                   <Bearing x={OUT.x} y={OUT.y} r={9} />
-                  <g ref={outWG}>
-                    <g transform={`translate(${OUTW.x} ${OUTW.y})`}>
-                      <Gear r={OUTW.r} teeth={10} fill="var(--core-mid)" stroke="var(--core-line)" hub={false} />
-                    </g>
-                  </g>
-                  <circle cx={OUTW.x} cy={OUTW.y} r={3.4} fill="var(--core-deep)" stroke="var(--core-line)" strokeWidth={1} />
+                  {/* output coupling collar */}
+                  <circle cx={OUT.x} cy={OUT.y} r={OUT.r + 9} fill="none" stroke="var(--core-line)" strokeWidth={1} strokeDasharray="4 4" opacity={0.5} />
                 </g>
               </svg>
 
