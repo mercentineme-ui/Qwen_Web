@@ -40,6 +40,19 @@ function GearShape({ r, teeth, fill = "var(--machine-plate)", stroke = "var(--ma
   );
 }
 
+/* two-line radial label system — forced line breaks + placement side, zero overlap */
+const LBL: { lines: [string, string]; side: "above" | "right" | "left" }[] = [
+  { lines: ["CREATIVE", "DIRECTION"], side: "above" },
+  { lines: ["GENERATIVE", "AI"], side: "right" },
+  { lines: ["VISUAL", "DEVELOPMENT"], side: "right" },
+  { lines: ["CINEMATIC", "STORYTELLING"], side: "right" },
+  { lines: ["AI IMAGE +", "VIDEO"], side: "right" },
+  { lines: ["CHARACTER", "DEVELOPMENT"], side: "left" },
+  { lines: ["ENVIRONMENT", "DESIGN"], side: "left" },
+  { lines: ["AI CREATIVE", "WORKFLOWS"], side: "left" },
+  { lines: ["PROMPT", "ARCHITECTURE"], side: "left" },
+];
+
 export default function CreativeCore() {
   const { data, theme } = useStore();
   const disciplines = data.core;
@@ -160,7 +173,7 @@ export default function CreativeCore() {
       s.ext = Math.max(0, Math.min(1.06, s.ext + s.extV * dt));
 
       /* the gears participate — spin with angular velocity + surge */
-      const speed = 16 + Math.min(430, Math.abs(s.angV) * 2.1) + Math.abs(s.extV) * 40 + (surgeOn ? 70 : 0);
+      const speed = 26 + Math.min(430, Math.abs(s.angV) * 2.1) + Math.abs(s.extV) * 40 + (surgeOn ? 70 : 0);
       s.mainRot += speed * dt;
       s.smallRot -= speed * 2.43 * dt;
       s.secRot -= speed * 1.68 * dt;
@@ -256,6 +269,8 @@ export default function CreativeCore() {
 
                   {/* ============ SEGMENTED OUTER RING + PRECISION TICKS ============ */}
                   <g className="rb-b">
+                    {/* rotating segmented ring — extremely slow sign of life */}
+                    <g className={reduced ? undefined : "gear-cw"} style={{ animationDuration: "240s" }}>
                     {Array.from({ length: 24 }).map((_, i) => {
                       const [x, y] = polar(300, 300, 196, (i / 24) * 360 + 7.5);
                       const on = surgeOn && lit > i;
@@ -267,6 +282,9 @@ export default function CreativeCore() {
                           style={{ transition: "fill .3s ease" }} />
                       );
                     })}
+                    </g>
+                    {/* counter-rotating precision tick ring */}
+                    <g className={reduced ? undefined : "gear-ccw-slow"}>
                     {Array.from({ length: 60 }).map((_, i) => {
                       const long = i % 5 === 0;
                       const [x1, y1] = polar(300, 300, 184, (i / 60) * 360);
@@ -275,18 +293,33 @@ export default function CreativeCore() {
                         stroke={long ? "var(--machine-inv)" : "var(--machine-line)"}
                         strokeWidth={long ? 1.4 : 0.8} opacity={long ? 0.5 : 0.6} />;
                     })}
-                    {/* node connector stubs + junction diamonds */}
+                    </g>
+                    {/* node connector rods + joint bearings (static — stay aligned with nodes) */}
                     {disciplines.map((dis, i) => {
                       const on = i === sel;
-                      const [x1, y1] = polar(300, 300, 232, nodeAngle(i));
-                      const [x2, y2] = polar(300, 300, 250, nodeAngle(i));
-                      const [jx, jy] = polar(300, 300, 241, nodeAngle(i));
+                      const deg = nodeAngle(i);
+                      const [x1, y1] = polar(300, 300, 210, deg);
+                      const [x2, y2] = polar(300, 300, 252, deg);
+                      const [jx, jy] = polar(300, 300, 231, deg);
                       return (
                         <g key={dis.id}>
+                          {/* transmission rod */}
                           <line x1={x1} y1={y1} x2={x2} y2={y2}
-                            stroke={on ? "var(--machine-crimson-hot)" : "var(--machine-line)"} strokeWidth={on ? 3.4 : 2.6}
+                            stroke={on ? "var(--machine-crimson-hot)" : "var(--machine-line)"} strokeWidth={on ? 3.2 : 2.4}
                             strokeLinecap="round" style={{ transition: "stroke .35s ease" }} />
-                          <rect x="-5" y="-5" width="10" height="10" transform={`translate(${jx} ${jy}) rotate(45)`}
+                          {/* energy flow along the rod */}
+                          {!reduced && (
+                            <line x1={x1} y1={y1} x2={x2} y2={y2}
+                              stroke={on ? "var(--machine-inv)" : "var(--machine-line)"} strokeWidth="1"
+                              className={on ? "channel-flow" : undefined} opacity={on ? 0.9 : 0.22} />
+                          )}
+                          {/* mid joint bearing */}
+                          <circle cx={jx} cy={jy} r={on ? 4.6 : 3.6} fill="var(--machine-deep)"
+                            stroke={on ? "var(--machine-crimson-hot)" : "var(--machine-line)"} strokeWidth="1.2"
+                            style={{ transition: "all .35s ease" }} />
+                          <circle cx={jx} cy={jy} r="1.2" fill={on ? "var(--machine-crimson-hot)" : "var(--machine-line)"} />
+                          {/* end junction mating the node */}
+                          <rect x="-5" y="-5" width="10" height="10" transform={`translate(${x2} ${y2}) rotate(45)`}
                             fill={on ? "var(--machine-crimson-hot)" : "var(--machine-deep)"} stroke="var(--machine-line)" strokeWidth="1"
                             style={{ transition: "fill .35s ease" }} />
                         </g>
@@ -360,6 +393,17 @@ export default function CreativeCore() {
                       <circle cx="300" cy="300" r="13" fill="var(--machine-crimson-hot)" />
                       <circle cx="300" cy="300" r="5" fill="var(--machine-inv)" opacity="0.9" />
                     </g>
+                    {/* micro pressure gauge — idle needle sway */}
+                    <g transform="translate(352 246)">
+                      <circle r="12" fill="var(--machine-deep)" stroke="var(--machine-line)" strokeWidth="1.1" />
+                      {[-50, -25, 0, 25, 50].map((a) => (
+                        <line key={a} x1="0" y1="-8.5" x2="0" y2="-10.5" stroke="var(--machine-inv)" strokeWidth="0.8" opacity="0.6" transform={`rotate(${a})`} />
+                      ))}
+                      <g className={reduced ? undefined : "valve-wiggle"} style={{ animationDuration: "2.8s" }}>
+                        <line x1="0" y1="2" x2="0" y2="-8" stroke="var(--machine-crimson-hot)" strokeWidth="1.3" strokeLinecap="round" />
+                      </g>
+                      <circle r="1.6" fill="var(--machine-line)" />
+                    </g>
                     <circle key={`engage-${sel ?? "x"}`} cx="300" cy="300" r="10" fill="none"
                       stroke="var(--machine-crimson-hot)" strokeWidth="2" className={reduced || sel === null ? undefined : "core-engage"} />
                   </g>
@@ -425,14 +469,12 @@ export default function CreativeCore() {
                 const [x, y] = polar(50, 50, 44.5, deg);
                 const fill = isActive ? "var(--machine-crimson-hot)" : isHover ? "var(--machine-inv)" : "var(--machine-plate)";
                 const iconColor = isActive ? "#f4f2ed" : isHover ? "var(--machine-plate)" : "var(--machine-inv)";
-                /* reserved label zones — names never cross the machine */
-                const zone = i === 0 ? "above" : i === 1 ? "right" : i === 2 ? "below" : i === disciplines.length - 1 ? "left"
-                  : deg < 30 || deg > 330 ? "above" : deg <= 120 ? "right" : deg <= 240 ? "below" : "left";
+                /* two-line directional label zones — names never cross the machine */
+                const lb = LBL[i % LBL.length];
                 const labelWrap =
-                  zone === "above" ? "absolute -top-9 inset-x-0 flex justify-center" :
-                  zone === "below" ? "absolute -bottom-9 inset-x-0 flex justify-center" :
-                  zone === "left" ? "absolute right-full top-1/2 -translate-y-1/2 pr-2.5 flex justify-end" :
-                  "absolute left-full top-1/2 -translate-y-1/2 pl-2.5 flex justify-start";
+                  lb.side === "above" ? "absolute -top-10 inset-x-0 flex flex-col items-center" :
+                  lb.side === "left" ? "absolute right-full top-1/2 -translate-y-1/2 pr-3 flex flex-col items-end" :
+                  "absolute left-full top-1/2 -translate-y-1/2 pl-3 flex flex-col items-start";
                 return (
                   <button key={dis.id}
                     onMouseEnter={() => setHoverIdx(i)}
@@ -460,10 +502,12 @@ export default function CreativeCore() {
                       </span>
                     </span>
                     <span className={`${labelWrap} pointer-events-none`}>
-                      <span className={`f-tech font-bold text-[12px] tracking-[0.1em] leading-tight whitespace-nowrap transition-colors duration-300 ${zone === "left" ? "text-right" : "text-left"}`}
-                        style={{ color: isActive ? "var(--machine-crimson-hot)" : "var(--ink2)" }}>
-                        {dis.name}
-                      </span>
+                      {lb.lines.map((ln) => (
+                        <span key={ln} className={`f-tech font-bold text-[12px] tracking-[0.12em] leading-[1.3] whitespace-nowrap transition-colors duration-300 ${lb.side === "left" ? "text-right" : "text-left"}`}
+                          style={{ color: isActive ? "var(--machine-crimson-hot)" : "var(--ink2)" }}>
+                          {ln}
+                        </span>
+                      ))}
                     </span>
                   </button>
                 );
