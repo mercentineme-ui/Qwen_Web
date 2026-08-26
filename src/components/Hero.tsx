@@ -214,40 +214,43 @@ export default function Hero() {
             </ul>
           </div>
 
-          {/* role strip — horizontal cyberpunk / industrial node cards */}
-          <div className="mt-9 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-3.5">
+          {/* role strip — horizontal compact cyberpunk / industrial modules */}
+          <div className="mt-9 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
             {h.chips.map((c, i) => (
               <div key={c}
-                className="group mat-outer mat-texture relative overflow-hidden px-4 pt-3.5 pb-4 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_34px_-18px_rgba(0,0,0,0.6)] active:translate-y-0 active:scale-[0.985]"
+                className="group mat-outer mat-texture relative overflow-hidden flex items-center gap-4 px-4 py-3.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_30px_-18px_rgba(0,0,0,0.6)] active:translate-y-0 active:scale-[0.99]"
                 style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--outer-ink) 20%, transparent)", clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)" }}>
                 {/* inset frame */}
                 <span className="absolute inset-[5px] pointer-events-none opacity-40" style={{ border: "1px solid color-mix(in srgb, var(--outer-ink) 28%, transparent)" }} aria-hidden />
-                <div className="flex items-center justify-between relative">
-                  <span className="f-mono font-semibold text-[11px] tracking-[0.14em] px-1.5 py-0.5"
-                    style={{ background: "var(--crimson-strong)", color: "#DDDDD8" }}>
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    {[0, 1, 2, 3].map((k) => (
-                      <span key={k} className="w-1 h-2.5 rounded-[1px] transition-all duration-300"
-                        style={{
-                          background: k <= i % 4 ? "var(--crimson-strong)" : "color-mix(in srgb, var(--outer-ink) 28%, transparent)",
-                          transform: `scaleY(${k === 3 ? 0.55 : k === 2 ? 0.75 : k === 1 ? 0.9 : 1})`,
-                        }} />
-                    ))}
-                  </span>
-                </div>
-                <span className="relative mt-2.5 block f-striker text-[15px] sm:text-[16px] leading-[1.12] tracking-[0.06em]" style={{ color: "var(--outer-ink)" }}>
-                  {c}
+                {/* index block */}
+                <span className="relative f-mono font-semibold text-[11px] tracking-[0.1em] w-8 h-8 grid place-items-center shrink-0"
+                  style={{ background: "var(--crimson-strong)", color: "#DDDDD8" }}>
+                  {String(i + 1).padStart(2, "0")}
                 </span>
-                <div className="relative mt-3 flex items-center gap-2 f-mono text-[8px] tracking-[0.2em]" style={{ color: "var(--m-sub)" }}>
-                  <span className="w-1.5 h-1.5 rounded-full transition-colors duration-300 group-hover:bg-[var(--crimson-strong)]"
-                    style={{ background: "color-mix(in srgb, var(--outer-ink) 35%, transparent)" }} />
-                  MODULE/{String(i + 1).padStart(2, "0")}
-                  <span className="ml-auto w-7 h-[3px] overflow-hidden rounded-[1px]" style={{ background: "color-mix(in srgb, var(--outer-ink) 16%, transparent)" }}>
-                    <span className="block h-full w-full origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-400" style={{ background: "var(--crimson-strong)" }} />
+                {/* title + technical metadata */}
+                <div className="relative min-w-0 flex-1">
+                  <span className="block f-striker text-[14.5px] sm:text-[15.5px] leading-[1.1] tracking-[0.06em] truncate" style={{ color: "var(--outer-ink)" }}>
+                    {c}
                   </span>
+                  <div className="mt-1.5 flex items-center gap-2 f-mono text-[8px] tracking-[0.2em]" style={{ color: "var(--m-sub)" }}>
+                    MODULE/{String(i + 1).padStart(2, "0")}
+                    <span className="ml-auto w-8 h-[3px] overflow-hidden rounded-[1px]" style={{ background: "color-mix(in srgb, var(--outer-ink) 16%, transparent)" }}>
+                      <span className="block h-full w-full origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-400" style={{ background: "var(--crimson-strong)" }} />
+                    </span>
+                  </div>
                 </div>
+                {/* segmented indicator bars */}
+                <span className="relative flex items-end gap-1 shrink-0" aria-hidden>
+                  {[0, 1, 2, 3].map((k) => (
+                    <span key={k} className="w-[3px] rounded-[1px] transition-all duration-300"
+                      style={{
+                        height: `${7 + k * 4}px`,
+                        background: k <= i % 4 ? "var(--crimson-strong)" : "color-mix(in srgb, var(--outer-ink) 28%, transparent)",
+                        transformOrigin: "bottom",
+                        transform: k === (i % 4) && k <= i % 4 ? "scaleY(1.2)" : "none",
+                      }} />
+                  ))}
+                </span>
               </div>
             ))}
           </div>

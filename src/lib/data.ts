@@ -118,8 +118,16 @@ export interface ContactData {
   portrait: MediaItem;
 }
 
+export interface ByNumbersData {
+  artistRole: string;
+  upcomingLabel: string;
+  upcoming: string[];
+  stats: { num: string; value: number; suffix: string; label: string }[];
+}
+
 export interface PortfolioData {
   hero: HeroData;
+  byNumbers: ByNumbersData;
   expertise: ExpertiseData;
   core: Discipline[];
   showReel: ShowReelData;
@@ -165,6 +173,18 @@ export const defaultData: PortfolioData = {
       slot("IMAGE 04", "image", ["ADD PORTRAIT", "IN STUDIO"]),
     ],
     rotationSeconds: 15,
+  },
+
+  byNumbers: {
+    artistRole: "AI ARTIST",
+    upcomingLabel: "UPCOMING WORKS",
+    upcoming: ["RAMAYANA", "VEERABHADRA"],
+    stats: [
+      { num: "01", value: 1000, suffix: "+", label: "POSTS" },
+      { num: "02", value: 750, suffix: "+", label: "CONTENT" },
+      { num: "03", value: 450, suffix: "+", label: "AI CREATIVES" },
+      { num: "04", value: 250, suffix: "+", label: "CAMPAIGNS" },
+    ],
   },
 
   expertise: {

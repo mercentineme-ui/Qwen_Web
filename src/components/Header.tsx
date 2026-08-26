@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useHashRoute, useLocalTime, useStore } from "../lib/store";
+import { useHashRoute, useLocalTime, useReducedMotion, useStore } from "../lib/store";
 import { LinkedInIcon, MoonIcon, SunIcon } from "./icons";
 
 const NAV = [
@@ -10,9 +10,12 @@ const NAV = [
   { label: "CONTACT ME", href: "#contact" },
 ];
 
+const DESIGNFOLIO = "DESIGNFOLIO".split("");
+
 export default function Header() {
   const { theme, toggleTheme } = useStore();
   const [, nav] = useHashRoute();
+  const reduced = useReducedMotion();
   const time = useLocalTime();
   const [scrolled, setScrolled] = useState(false);
 
@@ -36,16 +39,28 @@ export default function Header() {
           borderBottom: "1px solid var(--line)",
         }}
       >
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 h-[58px] lg:h-[64px] flex items-center gap-4 lg:gap-6">
-          {/* CBK identity — compact futuristic mark, not a badge */}
-          <a href="#about" className="relative flex items-baseline gap-2.5 shrink-0 group" aria-label="CBK Designfolio — home">
+        <div className="relative max-w-[1440px] mx-auto px-4 sm:px-8 h-[58px] lg:h-[64px] flex items-center gap-4 lg:gap-6">
+          {/* ---- CBK identity — clean mark, no strike ---- */}
+          <a href="#about" className="flex items-baseline gap-3 shrink-0" aria-label="CBK Designfolio — home">
             <span className="f-automata text-[21px] lg:text-[23px] leading-none tracking-[0.08em] text-[var(--ink)]">
               CBK
             </span>
-            <span className="absolute left-[-3px] right-auto top-[54%] w-[52px] h-[2px] bg-[var(--crimson)] -rotate-6 group-hover:rotate-0 transition-transform duration-400" aria-hidden />
-            <span className="absolute left-[46px] top-[54%] w-[6px] h-[6px] bg-[var(--crimson)] -translate-y-1/2" aria-hidden />
-            <span className="f-tech font-semibold text-[11px] lg:text-[12px] tracking-[0.42em] text-[var(--ink2)] hidden sm:inline">
-              DESIGNFOLIO
+            {/* DESIGNFOLIO — technical identity activation: letter reveal + scan + tracking settle */}
+            <span className="relative hidden sm:inline-flex overflow-hidden">
+              <span className={`f-tech font-semibold text-[11px] lg:text-[12px] text-[var(--ink2)] ${reduced ? "" : "logo-track"}`}
+                style={reduced ? { letterSpacing: "0.42em" } : undefined}>
+                {DESIGNFOLIO.map((ch, i) => (
+                  <span key={i} className={reduced ? "inline-block" : "logo-letter-in inline-block"}
+                    style={reduced ? undefined : { animationDelay: `${0.08 + i * 0.035}s` }}>
+                    {ch}
+                  </span>
+                ))}
+              </span>
+              {!reduced && (
+                <span className="logo-scan pointer-events-none absolute top-0 bottom-0 left-0 w-[18px]"
+                  style={{ background: "linear-gradient(90deg, transparent, color-mix(in srgb, var(--crimson) 55%, transparent), transparent)" }}
+                  aria-hidden />
+              )}
             </span>
           </a>
 
@@ -56,11 +71,11 @@ export default function Header() {
             EDIT
           </button>
 
-          {/* nav */}
-          <nav className="hidden md:flex items-center gap-5 lg:gap-6 ml-1">
+          {/* ---- nav — centered ---- */}
+          <nav className="hidden md:flex items-center gap-5 lg:gap-7 absolute left-1/2 -translate-x-1/2">
             {NAV.map((n) => (
               <a key={n.label} href={n.href}
-                className="f-tech font-semibold text-[11.5px] lg:text-[12.5px] tracking-[0.22em] text-[var(--ink2)] hover:text-[var(--ink)] transition-colors duration-300 relative group">
+                className="f-tech font-bold text-[11.5px] lg:text-[12.5px] tracking-[0.24em] text-[var(--ink2)] hover:text-[var(--ink)] transition-colors duration-300 relative group">
                 {n.label}
                 <span className="absolute -bottom-1.5 left-0 h-[2px] w-0 bg-[var(--crimson)] group-hover:w-full transition-all duration-300" />
               </a>
@@ -69,10 +84,10 @@ export default function Header() {
 
           <div className="flex-1" />
 
-          {/* technical clock */}
-          <div className="hidden sm:flex items-baseline gap-1.5 f-clock text-[17px] lg:text-[18px] leading-none tabular-nums">
+          {/* ---- refined technical clock — semi-condensed, geometric, precise ---- */}
+          <div className="hidden sm:flex items-baseline gap-1.5 leading-none tabular-nums">
             <span className="f-mono text-[7.5px] tracking-[0.3em] text-[var(--ink2)] mr-1 self-center">LOCAL</span>
-            <span className="clock-num">{hh}:{mm}:{ss}</span>
+            <span className="clock-num f-tech font-bold text-[16px] lg:text-[17px] tracking-[0.05em]">{hh}:{mm}:{ss}</span>
             <span className={`f-tech font-bold text-[9px] tracking-[0.18em] px-1.5 py-[3px] rounded-[4px] self-center ${
               mer === "PM" ? "bg-[var(--crimson)] text-[#DDDDD8]" : "border border-[var(--ink2)] text-[var(--ink2)]"
             }`}>
@@ -110,6 +125,17 @@ export default function Header() {
           </svg>
         </div>
       </div>
+
+      {/* mobile nav row — same destinations, never a hamburger */}
+      <nav className="md:hidden max-w-[1440px] mx-auto px-4 sm:px-8 py-2.5 flex items-center gap-4 overflow-x-auto"
+        style={{ backgroundColor: "color-mix(in srgb, var(--page) 92%, transparent)", borderBottom: "1px solid var(--line)" }}>
+        {NAV.map((n) => (
+          <a key={n.label} href={n.href}
+            className="f-tech font-bold text-[10.5px] tracking-[0.22em] text-[var(--ink2)] whitespace-nowrap">
+            {n.label}
+          </a>
+        ))}
+      </nav>
     </header>
   );
 }

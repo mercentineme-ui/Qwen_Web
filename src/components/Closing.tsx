@@ -131,7 +131,7 @@ export function HowIBuild() {
                     {/* ---- PHASE 2 — ONE straight horizontal mechanical rail:
                        mailbox → 01 IDEA → 02 REFERENCE → 03 CONCEPT → 04 DEVELOPMENT → KNOW MORE.
                        The rail terminates at the dock — nothing continues past it. ---- */}
-                    <div ref={lineRef} className="relative flex-1 h-40 w-full min-w-0">
+                    <div ref={lineRef} className="relative flex-1 h-44 w-full min-w-0">
                       <div className="absolute left-0 right-0 top-1/2 h-[3px] -translate-y-1/2" style={{ background: "var(--m-line)" }} />
                       <div className="absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 opacity-40" style={{ background: "var(--m-sub)" }} />
                       {/* active rail — extends segment-by-segment as the plane passes */}
@@ -141,8 +141,8 @@ export function HowIBuild() {
                           background: "var(--crimson-strong)",
                           transition: reduced ? "none" : "width .7s cubic-bezier(.4,.4,.4,1)",
                         }} />
-                      {/* mechanical joints + directional chevrons on the rail */}
-                      {[14, 34, 54, 72].map((jx, k) => (
+                      {/* mechanical joints on the rail — one per checkpoint, evenly spaced */}
+                      {[12, 30, 48, 66].map((jx, k) => (
                         <span key={k} className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 w-2.5 h-2.5"
                           style={{
                             left: `${jx}%`,
@@ -151,7 +151,8 @@ export function HowIBuild() {
                             transition: "background .5s ease",
                           }} />
                       ))}
-                      {[24, 44, 63].map((cxp, k) => (
+                      {/* directional chevrons between checkpoints */}
+                      {[21, 39, 57].map((cxp, k) => (
                         <svg key={k} className="absolute top-1/2 -translate-y-1/2 opacity-80" style={{ left: `${cxp}%` }} width="10" height="12" viewBox="0 0 10 12">
                           <path d="M1 1 L8 6 L1 11" fill="none"
                             stroke={(planeDone || reduced ? 5 : litN) * 20 > cxp ? "var(--crimson-strong)" : "var(--m-sub)"}
@@ -159,14 +160,15 @@ export function HowIBuild() {
                         </svg>
                       ))}
 
-                      {/* checkpoints — compact mechanical modules anchored to the rail */}
+                      {/* checkpoints — evenly spaced, struts land exactly on the rail,
+                          boxes alternate above/below so nothing collides */}
                       {b.nodes.map((nd, i) => {
                         const stage = planeDone || reduced ? 5 : litN;
                         const isCurrent = i === stage - 1;
                         const isPassed = i < stage - 1;
                         const above = i % 2 === 0;
                         const moduleBox = (
-                          <div className="relative px-3.5 py-2 text-center mat-texture dossier-clip-sm pop-in"
+                          <div className="relative px-3 py-2 text-center mat-texture dossier-clip-sm pop-in"
                             style={{
                               background: isCurrent ? "#3C3D42" : "var(--outer-bg)",
                               boxShadow: `inset 0 0 0 1.5px ${isCurrent ? "var(--crimson-strong)" : isPassed ? "color-mix(in srgb, var(--crimson-strong) 40%, transparent)" : "rgba(221,221,216,0.22)"}`,
@@ -177,22 +179,25 @@ export function HowIBuild() {
                             <span className={`absolute top-1 right-1.5 w-1.5 h-1.5 rounded-full ${isCurrent ? "live-blink" : ""}`}
                               style={{ background: isCurrent ? "var(--crimson-strong)" : isPassed ? "color-mix(in srgb, var(--crimson-strong) 55%, transparent)" : "rgba(221,221,216,0.25)" }} />
                             <span className="f-mono text-[9px] tracking-[0.2em] block" style={{ color: isCurrent ? "var(--crimson-strong)" : isPassed ? "var(--outer-ink)" : "var(--m-sub)" }}>{nd.num}</span>
-                            <span className="f-tech font-bold text-[11px] sm:text-[12.5px] tracking-[0.16em] block mt-0.5 whitespace-nowrap"
+                            <span className="f-tech font-bold text-[10.5px] sm:text-[12px] tracking-[0.14em] block mt-0.5 whitespace-nowrap"
                               style={{ color: "var(--outer-ink)", opacity: isCurrent || planeDone || reduced ? 1 : isPassed ? 0.7 : 0.85 }}>
                               {nd.title}
                             </span>
                           </div>
                         );
                         const strut = (
-                          <span className="w-[3px] rounded" style={{ height: 10, background: isCurrent ? "var(--crimson-strong)" : isPassed ? "color-mix(in srgb, var(--crimson-strong) 45%, transparent)" : "#59595B", transition: "background .4s ease" }} />
-                        );
-                        const foot = (
-                          <span className="w-4 h-[3px] rounded" style={{ background: isCurrent ? "var(--crimson-strong)" : isPassed ? "color-mix(in srgb, var(--crimson-strong) 45%, transparent)" : "#59595B", transition: "background .4s ease" }} />
+                          <span className="w-[3px] rounded" style={{ height: 12, background: isCurrent ? "var(--crimson-strong)" : isPassed ? "color-mix(in srgb, var(--crimson-strong) 45%, transparent)" : "#59595B", transition: "background .4s ease" }} />
                         );
                         return (
-                          <div key={nd.num} className="absolute -translate-x-1/2 flex flex-col items-center"
-                            style={{ left: `${[14, 34, 54, 72][i]}%`, top: above ? "14%" : "86%", transform: "translate(-50%, " + (above ? "0" : "-100%") + ")" }}>
-                            {above ? (<>{moduleBox}{strut}{foot}</>) : (<>{foot}{strut}{moduleBox}</>)}
+                          <div key={nd.num} className="absolute flex flex-col items-center"
+                            style={{
+                              left: `${[12, 30, 48, 66][i]}%`,
+                              transform: "translateX(-50%)",
+                              ...(above
+                                ? { bottom: "calc(50% + 6px)" }
+                                : { top: "calc(50% + 6px)" }),
+                            }}>
+                            {above ? (<>{moduleBox}{strut}</>) : (<>{strut}{moduleBox}</>)}
                           </div>
                         );
                       })}

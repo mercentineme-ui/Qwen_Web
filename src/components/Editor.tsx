@@ -298,9 +298,35 @@ function ContactEditor() {
   );
 }
 
+/* ============ BY THE NUMBERS ============ */
+function ByNumbersEditor() {
+  const { data, update } = useStore();
+  const bn = data.byNumbers;
+  const set = (p: Partial<typeof bn>) => update((d) => ({ ...d, byNumbers: { ...d.byNumbers, ...p } }));
+  return (
+    <Group title="BY THE NUMBERS — OUTPUT STATISTICS">
+      <div className="grid sm:grid-cols-2 gap-3.5">
+        <Field label="ARTIST ROLE" value={bn.artistRole} onChange={(v) => set({ artistRole: v })} />
+        <Field label="UPCOMING LABEL" value={bn.upcomingLabel} onChange={(v) => set({ upcomingLabel: v })} />
+      </div>
+      <Field label="UPCOMING WORKS (COMMA-SEPARATED)" value={bn.upcoming.join(", ")}
+        onChange={(v) => set({ upcoming: v.split(",").map((s) => s.trim()).filter(Boolean) })} />
+      {bn.stats.map((s, i) => (
+        <div key={s.num} className="grid grid-cols-[80px_1fr_70px_1fr] gap-3">
+          <Field label="INDEX" value={s.num} onChange={(v) => set({ stats: bn.stats.map((x, j) => (j === i ? { ...x, num: v } : x)) })} />
+          <Field label="VALUE" value={String(s.value)} onChange={(v) => set({ stats: bn.stats.map((x, j) => (j === i ? { ...x, value: Number(v.replace(/[^\d]/g, "")) || 0 } : x)) })} />
+          <Field label="SUFFIX" value={s.suffix} onChange={(v) => set({ stats: bn.stats.map((x, j) => (j === i ? { ...x, suffix: v } : x)) })} />
+          <Field label="LABEL" value={s.label} onChange={(v) => set({ stats: bn.stats.map((x, j) => (j === i ? { ...x, label: v } : x)) })} />
+        </div>
+      ))}
+    </Group>
+  );
+}
+
 /* ============ editor shell ============ */
 const SECTIONS = [
   { id: "hero", num: "00", label: "HERO", el: <HeroEditor /> },
+  { id: "bynumbers", num: "00", label: "BY THE NUMBERS", el: <ByNumbersEditor /> },
   { id: "expertise", num: "01", label: "MY EXPERTISE", el: <ExpertiseEditor /> },
   { id: "core", num: "02", label: "CORE", el: <CoreEditor /> },
   { id: "showreel", num: "03", label: "MY WORK", el: <ShowReelEditor /> },

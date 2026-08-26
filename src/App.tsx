@@ -2,6 +2,7 @@ import React from "react";
 import { StoreProvider, useHashRoute } from "./lib/store";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
+import ByNumbers from "./components/ByNumbers";
 import Expertise from "./components/Expertise";
 import CreativeCore from "./components/CreativeCore";
 import ShowReel from "./components/ShowReel";
@@ -16,6 +17,7 @@ function Site() {
       <Header />
       <main>
         <Hero />
+        <ByNumbers />
         <Expertise />
         <CreativeCore />
         <ShowReel />
