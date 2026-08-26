@@ -48,6 +48,8 @@
   --core-line: #59595b;
   --core-mid: #a6a6a4;
   --core-inv: #ddddd8;
+  --core-ring: #59595b;
+  --core-gear: #222328;
   --core-crimson: #e72241;
 }
 
@@ -93,6 +95,8 @@
   --core-line: #222328;
   --core-mid: #59595b;
   --core-inv: #222328;
+  --core-ring: #a6a6a4;
+  --core-gear: #ddddd8;
   --core-crimson: #e72241;
 }
 
@@ -234,10 +238,12 @@ body {
 .core-spin-slow { animation: coreSpinCW 70s linear infinite; transform-box: fill-box; transform-origin: center; }
 .core-beat { animation: coreBeat 2.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes coreBeat { 0%,100% { transform: scale(1); } 12% { transform: scale(1.08); } 24% { transform: scale(1); } 36% { transform: scale(1.05); } }
-.idx-ring-spin { animation: coreSpinCW 60s linear infinite; transform-box: fill-box; transform-origin: center; }
+  .idx-ring-spin { animation: coreSpinCW 60s linear infinite; transform-box: fill-box; transform-origin: center; }
+.esc-rock { animation: escRock 1.6s cubic-bezier(0.45,0.05,0.55,0.95) infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes escRock { 0%,100% { transform: rotate(-14deg); } 50% { transform: rotate(14deg); } }
+.coupling-spin { animation: coreSpinCW 1.1s linear infinite; transform-box: fill-box; transform-origin: center; }
 
-/* ---------- show reel / sea ---------- */
-.wave-drift { animation: waveDrift 7s linear infinite; }
+/* ---------- show reel / sea ---------- */.wave-drift { animation: waveDrift 7s linear infinite; }
 @keyframes waveDrift { to { transform: translateX(-120px); } }
 .ship-bob { animation: shipBob 3.2s ease-in-out infinite; }
 @keyframes shipBob { 0%,100% { transform: translateY(0) rotate(-0.6deg); } 50% { transform: translateY(-3px) rotate(0.8deg); } }
