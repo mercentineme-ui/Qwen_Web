@@ -42,6 +42,15 @@
   --machine-crimson-hot: #E72241;
   --machine-shadow: #59232F;
 
+  /* Contact — inverts with the page: LIGHT page → dark matte section */
+  --ct-bg: #222328;
+  --ct-ink: #DDDDD8;
+  --ct-sub: rgba(221, 221, 216, 0.62);
+  --ct-line: rgba(221, 221, 216, 0.16);
+  --ct-card: #DDDDD8;
+  --ct-card-ink: #222328;
+  --ct-card-sub: #59595B;
+
   /* Career transmission — dark graphite machine in BOTH themes,
      tonal separation keeps it physical and readable */
   --tm-plate: #222328;
@@ -84,6 +93,15 @@
   --machine-deep: #C3C1BC;
   --machine-line: #222328;
   --machine-inv: #222328;
+
+  /* Contact — DARK page → light matte section */
+  --ct-bg: #DDDDD8;
+  --ct-ink: #222328;
+  --ct-sub: rgba(34, 35, 40, 0.62);
+  --ct-line: rgba(34, 35, 40, 0.18);
+  --ct-card: #222328;
+  --ct-card-ink: #DDDDD8;
+  --ct-card-sub: #A6A6A4;
 
   /* dark-theme transmission: charcoal plates, black recesses, grey edges */
   --tm-plate: #292A2F;
