@@ -12,9 +12,10 @@ function Carousel({ items, idx, setIdx, ratio }: { items: ArcEntry[]; idx: numbe
     return r;
   };
   const [open, setOpen] = useState<number | null>(null);
+  const isPortrait = ratio === "9/16";
 
   return (
-    <div className="relative w-full overflow-hidden py-3" style={{ aspectRatio: ratio === "9/16" ? "16/14.5" : ratio }}>
+    <div className="relative w-full overflow-hidden py-3" style={{ aspectRatio: isPortrait ? "16/14.5" : "16/14" }}>
       {items.map((it, i) => {
         const r = rel(i);
         const active = r === 0;
@@ -24,9 +25,9 @@ function Carousel({ items, idx, setIdx, ratio }: { items: ArcEntry[]; idx: numbe
             aria-label={active ? `Open ${it.name}` : `Select ${it.name}`}
             className={`absolute top-1/2 left-1/2 rounded-xl overflow-hidden border transition-all ${active ? "border-[var(--crimson)] z-20" : "border-[var(--line)] z-10 cursor-pointer hover:border-[var(--ink2)]"}`}
             style={{
-              width: ratio === "9/16" ? "47%" : "60%",
+              width: isPortrait ? "47%" : "74%",
               aspectRatio: ratio,
-              transform: `translate(-50%, -50%) translateX(${r * (ratio === "9/16" ? 105 : 78)}%) scale(${active ? 1 : 0.8})`,
+              transform: `translate(-50%, -50%) translateX(${r * (isPortrait ? 105 : 95)}%) scale(${active ? 1 : 0.8})`,
               opacity: active ? 1 : 0.42,
               filter: active ? "none" : "saturate(0.65)",
               transition: reduced ? "none" : "transform .55s cubic-bezier(.3,.85,.3,1), opacity .45s ease, filter .45s ease",
@@ -75,6 +76,7 @@ export default function Arc() {
   const [mode, setMode] = useState<"CHARACTERS" | "WORLDS">("CHARACTERS");
   const [charIdx, setCharIdx] = useState(0);
   const [worldIdx, setWorldIdx] = useState(0);
+  const [mediaHover, setMediaHover] = useState(false);
 
   const isChar = mode === "CHARACTERS";
   const items = isChar ? characters : worlds;
@@ -87,9 +89,10 @@ export default function Arc() {
   /* transparent curved-triangle arrows — bold, minimal, no box */
   const arrowCls = "group self-center justify-self-center w-12 h-16 lg:w-14 lg:h-20 grid place-items-center bg-transparent transition-all duration-300";
   const arrowStyle = { color: "var(--outer-ink)" };
+  /* natural glyph points LEFT; flip only for the right/next control */
   const curve = (dir: 1 | -1) => (
     <svg width="26" height="30" viewBox="0 0 24 24" className={`transition-all duration-300 opacity-60 group-hover:opacity-100 group-hover:text-[var(--crimson)] ${reduced ? "" : "group-hover:scale-110"}`}
-      style={{ transform: dir === -1 ? "scaleX(-1)" : undefined }} aria-hidden>
+      style={{ transform: dir === 1 ? "scaleX(-1)" : undefined }} aria-hidden>
       <path d="M6.5 12 C11.5 6.5 15.5 4.4 18.5 3.8 C15.8 8 15.8 16 18.5 20.2 C15.5 19.6 11.5 17.5 6.5 12 Z" fill="currentColor" />
     </svg>
   );
@@ -121,11 +124,11 @@ export default function Arc() {
 
         <Reveal className="mt-8">
           <div key={mode} className="career-wipe-in mat-outer mat-texture rounded-xl p-4 sm:p-7">
-            <div className="grid lg:grid-cols-[180px_76px_minmax(0,1fr)_76px_300px] gap-3 lg:gap-4 items-stretch">
-              {/* LEFT — slot list */}
+            <div className="grid lg:grid-cols-[180px_minmax(0,1fr)_300px] gap-3 lg:gap-4 items-stretch">
+              {/* LEFT — slot list (hovering a slot previews its card) */}
               <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0 items-stretch">
                 {items.map((it, i) => (
-                  <button key={it.id} onClick={() => setIdx(i)}
+                  <button key={it.id} onClick={() => setIdx(i)} onMouseEnter={() => setIdx(i)}
                     className={`group shrink-0 lg:shrink flex items-center gap-3 px-4 py-3.5 rounded-lg text-left transition-all duration-400 ${i === idx ? "" : ""}`}
                     style={i === idx
                       ? { background: "color-mix(in srgb, var(--crim-panel) 14%, transparent)", boxShadow: "inset 0 0 0 1.5px var(--crim-panel)" }
@@ -140,20 +143,28 @@ export default function Arc() {
                 ))}
               </div>
 
-              {/* LEFT arrow */}
-              <button onClick={() => setIdx((idx - 1 + n) % n)} aria-label="Previous" className={arrowCls} style={arrowStyle}>
-                {curve(-1)}
-              </button>
-
-              {/* CENTER — carousel */}
-              <div className="min-w-0 flex items-center">
-                <Carousel items={items} idx={idx} setIdx={setIdx} ratio={ratio} />
+              {/* CENTER — arrows + carousel as one hover zone; arrows reveal on media hover */}
+              <div
+                className="flex items-stretch gap-3 lg:gap-4 min-w-0"
+                onMouseEnter={() => setMediaHover(true)}
+                onMouseLeave={() => setMediaHover(false)}
+              >
+                <div className="w-[48px] lg:w-[64px] grid place-items-center shrink-0">
+                  <button onClick={() => setIdx((idx - 1 + n) % n)} aria-label="Previous"
+                    className={`${arrowCls} transition-opacity duration-300 ${mediaHover ? "opacity-100" : "opacity-0"}`} style={arrowStyle}>
+                    {curve(-1)}
+                  </button>
+                </div>
+                <div className="min-w-0 flex-1 flex items-center">
+                  <Carousel items={items} idx={idx} setIdx={setIdx} ratio={ratio} />
+                </div>
+                <div className="w-[48px] lg:w-[64px] grid place-items-center shrink-0">
+                  <button onClick={() => setIdx((idx + 1) % n)} aria-label="Next"
+                    className={`${arrowCls} transition-opacity duration-300 ${mediaHover ? "opacity-100" : "opacity-0"}`} style={arrowStyle}>
+                    {curve(1)}
+                  </button>
+                </div>
               </div>
-
-              {/* RIGHT arrow */}
-              <button onClick={() => setIdx((idx + 1) % n)} aria-label="Next" className={arrowCls} style={arrowStyle}>
-                {curve(1)}
-              </button>
 
               {/* RIGHT — dossier */}
               <Dossier entry={entry} kind={isChar ? "CHARACTER" : "WORLD"} />

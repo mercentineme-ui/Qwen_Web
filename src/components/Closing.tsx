@@ -283,14 +283,14 @@ export function Contact() {
                 <span className="absolute -top-[5px] -left-[5px] w-3 h-3 border-t-2 border-l-2" style={{ borderColor: "var(--crim-panel)" }} />
                 <span className="absolute -bottom-[5px] -right-[5px] w-3 h-3 border-b-2 border-r-2" style={{ borderColor: "var(--crim-panel)" }} />
                 <span className="f-mono text-[9px] tracking-[0.3em] block" style={{ color: "var(--ct-sub)" }}>IDENTITY</span>
-                <h3 className="f-serif font-bold text-[clamp(2rem,3.4vw,2.9rem)] leading-[1.04] mt-2 whitespace-nowrap">
+                <h3 className="f-display text-[clamp(2.5rem,4.4vw,3.9rem)] leading-[1.02] mt-2 whitespace-nowrap">
                   <span style={{ color: "var(--ct-ink)" }}>{c.identityA}</span>{" "}
                   <span style={{ color: "var(--crim-panel)" }}>{c.identityB}</span>
                 </h3>
               </div>
-              {/* manifesto — medium-bold serif, ~3 lines, matches identity height */}
-              <p className="f-serif font-semibold text-[clamp(1.15rem,1.9vw,1.55rem)] leading-[1.45] max-w-[34ch]"
-                style={{ color: "var(--ct-ink)", opacity: 0.95 }}>
+              {/* manifesto — clean readable Arial editorial statement, ~3 lines */}
+              <p className="font-semibold text-[clamp(1.15rem,1.9vw,1.55rem)] leading-[1.45] max-w-[34ch]"
+                style={{ fontFamily: "Arial, Helvetica, sans-serif", color: "var(--ct-ink)", opacity: 0.95 }}>
                 {c.statement}
               </p>
             </div>
