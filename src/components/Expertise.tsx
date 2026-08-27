@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Company } from "../lib/data";
 import { useReducedMotion, useStore } from "../lib/store";
 import { FullscreenViewer, MediaSlot, Reveal, SectionHead } from "./ui";
@@ -9,19 +9,72 @@ const CLIP =
 
 const yearOf = (d: string) => (d.match(/\d{4}/) || [""])[0];
 
-/* Split a company name into compact vertical columns (upright letters).
-   Short names stay one column; longer names break into two adjacent columns
-   so every letter keeps the same large display size. */
-function nameColumns(name: string): string[] {
-  if (name.length <= 5) return [name];
+/* ------------------------------------------------------------------
+   Company-name vertical stacking.
+   Long names break into two UPRIGHT columns; the second word/group is
+   offset DOWNWARD (never beside the top letters) and carries the accent
+   colour. Short names stay a single tall column at a larger size so every
+   letter keeps a consistent, large display scale.
+   ------------------------------------------------------------------ */
+type StackCfg = { g1: string; g2?: string; offset?: number };
+const NAME_STACKS: Record<string, StackCfg> = {
+  IMPROMP2LABS: { g1: "IMPROMP2", g2: "LABS", offset: 4 },
+  CYBEREDGE: { g1: "CYBER", g2: "EDGE", offset: 1 },
+  DNEG: { g1: "DNEG" },
+  PSD: { g1: "PSD" },
+};
+const fallbackStack = (name: string): StackCfg => {
+  if (name.length <= 5) return { g1: name };
   const mid = Math.ceil(name.length / 2);
-  return [name.slice(0, mid), name.slice(mid)];
+  return { g1: name.slice(0, mid), g2: name.slice(mid), offset: 1 };
+};
+
+function NameStack({ name, accent }: { name: string; accent: string }) {
+  const cfg = NAME_STACKS[name] ?? fallbackStack(name);
+  const twoCol = Boolean(cfg.g2);
+  /* previous max was 32px → long two-column names at ~1.5× (48px),
+     short single-column names at ~2× (64px). Both stay large & readable. */
+  const font = twoCol ? "clamp(34px, 3vw, 48px)" : "clamp(46px, 4.3vw, 64px)";
+
+  type Cell = { ch: string; col: number; row: number; color: string };
+  const cells: Cell[] = [];
+  cfg.g1.split("").forEach((ch, k) => cells.push({ ch, col: 1, row: k + 1, color: "var(--outer-ink)" }));
+  if (cfg.g2)
+    cfg.g2.split("").forEach((ch, k) =>
+      cells.push({ ch, col: 2, row: (cfg.offset ?? 0) + k + 1, color: accent })
+    );
+
+  return (
+    <span
+      className="inline-grid items-center justify-items-center select-none"
+      style={{
+        gridTemplateColumns: twoCol ? "auto auto" : "auto",
+        gridAutoRows: "auto",
+        columnGap: "0.24em",
+        rowGap: "0.1em",
+        fontSize: font,
+      }}
+      aria-label={name}
+    >
+      {cells.map((c, i) => (
+        <span
+          key={i}
+          aria-hidden
+          className="name-letter"
+          style={{ gridColumn: c.col, gridRow: c.row, color: c.color, fontSize: "inherit" }}
+        >
+          {c.ch}
+        </span>
+      ))}
+    </span>
+  );
 }
 
+/* ---------- dossier helpers (expanded card uses the journey material) ---------- */
 function Chip({ children }: { children: React.ReactNode }) {
   return (
     <span className="inline-flex items-center f-tech font-semibold text-[9px] sm:text-[10px] tracking-[0.12em] px-2 py-[3px]"
-      style={{ border: "1px solid color-mix(in srgb, var(--outer-ink) 30%, transparent)", color: "var(--outer-ink)", opacity: 0.9 }}>
+      style={{ border: "1px solid color-mix(in srgb, var(--journey-ink) 30%, transparent)", color: "var(--journey-ink)", opacity: 0.9 }}>
       {children}
     </span>
   );
@@ -30,13 +83,13 @@ function Chip({ children }: { children: React.ReactNode }) {
 function Block({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <span className="block f-mono text-[8px] tracking-[0.28em] mb-2" style={{ color: "var(--crim-panel)" }}>{label}</span>
+      <span className="block f-mono text-[8px] tracking-[0.28em] mb-2" style={{ color: "var(--crim-journey)" }}>{label}</span>
       {children}
     </div>
   );
 }
 
-/* tiny machined fastener */
+/* tiny machined fastener (closed face — outer material) */
 function Screw({ className = "" }: { className?: string }) {
   return (
     <span className={`w-[7px] h-[7px] rounded-full grid place-items-center shrink-0 ${className}`}
@@ -46,7 +99,7 @@ function Screw({ className = "" }: { className?: string }) {
   );
 }
 
-/* L-shaped corner registration mark */
+/* L-shaped corner registration mark (closed face — outer material) */
 function CornerMark({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
   const map = {
     tl: "top-[13px] left-[13px] border-t border-l",
@@ -57,7 +110,7 @@ function CornerMark({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
   return <span className={`absolute w-[9px] h-[9px] pointer-events-none ${map[pos]}`} style={{ borderColor: "color-mix(in srgb, var(--outer-ink) 34%, transparent)" }} />;
 }
 
-/* thin segmented data rail */
+/* thin segmented data rail (closed face — outer material) */
 function DataRail({ className = "" }: { className?: string }) {
   return (
     <span className={`relative block h-px w-full ${className}`} style={{ background: "color-mix(in srgb, var(--outer-ink) 22%, transparent)" }}>
@@ -81,10 +134,12 @@ export default function Expertise() {
   const expanded = locked ?? hovered;
   const activeCo: Company | null = expanded != null ? companies[expanded] : null;
 
-  /* rail column template — expanded card claims ~50% MORE real layout space,
-     so neighbors are physically pushed farther away (no overlay). */
+  /* rail columns — the expanded card claims substantially MORE real layout
+     space (7fr ≈ 50%+ more than before) while closed cards compress into
+     narrow vertical modules (0.85fr), so neighbours are physically pushed
+     farther away. Real grid redistribution — never an overlay. */
   const cols = companies
-    .map((_, i) => (i === expanded ? "minmax(0, 5fr)" : "minmax(0, 1fr)"))
+    .map((_, i) => (i === expanded ? "minmax(0, 7fr)" : "minmax(0, 0.85fr)"))
     .join(" ");
 
   const toggleLock = (i: number) => setLocked((prev) => (prev === i ? null : i));
@@ -115,20 +170,23 @@ export default function Expertise() {
         />
 
         <Reveal className="mt-10">
-          <div id="journey" className="mat-journey mat-texture rounded-xl p-5 sm:p-8 xl:p-10 relative overflow-hidden scroll-mt-28">
-            <span className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2" style={{ borderColor: "var(--crim-panel)" }} />
-            <span className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2" style={{ borderColor: "var(--crim-panel)" }} />
+          {/* MY JOURNEY — matte section; expanded card matches THIS material,
+              closed cards use the contrasting archive material. */}
+          <div id="journey" className="mat-texture rounded-xl p-5 sm:p-8 xl:p-10 relative overflow-hidden scroll-mt-28"
+            style={{ background: "var(--journey-bg)", color: "var(--journey-ink)" }}>
+            <span className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2" style={{ borderColor: "var(--crim-journey)" }} />
+            <span className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2" style={{ borderColor: "var(--crim-journey)" }} />
 
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-8">
-              <span className="w-3 h-9" style={{ background: "var(--crim-panel)" }} />
-              <h3 className="f-display text-[clamp(1.7rem,3.4vw,2.8rem)] leading-none tracking-wide" style={{ color: "var(--outer-ink)" }}>
+              <span className="w-3 h-9" style={{ background: "var(--crim-journey)" }} />
+              <h3 className="f-display text-[clamp(1.7rem,3.4vw,2.8rem)] leading-none tracking-wide" style={{ color: "var(--journey-ink)" }}>
                 MY JOURNEY
               </h3>
-              <span className="f-mono text-[10px] tracking-[0.28em]" style={{ color: "var(--m-sub)" }}>
+              <span className="f-mono text-[10px] tracking-[0.28em]" style={{ color: "var(--journey-sub)" }}>
                 INDUSTRIAL ARCHIVE — {String(n).padStart(2, "0")} MODULES
               </span>
-              <span className="flex-1 h-px min-w-[60px]" style={{ background: "var(--m-line)" }} />
-              <span className="f-mono text-[10px] tracking-[0.2em]" style={{ color: "var(--m-sub)" }}>
+              <span className="flex-1 h-px min-w-[60px]" style={{ background: "var(--journey-line)" }} />
+              <span className="f-mono text-[10px] tracking-[0.2em]" style={{ color: "var(--journey-sub)" }}>
                 {locked != null ? "MODULE LOCKED" : expanded != null ? "PREVIEW" : "STANDBY"}
               </span>
             </div>
@@ -138,7 +196,6 @@ export default function Expertise() {
               {companies.map((c, i) => {
                 const isOpen = expanded === i;
                 const isActive = locked === i;
-                const colsArr = nameColumns(c.short);
                 return (
                   <div
                     key={c.id}
@@ -152,19 +209,24 @@ export default function Expertise() {
                     onKeyDown={(e) => onKey(e, i)}
                     className="journey-card relative outline-none cursor-pointer mat-texture overflow-hidden"
                     style={{
-                      background: "var(--outer-bg)",
-                      color: "var(--outer-ink)",
+                      /* closed = contrasting archive material; open = journey material */
+                      background: isOpen ? "var(--journey-bg)" : "var(--outer-bg)",
+                      color: isOpen ? "var(--journey-ink)" : "var(--outer-ink)",
                       clipPath: CLIP,
                       boxShadow: isOpen
-                        ? "inset 0 0 0 1.5px var(--crim-panel), 0 18px 40px -18px rgba(0,0,0,0.5)"
+                        ? "inset 0 0 0 1.5px var(--crim-journey), 0 18px 40px -18px rgba(0,0,0,0.5)"
                         : "inset 0 0 0 1px color-mix(in srgb, var(--outer-ink) 22%, transparent), 0 8px 24px -16px rgba(0,0,0,0.35)",
-                      transition: reduced ? "none" : "box-shadow 420ms cubic-bezier(0.22,1,0.36,1)",
+                      transition: reduced
+                        ? "none"
+                        : "box-shadow 520ms cubic-bezier(0.22,1,0.36,1), background-color 520ms cubic-bezier(0.22,1,0.36,1), color 520ms cubic-bezier(0.22,1,0.36,1)",
                     }}
                   >
                     {/* inner recessed frame — visible gap between shell and frame */}
-                    <div className="absolute inset-[7px] pointer-events-none z-0" style={{ clipPath: CLIP, border: "1px solid color-mix(in srgb, var(--outer-ink) 24%, transparent)" }} />
+                    <div className="absolute inset-[7px] pointer-events-none z-0"
+                      style={{ clipPath: CLIP, border: `1px solid ${isOpen ? "color-mix(in srgb, var(--journey-ink) 24%, transparent)" : "color-mix(in srgb, var(--outer-ink) 24%, transparent)"}` }} />
                     {/* panel seam — vertical machined line */}
-                    <span className="absolute top-[10px] bottom-[10px] left-[22px] w-px pointer-events-none z-0 hidden lg:block" style={{ background: "color-mix(in srgb, var(--outer-ink) 14%, transparent)" }} />
+                    <span className="absolute top-[10px] bottom-[10px] left-[22px] w-px pointer-events-none z-0 hidden lg:block"
+                      style={{ background: isOpen ? "color-mix(in srgb, var(--journey-ink) 14%, transparent)" : "color-mix(in srgb, var(--outer-ink) 14%, transparent)" }} />
 
                     {/* ---------- CLOSED VERTICAL FACE (desktop, when collapsed) ---------- */}
                     <div
@@ -191,20 +253,9 @@ export default function Expertise() {
                       </div>
                       <div className="px-4 mt-2 shrink-0"><DataRail /></div>
 
-                      {/* large multi-column stacked company name — vertically centered */}
-                      <div className="relative z-10 flex-1 flex items-center justify-center px-2 select-none min-h-0">
-                        <div className="flex items-start justify-center gap-[12px]">
-                          {colsArr.map((col, ci) => (
-                            <div key={ci} className="flex flex-col items-center gap-[3px]">
-                              {col.split("").map((ch, k) => (
-                                <span key={k} className="name-letter"
-                                  style={{ fontSize: "clamp(24px, 2vw, 32px)", color: "var(--outer-ink)" }}>
-                                  {ch}
-                                </span>
-                              ))}
-                            </div>
-                          ))}
-                        </div>
+                      {/* large stacked company name — upright letters, second group offset down + accented */}
+                      <div className="relative z-10 flex-1 flex items-center justify-center px-2 min-h-0">
+                        <NameStack name={c.short} accent="var(--crim-panel)" />
                       </div>
 
                       {/* bottom status rail */}
@@ -214,7 +265,6 @@ export default function Expertise() {
                           {isActive ? "STATUS / LOCKED" : isOpen ? "STATUS / OPEN" : "STATUS / IDLE"}
                         </span>
                         <span className="flex items-center gap-1.5">
-                          {/* indicator light */}
                           <span className="w-[5px] h-[5px] rounded-full transition-colors duration-300"
                             style={{ background: isOpen ? "var(--crim-panel)" : "color-mix(in srgb, var(--outer-ink) 28%, transparent)", boxShadow: isOpen ? "0 0 6px var(--crim-panel)" : "none" }} />
                           <span className="w-2 h-2 rotate-45 transition-colors duration-300" style={{ background: isOpen ? "var(--crim-panel)" : "color-mix(in srgb, var(--outer-ink) 30%, transparent)" }} />
@@ -224,58 +274,56 @@ export default function Expertise() {
 
                     {/* ---------- MOBILE CLOSED HEADER ---------- */}
                     <div className={"relative z-10 flex lg:hidden items-center gap-3 px-4 py-4 " + (isOpen ? "hidden" : "")}>
-                      <span className="f-mono font-semibold text-[12px] tracking-[0.14em]" style={{ color: "var(--crim-panel)" }}>{c.num}</span>
-                      <span className="name-letter flex-1 text-[17px] tracking-[0.06em]" style={{ color: "var(--outer-ink)" }}>{c.short}</span>
-                      <span className="w-2 h-2 rotate-45" style={{ background: isOpen ? "var(--crim-panel)" : "color-mix(in srgb, var(--outer-ink) 30%, transparent)" }} />
+                      <span className="f-mono font-semibold text-[12px] tracking-[0.14em]" style={{ color: isOpen ? "var(--crim-journey)" : "var(--crim-panel)" }}>{c.num}</span>
+                      <span className="name-letter flex-1 text-[17px] tracking-[0.06em]" style={{ color: isOpen ? "var(--journey-ink)" : "var(--outer-ink)" }}>{c.short}</span>
+                      <span className="w-2 h-2 rotate-45" style={{ background: isOpen ? "var(--crim-journey)" : "var(--crim-panel)" }} />
                     </div>
 
-                    {/* ---------- EXPANDED DOSSIER ---------- */}
+                    {/* ---------- EXPANDED DOSSIER (journey material) ---------- */}
                     <div className={isOpen ? "relative z-10 block h-full" : "hidden lg:block lg:invisible relative z-10"}>
-                      <div className="h-full flex flex-col px-5 py-4 overflow-y-auto" style={{ scrollbarWidth: "thin" }}>
+                      <div className={`journey-dossier h-full flex flex-col px-5 py-4 overflow-y-auto ${isOpen ? "journey-open" : ""}`} style={{ scrollbarWidth: "thin" }}>
                         {/* TOP: number + company + role + date/location */}
-                        <div className="flex items-start justify-between gap-3 shrink-0">
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2.5">
-                              <span className="f-mono font-semibold text-[12px] tracking-[0.14em]" style={{ color: "var(--crim-panel)" }}>{c.num}</span>
-                              {c.discipline && <Chip>{c.discipline}</Chip>}
-                            </div>
-                            <h4 className="name-letter text-[clamp(1.15rem,1.8vw,1.55rem)] leading-[1.06] mt-1.5 break-words" style={{ color: "var(--outer-ink)", fontWeight: 700 }}>
-                              {c.expandedName ?? c.name}
-                            </h4>
-                            <span className="block f-tech font-semibold text-[10px] tracking-[0.16em] mt-1" style={{ color: "var(--crim-panel)" }}>{c.role}</span>
-                            <span className="block f-mono text-[9px] tracking-[0.14em] mt-1" style={{ color: "var(--m-sub)" }}>
-                              {c.date}{c.location ? ` · ${c.location}` : ""}
-                            </span>
-                            {c.disciplineNote && (
-                              <span className="block f-mono text-[8px] tracking-[0.16em] mt-1.5" style={{ color: "var(--m-sub)" }}>{c.disciplineNote}</span>
-                            )}
+                        <div className="ji shrink-0" style={{ animationDelay: "0.04s" }}>
+                          <div className="flex items-center gap-2.5">
+                            <span className="f-mono font-semibold text-[12px] tracking-[0.14em]" style={{ color: "var(--crim-journey)" }}>{c.num}</span>
+                            {c.discipline && <Chip>{c.discipline}</Chip>}
                           </div>
+                          <h4 className="name-letter text-[clamp(1.15rem,1.8vw,1.55rem)] leading-[1.06] mt-1.5 break-words" style={{ color: "var(--journey-ink)", fontWeight: 700 }}>
+                            {c.expandedName ?? c.name}
+                          </h4>
+                          <span className="block f-tech font-semibold text-[10px] tracking-[0.16em] mt-1" style={{ color: "var(--crim-journey)" }}>{c.role}</span>
+                          <span className="block f-mono text-[9px] tracking-[0.14em] mt-1" style={{ color: "var(--journey-sub)" }}>
+                            {c.date}{c.location ? ` · ${c.location}` : ""}
+                          </span>
+                          {c.disciplineNote && (
+                            <span className="block f-mono text-[8px] tracking-[0.16em] mt-1.5" style={{ color: "var(--journey-sub)" }}>{c.disciplineNote}</span>
+                          )}
                         </div>
 
                         {/* SUMMARY */}
                         {c.summary && (
-                          <div className="mt-4 shrink-0">
+                          <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.10s" }}>
                             <Block label="EXPERIENCE">
-                              <p className="text-[12px] leading-relaxed" style={{ color: "var(--outer-ink)", opacity: 0.88 }}>{c.summary}</p>
+                              <p className="text-[12px] leading-relaxed" style={{ color: "var(--journey-ink)", opacity: 0.88 }}>{c.summary}</p>
                             </Block>
                           </div>
                         )}
 
                         {/* TOOLS / METHODS */}
                         {c.tools && c.tools.length > 0 && (
-                          <div className="mt-4 shrink-0">
+                          <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.16s" }}>
                             <Block label="TOOLS / METHODS">
                               <div className="flex flex-wrap gap-1.5">{c.tools.map((t) => <Chip key={t}>{t}</Chip>)}</div>
                             </Block>
                           </div>
                         )}
 
-                        {/* ONE primary company media slot — large, prominent */}
-                        {c.media.length > 0 && (
-                          <div className="mt-4 shrink-0">
+                        {/* ONE primary company media slot — only when an asset is actually loaded */}
+                        {c.media && c.media[0]?.src && (
+                          <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.22s" }}>
                             <Block label="MEDIA / 01">
                               <div style={{ height: 190 }}>
-                                <MediaSlot item={c.media[0]} ratio="16/9" fill className="mat-inner rounded-[4px]! border-0!" showLabel={false} onClick={() => setMediaView(0)} />
+                                <MediaSlot item={c.media[0]} ratio="16/9" fill className="rounded-[4px]! border-0!" showLabel={false} onClick={() => setMediaView(0)} />
                               </div>
                             </Block>
                           </div>
@@ -283,12 +331,12 @@ export default function Expertise() {
 
                         {/* HIGHLIGHTS / METRICS */}
                         {c.highlights && c.highlights.length > 0 && (
-                          <div className="mt-4 shrink-0">
+                          <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.28s" }}>
                             <Block label={c.highlightsLabel ?? "HIGHLIGHTS"}>
                               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-[5px]">
                                 {c.highlights.map((h) => (
-                                  <li key={h} className="flex items-start gap-2 text-[10.5px] leading-snug" style={{ color: "var(--outer-ink)", opacity: 0.85 }}>
-                                    <span className="mt-[5px] w-[5px] h-[5px] rotate-45 shrink-0" style={{ background: "var(--crim-panel)" }} />
+                                  <li key={h} className="flex items-start gap-2 text-[10.5px] leading-snug" style={{ color: "var(--journey-ink)", opacity: 0.85 }}>
+                                    <span className="mt-[5px] w-[5px] h-[5px] rotate-45 shrink-0" style={{ background: "var(--crim-journey)" }} />
                                     {h}
                                   </li>
                                 ))}
@@ -299,7 +347,7 @@ export default function Expertise() {
 
                         {/* EXTRAS (KEY EXPERIENCE) */}
                         {c.extras && c.extras.length > 0 && (
-                          <div className="mt-4 shrink-0">
+                          <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.34s" }}>
                             <Block label={c.extrasLabel ?? "KEY EXPERIENCE"}>
                               <div className="flex flex-wrap gap-1.5">{c.extras.map((t) => <Chip key={t}>{t}</Chip>)}</div>
                             </Block>
@@ -307,9 +355,9 @@ export default function Expertise() {
                         )}
 
                         {/* footer technical marks */}
-                        <div className="mt-auto pt-4 flex items-center justify-between shrink-0" style={{ borderTop: "1px solid color-mix(in srgb, var(--outer-ink) 16%, transparent)" }}>
-                          <span className="f-mono text-[8px] tracking-[0.2em]" style={{ color: "var(--m-sub)" }}>ARCHIVE / {c.num}</span>
-                          <span className="f-mono text-[8px] tracking-[0.2em]" style={{ color: isActive ? "var(--crim-panel)" : "var(--m-sub)" }}>
+                        <div className="ji mt-auto pt-4 flex items-center justify-between shrink-0" style={{ animationDelay: "0.4s", borderTop: "1px solid var(--journey-line)" }}>
+                          <span className="f-mono text-[8px] tracking-[0.2em]" style={{ color: "var(--journey-sub)" }}>ARCHIVE / {c.num}</span>
+                          <span className="f-mono text-[8px] tracking-[0.2em]" style={{ color: isActive ? "var(--crim-journey)" : "var(--journey-sub)" }}>
                             {isActive ? "LOCKED" : "CLICK TO LOCK"}
                           </span>
                         </div>
@@ -320,7 +368,7 @@ export default function Expertise() {
               })}
             </div>
 
-            <p className="mt-6 f-mono text-[9px] tracking-[0.26em] text-center" style={{ color: "var(--m-sub)" }}>
+            <p className="mt-6 f-mono text-[9px] tracking-[0.26em] text-center" style={{ color: "var(--journey-sub)" }}>
               HOVER — OPEN MODULE · CLICK — LOCK · ESC — RELEASE · ARROWS — NAVIGATE
             </p>
           </div>

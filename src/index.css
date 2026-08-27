@@ -42,6 +42,13 @@
   --ct-card-sub: #59595b;
   --crim-panel: #e72241;
 
+  /* MY JOURNEY section material — LIGHT: matte-white section, dark expanded card text */
+  --journey-bg: #ddddd8;
+  --journey-ink: #222328;
+  --journey-sub: rgba(34, 35, 40, 0.62);
+  --journey-line: rgba(34, 35, 40, 0.18);
+  --crim-journey: #9e2237;
+
   /* creative core machine — LIGHT: dark machine on light page */
   --core-plate: #222328;
   --core-deep: #3c3d42;
@@ -88,6 +95,13 @@
   --ct-card-ink: #ddddd8;
   --ct-card-sub: #a6a6a4;
   --crim-panel: #9e2237;
+
+  /* MY JOURNEY section material — DARK: matte-black section, light expanded card text */
+  --journey-bg: #222328;
+  --journey-ink: #ddddd8;
+  --journey-sub: rgba(221, 221, 216, 0.62);
+  --journey-line: rgba(221, 221, 216, 0.18);
+  --crim-journey: #e72241;
 
   /* creative core machine — DARK: light precision machine on dark page.
      tonal hierarchy: white highlights → off-white plate → grey → graphite → dark */
@@ -251,13 +265,18 @@ body {
 @media (min-width: 1024px) {
   .journey-rail {
     grid-template-columns: var(--rail-cols, repeat(4, minmax(0, 1fr)));
-    transition: grid-template-columns 460ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition: grid-template-columns 520ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 .journey-card { height: auto; }
 @media (min-width: 1024px) {
-  .journey-card { height: 560px; }
+  .journey-card { height: 700px; } /* 125% of the previous 560px rail height */
 }
+
+/* staggered dossier reveal — each block settles ~55ms after the previous */
+.ji { opacity: 0; transform: translateY(9px); }
+.journey-open .ji { animation: jiIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+@keyframes jiIn { to { opacity: 1; transform: none; } }
 
 .career-wipe-in { animation: careerWipeIn 0.42s cubic-bezier(0.3,0.8,0.3,1) both; }
 @keyframes careerWipeIn {
