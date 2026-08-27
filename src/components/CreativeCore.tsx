@@ -82,30 +82,48 @@ function Gear({ r, teeth, fill = "var(--core-gear)", rim = "var(--core-line)", h
   );
 }
 
-/* three meshed gears — CONTROL / REPEATABILITY / SYSTEM (AI IMAGE + VIDEO card) */
-function GearTrio({ reduced }: { reduced: boolean }) {
-  const spin = (dur: number, ccw = false): React.CSSProperties =>
+/* three meshed gears — CONTROL / REPEATABILITY / SYSTEM.
+   Each discipline gets a subtly different gear relationship (direction + speed)
+   so every card feels like a slightly different mechanical module. */
+const GEAR_BASE = [
+  { r: 17, teeth: 9, label: "CONTROL" },
+  { r: 12.5, teeth: 8, label: "REPEATABILITY" },
+  { r: 9, teeth: 7, label: "SYSTEM" },
+];
+const GEAR_SETS: { ccw: boolean; dur: number }[][] = [
+  [{ ccw: false, dur: 9 }, { ccw: true, dur: 6.4 }, { ccw: false, dur: 4.6 }],
+  [{ ccw: true, dur: 8 }, { ccw: false, dur: 5.8 }, { ccw: true, dur: 4.2 }],
+  [{ ccw: false, dur: 11 }, { ccw: false, dur: 7.2 }, { ccw: true, dur: 5.0 }],
+  [{ ccw: true, dur: 9.5 }, { ccw: true, dur: 6.8 }, { ccw: false, dur: 4.8 }],
+  [{ ccw: false, dur: 10 }, { ccw: true, dur: 6.0 }, { ccw: false, dur: 4.0 }],
+  [{ ccw: true, dur: 8.5 }, { ccw: false, dur: 6.2 }, { ccw: true, dur: 4.4 }],
+  [{ ccw: false, dur: 9 }, { ccw: true, dur: 7.0 }, { ccw: false, dur: 5.2 }],
+  [{ ccw: true, dur: 10.5 }, { ccw: false, dur: 5.6 }, { ccw: false, dur: 4.6 }],
+  [{ ccw: false, dur: 8 }, { ccw: true, dur: 6.6 }, { ccw: true, dur: 4.2 }],
+];
+function GearTrio({ reduced, node }: { reduced: boolean; node: number }) {
+  const set = GEAR_SETS[node % GEAR_SETS.length];
+  const spin = (dur: number, ccw: boolean): React.CSSProperties =>
     reduced ? {} : {
       animation: `${ccw ? "coreSpinCCW" : "coreSpinCW"} ${dur}s linear infinite`,
       transformBox: "fill-box",
       transformOrigin: "center",
     };
   return (
-    <div className="mt-5 flex items-end gap-4">
-      {[
-        { r: 17, teeth: 9, dur: 9, ccw: false, label: "CONTROL" },
-        { r: 12.5, teeth: 8, dur: 6.4, ccw: true, label: "REPEATABILITY" },
-        { r: 9, teeth: 7, dur: 4.6, ccw: false, label: "SYSTEM" },
-      ].map((g) => (
-        <div key={g.label} className="flex flex-col items-center gap-1.5">
-          <svg width={g.r * 2 + 8} height={g.r * 2 + 8} viewBox={`${-g.r - 4} ${-g.r - 4} ${(g.r + 4) * 2} ${(g.r + 4) * 2}`}>
-            <g style={spin(g.dur, g.ccw)}>
-              <Gear r={g.r} teeth={g.teeth} fill="currentColor" rim="currentColor" opacity={0.55} />
-            </g>
-          </svg>
-          <span className="f-mono text-[7.5px] tracking-[0.18em] opacity-60">{g.label}</span>
-        </div>
-      ))}
+    <div className={`mt-5 flex items-end gap-4 ${reduced ? "" : "gear-mesh-in"}`}>
+      {GEAR_BASE.map((g, k) => {
+        const cfg = set[k];
+        return (
+          <div key={g.label} className="flex flex-col items-center gap-1.5">
+            <svg width={g.r * 2 + 8} height={g.r * 2 + 8} viewBox={`${-g.r - 4} ${-g.r - 4} ${(g.r + 4) * 2} ${(g.r + 4) * 2}`}>
+              <g style={spin(cfg.dur, cfg.ccw)}>
+                <Gear r={g.r} teeth={g.teeth} fill="currentColor" rim="currentColor" opacity={0.55} />
+              </g>
+            </svg>
+            <span className="f-mono text-[7.5px] tracking-[0.18em] opacity-60">{g.label}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -211,24 +229,36 @@ export default function CreativeCore() {
       e.last = t; e.t += dt;
       const rm = reduced ? 0 : 1;
 
-      /* theme recalibration — machine disassembles in depth, swaps material, reassembles */
+      /* theme recalibration — an exploded-view mechanical rebuild:
+         PHASE 1 power down → PHASE 2/3 layers explode in Z-depth (some toward camera, some away,
+         some rotate/slide) → material swaps mid-explosion → PHASE 5 reassemble → PHASE 6 power up. */
       if (themeRef.current !== e.lastTheme) { e.lastTheme = themeRef.current; e.recT = 0.0001; }
-      let dis = 0;
+      let dis = 0;    /* 0..1 explosion amount */
+      let power = 1;  /* rotation power — dips to near-zero while exploded, then ramps back */
       if (e.recT > 0) {
         e.recT += dt;
-        dis = e.recT < 1.4 ? Math.sin(Math.PI * Math.min(1, e.recT / 1.4)) : 0;
-        if (e.recT >= 1.4) e.recT = -1;
+        const T = e.recT;
+        const sstep = (x: number) => { const t = clamp01(x); return t * t * (3 - 2 * t); };
+        if (T < 0.4) { dis = sstep(T / 0.4); power = 1 - 0.85 * sstep(T / 0.4); }        /* power down + begin explode */
+        else if (T < 1.5) { dis = 1; power = 0.15; }                                     /* hold exploded, material swaps */
+        else if (T < 2.2) { const u = (T - 1.5) / 0.7; dis = 1 - sstep(u); power = 0.15 + 0.85 * sstep(u); } /* reassemble + power up */
+        else { e.recT = -1; }
       }
-      /* theme disassembly — layers separate in real depth (forward / back / rotate), then re-seat.
-         Housing lifts forward, rings scale up, plate + hub recede, gears drift outward, couplings detach. */
-      orbitalG.current?.setAttribute("opacity", (1 - 0.35 * dis).toFixed(3));
+      /* ---- layers separate in distinct depth directions (toward / away / rotate / slide) ---- */
+      orbitalG.current?.setAttribute("opacity", (1 - 0.3 * dis).toFixed(3));
+      /* outer housing lifts toward the camera + rotates */
       housingG.current?.setAttribute("transform",
-        `translate(${C} ${C}) rotate(${(3.5 * dis).toFixed(2)}) scale(${(1 + 0.045 * dis).toFixed(4)}) translate(${-C} ${-C})`);
+        `translate(${C} ${C}) rotate(${(4 * dis).toFixed(2)}) scale(${(1 + 0.075 * dis).toFixed(4)}) translate(${-C} ${-C})`);
+      /* recessed engine plate recedes away from the camera */
       plateG.current?.setAttribute("transform",
-        `translate(${C} ${C + 7 * dis}) scale(${(1 - 0.035 * dis).toFixed(4)}) translate(${-C} ${-(C + 7 * dis)})`);
+        `translate(${C} ${C + 10 * dis}) scale(${(1 - 0.05 * dis).toFixed(4)}) translate(${-C} ${-(C + 10 * dis)})`);
+      /* central hub recedes slightly */
       hubPlateG.current?.setAttribute("transform",
-        `translate(${C} ${C}) scale(${(1 - 0.06 * dis).toFixed(4)}) translate(${-C} ${-C})`);
-      couplingsG.current?.setAttribute("opacity", (1 - 0.65 * dis).toFixed(3));
+        `translate(${C} ${C}) scale(${(1 - 0.07 * dis).toFixed(4)}) translate(${-C} ${-C})`);
+      /* node couplings detach (fade + shrink) */
+      couplingsG.current?.setAttribute("opacity", (1 - 0.7 * dis).toFixed(3));
+      couplingsG.current?.setAttribute("transform",
+        `translate(${C} ${C}) scale(${(1 - 0.05 * dis).toFixed(4)}) translate(${-C} ${-C})`);
 
       /* ---- mechanical surge: every 20s, ~1s impulse (emphasises the secondary ring) ---- */
       const phase = e.t % 20;
@@ -243,25 +273,29 @@ export default function CreativeCore() {
       const m = e.mult * rm;
       const boost = clamp01((e.mult - 1) / 1.6);
 
-      /* ---- independent rotation (believable gear logic) + per-layer theme separation ---- */
-      e.primary += dt * 6 * m;
-      e.secondary -= dt * 9 * m * (1 + 1.2 * boost);
-      e.central += dt * 14 * m;
-      e.gearA -= dt * 35 * m;
-      e.gearB -= dt * 35 * m;
-      e.lower -= dt * 10 * m;
+      /* ---- independent rotation (gear logic) — decelerates to near-stop while exploded ---- */
+      e.primary += dt * 6 * m * power;
+      e.secondary -= dt * 9 * m * power * (1 + 1.2 * boost);
+      e.central += dt * 14 * m * power;
+      e.gearA -= dt * 35 * m * power;
+      e.gearB -= dt * 35 * m * power;
+      e.lower -= dt * 10 * m * power;
 
+      /* primary ring drifts away from camera + counter-rotates slightly */
       primaryRingG.current?.setAttribute("transform",
-        `translate(${C} ${C}) scale(${(1 + 0.09 * dis).toFixed(4)}) rotate(${(e.primary % 360).toFixed(2)}) translate(${-C} ${-C})`);
+        `translate(${C} ${C}) rotate(${(-3 * dis).toFixed(2)}) scale(${(1 - 0.06 * dis).toFixed(4)}) rotate(${(e.primary % 360).toFixed(2)}) translate(${-C} ${-C})`);
+      /* secondary ring slides sideways + recedes */
       secondaryRingG.current?.setAttribute("transform",
-        `translate(${C} ${C}) scale(${(1 + 0.05 * dis).toFixed(4)}) rotate(${(e.secondary % 360).toFixed(2)}) translate(${-C} ${-C})`);
+        `translate(${C + 6 * dis} ${C + 4 * dis}) scale(${(1 - 0.04 * dis).toFixed(4)}) rotate(${(e.secondary % 360).toFixed(2)}) translate(${-C} ${-C})`);
+      /* central gear recedes into depth */
       centralGearG.current?.setAttribute("transform",
-        `translate(${C} ${C + 9 * dis}) scale(${(1 - 0.05 * dis).toFixed(4)}) rotate(${(e.central % 360).toFixed(2)})`);
-      const [gax, gay] = ptOf(C, C, G_OFF + 10 * dis, GA.a);
-      const [gbx, gby] = ptOf(C, C, G_OFF + 10 * dis, GB.a);
+        `translate(${C} ${C + 11 * dis}) scale(${(1 - 0.06 * dis).toFixed(4)}) rotate(${(e.central % 360).toFixed(2)})`);
+      /* support gears drift outward along their mounting paths + rotate */
+      const [gax, gay] = ptOf(C, C, G_OFF + 18 * dis, GA.a);
+      const [gbx, gby] = ptOf(C, C, G_OFF + 18 * dis, GB.a);
       gearAG.current?.setAttribute("transform", `translate(${gax} ${gay}) rotate(${(e.gearA % 360).toFixed(2)})`);
       gearBG.current?.setAttribute("transform", `translate(${gbx} ${gby}) rotate(${(e.gearB % 360).toFixed(2)})`);
-      const [lx, ly] = ptOf(C, C, LOWER.d + 8 * dis, LOWER.a);
+      const [lx, ly] = ptOf(C, C, LOWER.d + 14 * dis, LOWER.a);
       lowerGearG.current?.setAttribute("transform", `translate(${lx} ${ly}) rotate(${(e.lower % 360).toFixed(2)})`);
 
       /* crimson timing indicator strengthens with the surge */
@@ -285,14 +319,16 @@ export default function CreativeCore() {
 
       /* ---- articulated pointer: tracks the mouse anywhere inside the circular core, locks to a
             clicked node, and folds into the hub when idle. Never floats, never detaches. ---- */
-      const coreRadiusPx = box.current.w > 0 ? (R_WALL / 600) * box.current.w : 0;
+      /* interaction field = whole radial engine: core + rings + node/connector region */
+      const fieldRadiusPx = box.current.w > 0 ? 0.39 * box.current.w + 48 : 0;
       const mDist = Math.hypot(mouse.current.x, mouse.current.y);
-      const mouseInCore = mouse.current.in && coreRadiusPx > 0 && mDist < coreRadiusPx * 1.04;
+      const mouseInCore = mouse.current.in && fieldRadiusPx > 0 && mDist < fieldRadiusPx;
       const mouseAngle = Math.atan2(mouse.current.x, -mouse.current.y) / DEG;
 
       const lk = lockedRef.current;
       const hv = hoverRef.current;
-      const tracking = lk !== null || hv !== null || mouseInCore;
+      const inTransition = e.recT > 0; /* during theme change the pointer powers down + retracts */
+      const tracking = !inTransition && (lk !== null || hv !== null || mouseInCore);
       /* priority: locked node → hovered node → live mouse angle */
       const ptrAngTarget =
         lk !== null ? angleOf(lk)
@@ -418,7 +454,7 @@ export default function CreativeCore() {
         <div className="mt-12 grid lg:grid-cols-[1.22fr_0.78fr] gap-12 lg:gap-14 xl:gap-16 items-center">
           {/* ================= THE RADIAL CLOCKWORK TRANSMISSION CORE ================= */}
           <Reveal>
-            <div ref={containerRef} className="relative mx-auto w-full max-w-[620px] aspect-square select-none cursor-crosshair">
+            <div ref={containerRef} className="relative mx-auto w-full max-w-[620px] aspect-square select-none">
               <svg viewBox="0 0 600 600" className="absolute inset-0 w-full h-full">
                 <defs>
                   <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
@@ -677,9 +713,6 @@ export default function CreativeCore() {
                   side === "below" ? { left: 0, top: 54, transform: "translateX(-50%)", textAlign: "center" } :
                   side === "left" ? { right: 52, top: 0, transform: "translateY(-50%)", textAlign: "right" } :
                   { left: 52, top: 0, transform: "translateY(-50%)", textAlign: "left" };
-                /* pop-up sits just outside the node, radially outward */
-                const ox = Math.sin(angleOf(i) * DEG) * 52;
-                const oy = -Math.cos(angleOf(i) * DEG) * 52;
                 return (
                   <div key={dis.id} ref={(el) => { nodeWrapRefs.current[i] = el; }}
                     className="absolute" style={{ left: `${x}%`, top: `${y}%` }}>
@@ -724,19 +757,6 @@ export default function CreativeCore() {
                       <br />
                       {SPLIT[i][1]}
                     </span>
-                    {/* contextual pop-up (mechanical info tag) */}
-                    <span
-                      className="absolute left-0 top-0 pointer-events-none f-mono text-[8px] tracking-[0.16em] px-2 py-1 whitespace-nowrap transition-all duration-300"
-                      style={{
-                        transform: `translate(-50%,-50%) translate(${ox.toFixed(0)}px, ${oy.toFixed(0)}px)`,
-                        background: "var(--outer-bg)",
-                        color: hovered ? "#f4f2ed" : "var(--outer-ink)",
-                        border: "1px solid color-mix(in srgb, var(--crimson) 60%, transparent)",
-                        opacity: hovered ? 1 : 0,
-                        clipPath: "polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)",
-                      }}>
-                      {dis.num} · {dis.tags[0]}
-                    </span>
                   </div>
                 );
               })}
@@ -752,13 +772,12 @@ export default function CreativeCore() {
 
           {/* ================= RIGHT — DETAIL CARD ================= */}
           <Reveal delay={0.12}>
+            {/* the standby state uses the same matte card system as the node cards */}
             <div className="relative rounded-xl overflow-hidden transition-colors duration-500"
               style={{
-                background: cardActive ? cardBg : "var(--sup1)",
-                color: cardActive ? cardInk : "var(--ink)",
-                boxShadow: cardActive
-                  ? "inset 0 0 0 1px color-mix(in srgb, currentColor 22%, transparent), 0 18px 40px -22px rgba(0,0,0,0.45)"
-                  : "inset 0 0 0 1px var(--line)",
+                background: cardBg,
+                color: cardInk,
+                boxShadow: "inset 0 0 0 1px color-mix(in srgb, currentColor 22%, transparent), 0 18px 40px -22px rgba(0,0,0,0.45)",
               }}>
               <span className="absolute top-0 left-0 h-[3px] w-16" style={{ background: "var(--crim-panel)" }} aria-hidden />
 
@@ -771,14 +790,14 @@ export default function CreativeCore() {
                         <circle cx="10" cy="10" r="2.4" fill="var(--crim-panel)" />
                         <circle cx="16.5" cy="6.5" r="1.6" fill="currentColor" opacity="0.6" />
                       </svg>
-                      <span className="f-mono text-[10px] tracking-[0.3em]" style={{ color: cardActive ? cardSub : "var(--m-sub)" }}>
+                      <span className="f-mono text-[10px] tracking-[0.3em]" style={{ color: cardSub }}>
                         {active !== null ? `MODULE ${disciplines[active].num}` : "OUTPUT"}
                       </span>
                     </span>
                     <span className="f-mono text-[9px] tracking-[0.22em] flex items-center gap-2"
-                      style={{ color: active !== null ? "var(--crim-panel)" : "var(--m-sub)" }}>
+                      style={{ color: active !== null ? "var(--crim-panel)" : cardSub }}>
                       <span className="w-1.5 h-1.5 rounded-full live-blink" style={{ background: active !== null ? "var(--crim-panel)" : "currentColor", opacity: active !== null ? 1 : 0.5 }} />
-                      {active !== null ? (lockedIdx !== null ? "LOCKED" : "SELECTED") : "STANDING BY"}
+                      {active !== null ? (lockedIdx !== null ? "LOCKED" : "SELECTED") : "ON STAND BY"}
                     </span>
                   </div>
 
@@ -802,22 +821,22 @@ export default function CreativeCore() {
                         ))}
                       </div>
                       {/* three meshed mechanical gear indicators — CONTROL / REPEATABILITY / SYSTEM */}
-                      <div style={{ color: cardInk }}><GearTrio reduced={reduced} /></div>
+                      <div style={{ color: cardInk }}><GearTrio reduced={reduced} node={active ?? 0} /></div>
                     </>
                   ) : (
                     <>
                       <h3 className="f-display leading-[1.05] mt-3.5 text-[clamp(1.6rem,2.4vw,2.2rem)]">
-                        Standing by
+                        ON STAND BY
                       </h3>
-                      <p className="mt-3 text-[13px] sm:text-[13.5px]" style={{ color: "var(--ink2)" }}>
-                        Choose a node to explore.
+                      <p className="mt-3 text-[13px] sm:text-[13.5px]" style={{ color: cardSub }}>
+                        Pick a node to explore
                       </p>
                     </>
                   )}
                 </div>
 
                 <div className="mt-6 pt-4 f-mono text-[8.5px] tracking-[0.26em] flex items-center justify-between"
-                  style={{ borderTop: `1px solid ${cardActive ? "color-mix(in srgb, currentColor 20%, transparent)" : "var(--line)"}`, color: cardActive ? cardSub : "var(--m-sub)" }}>
+                  style={{ borderTop: "1px solid color-mix(in srgb, currentColor 20%, transparent)", color: cardSub }}>
                   <span>HOVER · CLICK TO LOCK — THE ENGINE RESPONDS</span>
                   <span style={{ color: "var(--crim-panel)" }}>SYS/09</span>
                 </div>

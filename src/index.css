@@ -236,6 +236,13 @@ body {
 @keyframes coreSpinCW { to { transform: rotate(360deg); } }
 .core-spin-ccw { animation: coreSpinCCW 26s linear infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes coreSpinCCW { to { transform: rotate(-360deg); } }
+/* gear assembly enters → aligns → meshes → locks when a card becomes active */
+.gear-mesh-in { animation: gearMesh 0.6s cubic-bezier(0.34, 0.9, 0.3, 1) both; }
+@keyframes gearMesh {
+  0% { opacity: 0; transform: translateY(8px) scale(0.6) rotate(-14deg); }
+  55% { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
 .core-spin-slow { animation: coreSpinCW 70s linear infinite; transform-box: fill-box; transform-origin: center; }
 .core-beat { animation: coreBeat 2.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes coreBeat { 0%,100% { transform: scale(1); } 12% { transform: scale(1.08); } 24% { transform: scale(1); } 36% { transform: scale(1.05); } }
