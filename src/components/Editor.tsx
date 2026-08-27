@@ -96,7 +96,7 @@ function ByNumbersEditor() {
   const bn = data.byNumbers;
   const set = (p: Partial<typeof bn>) => update((d) => ({ ...d, byNumbers: { ...d.byNumbers, ...p } }));
   return (
-    <Group title="BY THE NUMBERS">
+    <Group title="IMPACT METRICS">
       <div className="grid sm:grid-cols-2 gap-3.5">
         <Field label="ARTIST ROLE" value={bn.artistRole} onChange={(v) => set({ artistRole: v })} />
         <Field label="UPCOMING LABEL" value={bn.upcomingLabel} onChange={(v) => set({ upcomingLabel: v })} />
@@ -201,7 +201,7 @@ function ContactEditor() {
 
 const SECTIONS = [
   { id: "hero", num: "00", label: "HERO", el: <HeroEditor /> },
-  { id: "bynumbers", num: "00", label: "BY THE NUMBERS", el: <ByNumbersEditor /> },
+  { id: "bynumbers", num: "00", label: "IMPACT METRICS", el: <ByNumbersEditor /> },
   { id: "expertise", num: "01", label: "EXPERIENCE", el: <ExpertiseEditor /> },
   { id: "ailab", num: "04", label: "AI LAB", el: <AILabEditor /> },
   { id: "arc", num: "05", label: "ARC", el: <ArcEditor /> },

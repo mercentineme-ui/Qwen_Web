@@ -77,11 +77,11 @@ export default function Header() {
 
           <div className="flex-1" />
 
-          {/* refined technical clock */}
+          {/* refined technical clock — futuristic monospace treatment */}
           <div className="hidden sm:flex items-baseline gap-1.5 leading-none tabular-nums">
-            <span className="f-mono text-[7.5px] tracking-[0.3em] text-[var(--ink2)] mr-1 self-center">LOCAL</span>
-            <span className="clock-num f-tech font-bold text-[16px] lg:text-[17px] tracking-[0.05em]">{hh}:{mm}:{ss}</span>
-            <span className={`f-tech font-bold text-[9px] tracking-[0.18em] px-1.5 py-[3px] rounded-[4px] self-center ${
+            <span className="f-clock text-[8px] tracking-[0.32em] text-[var(--ink2)] mr-1 self-center">LOCAL</span>
+            <span className="clock-num f-clock font-bold text-[16px] lg:text-[17px] tracking-[0.12em]">{hh}:{mm}:{ss}</span>
+            <span className={`f-clock font-bold text-[9px] tracking-[0.2em] px-1.5 py-[3px] rounded-[4px] self-center ${
               mer === "PM" ? "bg-[var(--crimson)] text-[#ddddd8]" : "border border-[var(--ink2)] text-[var(--ink2)]"
             }`}>
               {mer}

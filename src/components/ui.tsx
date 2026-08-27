@@ -75,9 +75,9 @@ export function EmptySlot({ item }: { item: MediaItem }) {
 
 /* ---------- media slot (empty editable placeholder or loaded media) ---------- */
 export function MediaSlot({
-  item, ratio, className = "", showLabel = true, onClick,
+  item, ratio, className = "", showLabel = true, onClick, fill = false,
 }: {
-  item: MediaItem; ratio: string; className?: string; showLabel?: boolean; onClick?: () => void;
+  item: MediaItem; ratio: string; className?: string; showLabel?: boolean; onClick?: () => void; fill?: boolean;
 }) {
   const isVideo = item.kind === "video";
   return (
@@ -87,7 +87,7 @@ export function MediaSlot({
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } } : undefined}
       className={`relative overflow-hidden rounded-lg border border-[var(--line)] mat-page-card group ${onClick ? "cursor-pointer" : ""} ${className}`}
-      style={{ aspectRatio: ratio }}
+      style={fill ? { height: "100%", width: "100%" } : { aspectRatio: ratio }}
     >
       {item.src ? (
         isVideo ? (

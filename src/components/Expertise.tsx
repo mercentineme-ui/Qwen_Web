@@ -178,24 +178,28 @@ export default function Expertise() {
                   </div>
                 </div>
 
-                {/* MEDIA / VIDEO AREA — occupies the full remaining media-designated region */}
-                <div key={`media-${featured}`} className={`flex-1 min-h-0 overflow-y-auto ${leaving ? "career-wipe-out" : "career-wipe-in"}`}>
-                  <div className="flex items-center justify-between mb-3">
+                {/* MEDIA / VIDEO AREA — production-archive composition filling the full media region */}
+                <div key={`media-${featured}`} className={`flex-1 min-h-0 flex flex-col ${leaving ? "career-wipe-out" : "career-wipe-in"}`}>
+                  <div className="flex items-center justify-between mb-3 shrink-0">
                     <span className="f-mono text-[10px] tracking-[0.28em]" style={{ color: "var(--m-sub)" }}>PRODUCTION MEDIA — {String(co.media.length).padStart(2, "0")} SLOTS</span>
                     <span className="f-mono text-[10px] tracking-[0.2em]" style={{ color: "var(--crim-panel)" }}>{co.short}</span>
                   </div>
-                  {co.media.length > 0 && (
-                    <MediaSlot item={co.media[0]} ratio="16/9" className="mat-inner" showLabel={false}
-                      onClick={() => setMediaView(0)} />
-                  )}
-                  {co.media.length > 1 && (
-                    <div className="mt-3 grid gap-3" style={{ gridTemplateColumns: `repeat(${Math.min(co.media.length - 1, 3)}, minmax(0,1fr))` }}>
-                      {co.media.slice(1).map((m, k) => (
-                        <MediaSlot key={m.id} item={m} ratio="16/9" className="mat-inner" showLabel={false}
-                          onClick={() => setMediaView(k + 1)} />
-                      ))}
-                    </div>
-                  )}
+                  <div className="flex-1 min-h-0 grid gap-3"
+                    style={(() => {
+                      const n = co.media.length;
+                      if (n <= 1) return { gridTemplateColumns: "1fr" };
+                      if (n === 2) return { gridTemplateColumns: "1.5fr 1fr" };
+                      if (n === 3) return { gridTemplateColumns: "1.5fr 1fr", gridTemplateRows: "1fr 1fr" };
+                      return { gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr" };
+                    })()}>
+                    {co.media.map((m, k) => (
+                      <div key={m.id} className="min-h-0 min-w-0"
+                        style={k === 0 && co.media.length === 3 ? { gridRow: "1 / span 2" } : undefined}>
+                        <MediaSlot item={m} ratio="16/9" fill className="mat-inner rounded-[4px]! border-0!" showLabel={false}
+                          onClick={() => setMediaView(k)} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
