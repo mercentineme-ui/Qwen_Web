@@ -128,6 +128,66 @@ function GearTrio({ reduced, node }: { reduced: boolean; node: number }) {
   );
 }
 
+/* ============================================================
+   THEME-SWITCH CHOREOGRAPHY — exploded mechanical disassembly.
+   Mirrors the --core-* / --outer-* palettes in index.css. Used ONLY as a
+   temporary visual override while the machine is apart, so the material
+   flip lands during the exploded state instead of a flat color crossfade.
+   ============================================================ */
+const CORE_PALETTES: Record<"light" | "dark", Record<string, string>> = {
+  light: {
+    "--core-plate": "#222328", "--core-deep": "#3c3d42", "--core-line": "#59595b",
+    "--core-mid": "#a6a6a4", "--core-inv": "#ddddd8", "--core-ring": "#59595b",
+    "--core-gear": "#222328", "--core-crimson": "#e72241", "--crimson": "#e72241",
+    "--line": "rgba(34,35,40,0.16)", "--outer-bg": "#222328", "--outer-ink": "#ddddd8",
+  },
+  dark: {
+    "--core-plate": "#d3d4ce", "--core-deep": "#3c3d42", "--core-line": "#4a4b50",
+    "--core-mid": "#59595b", "--core-inv": "#f2f2ee", "--core-ring": "#c8c9c3",
+    "--core-gear": "#cdcec8", "--core-crimson": "#e72241", "--crimson": "#e72241",
+    "--line": "rgba(221,221,216,0.15)", "--outer-bg": "#ddddd8", "--outer-ink": "#222328",
+  },
+};
+const FREEZE_KEYS = Object.keys(CORE_PALETTES.light);
+
+/* per-layer explosion vectors — each part separates in its own direction.
+   order = disassembly stagger (outer low, central high); assembly reverses it. */
+const EXPLODE = {
+  couplings: { dx: 0, dy: -20, sc: 0, rot: 0, order: 0 },
+  housing: { dx: 0, dy: -16, sc: 0.035, rot: 2.5, order: 1 },
+  primary: { dx: 0, dy: -9, sc: 0.1, rot: -4, order: 2 },
+  secondary: { dx: 7, dy: 5, sc: 0.06, rot: 5, order: 3 },
+  plate: { dx: 0, dy: 11, sc: -0.03, rot: 0, order: 4 },
+  hub: { dx: 0, dy: 15, sc: -0.05, rot: 0, order: 5 },
+  gearA: { dx: -17, dy: 7, sc: 0, rot: -32, order: 5 },
+  gearB: { dx: 15, dy: 13, sc: 0, rot: 26, order: 5 },
+  lower: { dx: 9, dy: 17, sc: 0, rot: 22, order: 5 },
+} as const;
+type ExplodeKey = keyof typeof EXPLODE;
+
+const DIS_MS = 320; /* disassembly */
+const HOLD_MS = 140; /* exploded hold (material flips here) */
+const ASM_MS = 420; /* reassembly + lock */
+const ORDER_MAX = 5;
+
+const easeOutCubic = (x: number) => 1 - Math.pow(1 - x, 3);
+const easeOutBack = (x: number) => { const c = 1.70158; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+
+/* amount 0..1 for a layer given phase timeline; staggered outside-first on the
+   way out, centre-first on the way back. */
+function layerAmt(key: ExplodeKey, phase: number, pt01: number): number {
+  const { order } = EXPLODE[key];
+  if (phase === 1) { /* disassemble: outer leads */
+    const d = (order / ORDER_MAX) * 0.5; /* stagger as fraction of window */
+    return easeOutCubic(clamp01((pt01 - d) / (1 - d)));
+  }
+  if (phase === 3) { /* assemble: centre leads, snap-lock settle */
+    const d = ((ORDER_MAX - order) / ORDER_MAX) * 0.45;
+    return 1 - easeOutBack(clamp01((pt01 - d) / (1 - d)));
+  }
+  return phase === 2 ? 1 : 0;
+}
+
 export default function CreativeCore() {
   const { data, theme } = useStore();
   const disciplines = data.core;
@@ -190,7 +250,9 @@ export default function CreativeCore() {
     primary: 0, secondary: 0, central: 0, gearA: 0, gearB: 0, lower: 0,
     ext: Array(N).fill(0), joint: Array(N).fill(0), prox: Array(N).fill(0),
     ptrAngle: 0, ptrExt: 0, ptrSpin: 0,
-    recT: -1, lastTheme: "",
+    /* theme transition: phase 0 idle · 1 disassemble · 2 hold(exploded) · 3 assemble */
+    thPhase: 0 as 0 | 1 | 2 | 3, thT: 0, thFrozen: false,
+    lastTheme: "",
   });
 
   /* click fires a mechanical pulse + lock signal toward the centre */
@@ -204,6 +266,18 @@ export default function CreativeCore() {
   const toggleLock = (i: number) => {
     firePulse(i);
     setLockedIdx((prev) => (prev === i ? null : i));
+  };
+
+  /* temporarily pin the engine's palette so the material flip lands while the
+     machine is apart (exploded) rather than crossfading at toggle time.
+     pal=null releases the override and the live theme takes over. */
+  const applyFreeze = (pal: Record<string, string> | null) => {
+    const el = containerRef.current;
+    if (!el) return;
+    for (const k of FREEZE_KEYS) {
+      if (pal) el.style.setProperty(k, pal[k]);
+      else el.style.removeProperty(k);
+    }
   };
 
   useEffect(() => {
@@ -229,36 +303,57 @@ export default function CreativeCore() {
       e.last = t; e.t += dt;
       const rm = reduced ? 0 : 1;
 
-      /* theme recalibration — an exploded-view mechanical rebuild:
-         PHASE 1 power down → PHASE 2/3 layers explode in Z-depth (some toward camera, some away,
-         some rotate/slide) → material swaps mid-explosion → PHASE 5 reassemble → PHASE 6 power up. */
-      if (themeRef.current !== e.lastTheme) { e.lastTheme = themeRef.current; e.recT = 0.0001; }
-      let dis = 0;    /* 0..1 explosion amount */
-      let power = 1;  /* rotation power — dips to near-zero while exploded, then ramps back */
-      if (e.recT > 0) {
-        e.recT += dt;
-        const T = e.recT;
-        const sstep = (x: number) => { const t = clamp01(x); return t * t * (3 - 2 * t); };
-        if (T < 0.4) { dis = sstep(T / 0.4); power = 1 - 0.85 * sstep(T / 0.4); }        /* power down + begin explode */
-        else if (T < 1.5) { dis = 1; power = 0.15; }                                     /* hold exploded, material swaps */
-        else if (T < 2.2) { const u = (T - 1.5) / 0.7; dis = 1 - sstep(u); power = 0.15 + 0.85 * sstep(u); } /* reassemble + power up */
-        else { e.recT = -1; }
+      /* theme recalibration — EXPLODED mechanical rebuild, part by part:
+         disassemble outer→centre (fast) → brief exploded hold (material flips here) →
+         reassemble centre→outer with a mechanical snap-lock. Interrupt-safe: any new
+         toggle re-freezes the shown palette and restarts, never leaving parts half-apart. */
+      if (themeRef.current !== e.lastTheme) {
+        const preToggle = e.lastTheme; /* palette on screen before this flip */
+        e.lastTheme = themeRef.current;
+        applyFreeze(CORE_PALETTES[preToggle as "light" | "dark"] ?? null);
+        e.thFrozen = true;
+        e.thPhase = 1; e.thT = 0;
       }
-      /* ---- layers separate in distinct depth directions (toward / away / rotate / slide) ---- */
-      orbitalG.current?.setAttribute("opacity", (1 - 0.3 * dis).toFixed(3));
-      /* outer housing lifts toward the camera + rotates */
+      /* advance the phase timeline (ms) */
+      if (e.thPhase !== 0) {
+        e.thT += dt * 1000;
+        if (e.thPhase === 1 && e.thT >= DIS_MS) { e.thPhase = 2; e.thT = 0; }
+        else if (e.thPhase === 2 && e.thT >= HOLD_MS) {
+          /* exploded hold ends → release the freeze; the NEW theme appears while apart */
+          if (e.thFrozen) { applyFreeze(null); e.thFrozen = false; }
+          e.thPhase = 3; e.thT = 0;
+        } else if (e.thPhase === 3 && e.thT >= ASM_MS) {
+          if (e.thFrozen) { applyFreeze(null); e.thFrozen = false; }
+          e.thPhase = 0; e.thT = 0; /* fully assembled, resume */
+        }
+      }
+      /* per-layer explosion amounts — staggered, centre-last out / centre-first back */
+      const pt01 = e.thPhase === 1 ? clamp01(e.thT / DIS_MS)
+        : e.thPhase === 3 ? clamp01(e.thT / ASM_MS)
+        : e.thPhase === 2 ? 1 : 0;
+      const A = {} as Record<ExplodeKey, number>;
+      for (const k of Object.keys(EXPLODE) as ExplodeKey[]) A[k] = reduced ? 0 : layerAmt(k, e.thPhase, pt01);
+      /* rotation power — dips to near-zero while exploded, ramps back on assembly */
+      const power = e.thPhase === 0 ? 1
+        : e.thPhase === 1 ? 1 - 0.85 * A.housing
+        : e.thPhase === 2 ? 0.15
+        : 0.15 + 0.85 * (1 - A.housing);
+      /* ---- layers separate in distinct X/Y/Z directions (toward / away / rotate / slide) ---- */
+      const aH = A.housing;
+      orbitalG.current?.setAttribute("opacity", (1 - 0.22 * Math.max(aH, A.plate)).toFixed(3));
+      /* outer housing lifts toward the camera + rotates a few degrees */
       housingG.current?.setAttribute("transform",
-        `translate(${C} ${C}) rotate(${(4 * dis).toFixed(2)}) scale(${(1 + 0.075 * dis).toFixed(4)}) translate(${-C} ${-C})`);
+        `translate(${C} ${C - 0}) rotate(${(EXPLODE.housing.rot * aH).toFixed(2)}) scale(${(1 + EXPLODE.housing.sc * aH).toFixed(4)}) translate(${-C} ${-C}) translate(0 ${(-EXPLODE.housing.dy * aH).toFixed(1)})`);
       /* recessed engine plate recedes away from the camera */
       plateG.current?.setAttribute("transform",
-        `translate(${C} ${C + 10 * dis}) scale(${(1 - 0.05 * dis).toFixed(4)}) translate(${-C} ${-(C + 10 * dis)})`);
-      /* central hub recedes slightly */
+        `translate(${C} ${C + EXPLODE.plate.dy * A.plate}) scale(${(1 + EXPLODE.plate.sc * A.plate).toFixed(4)}) translate(${-C} ${-(C + EXPLODE.plate.dy * A.plate)})`);
+      /* central hub recedes slightly into depth */
       hubPlateG.current?.setAttribute("transform",
-        `translate(${C} ${C}) scale(${(1 - 0.07 * dis).toFixed(4)}) translate(${-C} ${-C})`);
-      /* node couplings detach (fade + shrink) */
-      couplingsG.current?.setAttribute("opacity", (1 - 0.7 * dis).toFixed(3));
+        `translate(${C} ${C}) scale(${(1 + EXPLODE.hub.sc * A.hub).toFixed(4)}) translate(${-C} ${-C}) translate(0 ${(EXPLODE.hub.dy * A.hub).toFixed(1)})`);
+      /* node couplings detach outward early (unlock first) */
+      couplingsG.current?.setAttribute("opacity", (1 - 0.7 * A.couplings).toFixed(3));
       couplingsG.current?.setAttribute("transform",
-        `translate(${C} ${C}) scale(${(1 - 0.05 * dis).toFixed(4)}) translate(${-C} ${-C})`);
+        `translate(${C} ${C}) scale(${(1 - 0.05 * A.couplings).toFixed(4)}) translate(${-C} ${-C})`);
 
       /* ---- mechanical surge: every 20s, ~1s impulse (emphasises the secondary ring) ---- */
       const phase = e.t % 20;
@@ -281,22 +376,22 @@ export default function CreativeCore() {
       e.gearB -= dt * 35 * m * power;
       e.lower -= dt * 10 * m * power;
 
-      /* primary ring drifts away from camera + counter-rotates slightly */
+      /* primary ring separates outward + counter-rotates a few degrees */
       primaryRingG.current?.setAttribute("transform",
-        `translate(${C} ${C}) rotate(${(-3 * dis).toFixed(2)}) scale(${(1 - 0.06 * dis).toFixed(4)}) rotate(${(e.primary % 360).toFixed(2)}) translate(${-C} ${-C})`);
-      /* secondary ring slides sideways + recedes */
+        `translate(${C} ${C}) rotate(${(EXPLODE.primary.rot * A.primary).toFixed(2)}) scale(${(1 + EXPLODE.primary.sc * A.primary).toFixed(4)}) rotate(${(e.primary % 360).toFixed(2)}) translate(${-C} ${-C})`);
+      /* secondary ring slides sideways + rotates the other way */
       secondaryRingG.current?.setAttribute("transform",
-        `translate(${C + 6 * dis} ${C + 4 * dis}) scale(${(1 - 0.04 * dis).toFixed(4)}) rotate(${(e.secondary % 360).toFixed(2)}) translate(${-C} ${-C})`);
-      /* central gear recedes into depth */
+        `translate(${C + EXPLODE.secondary.dx * A.secondary} ${C + EXPLODE.secondary.dy * A.secondary}) rotate(${(EXPLODE.secondary.rot * A.secondary).toFixed(2)}) scale(${(1 + EXPLODE.secondary.sc * A.secondary).toFixed(4)}) rotate(${(e.secondary % 360).toFixed(2)}) translate(${-C} ${-C})`);
+      /* central gear assembly recedes into depth */
       centralGearG.current?.setAttribute("transform",
-        `translate(${C} ${C + 11 * dis}) scale(${(1 - 0.06 * dis).toFixed(4)}) rotate(${(e.central % 360).toFixed(2)})`);
-      /* support gears drift outward along their mounting paths + rotate */
-      const [gax, gay] = ptOf(C, C, G_OFF + 18 * dis, GA.a);
-      const [gbx, gby] = ptOf(C, C, G_OFF + 18 * dis, GB.a);
-      gearAG.current?.setAttribute("transform", `translate(${gax} ${gay}) rotate(${(e.gearA % 360).toFixed(2)})`);
-      gearBG.current?.setAttribute("transform", `translate(${gbx} ${gby}) rotate(${(e.gearB % 360).toFixed(2)})`);
-      const [lx, ly] = ptOf(C, C, LOWER.d + 14 * dis, LOWER.a);
-      lowerGearG.current?.setAttribute("transform", `translate(${lx} ${ly}) rotate(${(e.lower % 360).toFixed(2)})`);
+        `translate(${C} ${C + EXPLODE.hub.dy * A.hub}) scale(${(1 + EXPLODE.hub.sc * A.hub).toFixed(4)}) rotate(${(e.central % 360).toFixed(2)})`);
+      /* support gears drift outward along their mounting paths + spin with their parent */
+      const [gax, gay] = ptOf(C, C, G_OFF + 18 * A.gearA, GA.a);
+      const [gbx, gby] = ptOf(C, C, G_OFF + 18 * A.gearB, GB.a);
+      gearAG.current?.setAttribute("transform", `translate(${gax} ${gay}) rotate(${(EXPLODE.gearA.rot * A.gearA).toFixed(2)}) rotate(${(e.gearA % 360).toFixed(2)})`);
+      gearBG.current?.setAttribute("transform", `translate(${gbx} ${gby}) rotate(${(EXPLODE.gearB.rot * A.gearB).toFixed(2)}) rotate(${(e.gearB % 360).toFixed(2)})`);
+      const [lx, ly] = ptOf(C, C, LOWER.d + 14 * A.lower, LOWER.a);
+      lowerGearG.current?.setAttribute("transform", `translate(${lx} ${ly}) rotate(${(EXPLODE.lower.rot * A.lower).toFixed(2)}) rotate(${(e.lower % 360).toFixed(2)})`);
 
       /* crimson timing indicator strengthens with the surge */
       indicatorC.current?.setAttribute("opacity", (0.8 + 0.2 * boost).toFixed(2));
@@ -327,7 +422,7 @@ export default function CreativeCore() {
 
       const lk = lockedRef.current;
       const hv = hoverRef.current;
-      const inTransition = e.recT > 0; /* during theme change the pointer powers down + retracts */
+      const inTransition = e.thPhase !== 0; /* during theme change the pointer powers down + retracts */
       const tracking = !inTransition && (lk !== null || hv !== null || mouseInCore);
       /* priority: locked node → hovered node → live mouse angle */
       const ptrAngTarget =
@@ -356,11 +451,14 @@ export default function CreativeCore() {
       ptrJoint2.current?.setAttribute("cy", joint2Y.toFixed(1));
       ptrTipG.current?.setAttribute("transform", `translate(${C} ${joint2Y.toFixed(1)})`);
 
-      /* ---- nodes: proximity shift toward cursor + theme-disassembly drift (outward + slight rotate) ---- */
+      /* ---- nodes: proximity shift toward cursor + theme-disassembly drift.
+            Nodes unlock with their couplings (outer-first), drift outward + rotate a few
+            degrees, then settle back to their exact original position/rotation. ---- */
+      const nA = A.couplings; /* nodes separate with the coupling layer */
       for (let i = 0; i < N; i++) {
         const na = angleOf(i);
-        const ox = Math.sin(na * DEG) * dis * 16;
-        const oy = -Math.cos(na * DEG) * dis * 16;
+        const ox = Math.sin(na * DEG) * nA * 16;
+        const oy = -Math.cos(na * DEG) * nA * 16;
         let dx = 0, dy = 0;
         if (box.current.w > 0) {
           const nx = (pct(i, NODE_PCT).x / 100 - 0.5) * box.current.w;
@@ -373,7 +471,7 @@ export default function CreativeCore() {
         }
         const w = nodeWrapRefs.current[i];
         if (w) w.style.transform =
-          `translate(${(dx + ox).toFixed(1)}px, ${(dy + oy).toFixed(1)}px) rotate(${(dis * 5).toFixed(1)}deg)`;
+          `translate(${(dx + ox).toFixed(1)}px, ${(dy + oy).toFixed(1)}px) rotate(${(nA * 5).toFixed(1)}deg)`;
       }
       if (box.current.w > 0 && glowC.current) {
         const scale = 600 / box.current.w;
@@ -427,6 +525,8 @@ export default function CreativeCore() {
       cancelAnimationFrame(eng.current.raf);
       el?.removeEventListener("mousemove", onMove);
       el?.removeEventListener("mouseleave", onLeave);
+      /* never leave a stale palette override behind */
+      if (eng.current.thFrozen) { applyFreeze(null); eng.current.thFrozen = false; }
     };
   }, [reduced]);
 
