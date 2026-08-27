@@ -151,7 +151,7 @@ export function FullscreenViewer({
 
   const isVideo = item.kind === "video";
   const ctl = "absolute w-12 h-12 grid place-items-center rounded-lg transition-all duration-300 hover:-translate-y-0.5 shadow-[0_10px_24px_-12px_rgba(0,0,0,0.85)]";
-  const ctlStyle = { background: "#ddddd8", color: "#222328" };
+  const ctlStyle = { background: "#f0f8ff", color: "#222328" };
 
   /* rendered through a portal to document.body so the viewer is a true
      page-level layer — never clipped or trapped by an ancestor container. */
@@ -173,7 +173,7 @@ export function FullscreenViewer({
             )
           ) : (
             <div className="h-[70vh] w-[min(92vw,60vh)] rounded-lg border-2 border-dashed grid place-items-center text-center p-8"
-              style={{ borderColor: "rgba(221,221,216,0.3)", color: "#ddddd8", aspectRatio: ratio }}>
+              style={{ borderColor: "rgba(221,221,216,0.3)", color: "#f0f8ff", aspectRatio: ratio }}>
               <div className="flex flex-col gap-2 items-center">
                 <span className="f-mono text-[10px] tracking-[0.3em] text-[#e72241]">{isVideo ? "ADD VIDEO" : "ADD IMAGE"}</span>
                 <span className="f-mono text-[9px] tracking-[0.24em] opacity-60">UPLOAD VIA EDIT — SLOT EMPTY</span>
@@ -194,7 +194,7 @@ export function FullscreenViewer({
           <button onClick={(e) => { e.stopPropagation(); setIndex((index - 1 + n) % n); }} aria-label="Previous media"
             className="group absolute left-0 sm:left-3 top-1/2 -translate-y-1/2 w-20 sm:w-24 h-40 sm:h-52 grid place-items-center cursor-pointer"
             style={{ background: "transparent", border: "none" }}>
-            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#ddddd8" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#f0f8ff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"
               className="opacity-60 group-hover:opacity-100 group-hover:-translate-x-1.5 transition-all duration-300 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
               <path d="M15 4l-8 8 8 8" />
             </svg>
@@ -202,7 +202,7 @@ export function FullscreenViewer({
           <button onClick={(e) => { e.stopPropagation(); setIndex((index + 1 + n) % n); }} aria-label="Next media"
             className="group absolute right-0 sm:right-3 top-1/2 -translate-y-1/2 w-20 sm:w-24 h-40 sm:h-52 grid place-items-center cursor-pointer"
             style={{ background: "transparent", border: "none" }}>
-            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#ddddd8" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#f0f8ff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"
               className="opacity-60 group-hover:opacity-100 group-hover:translate-x-1.5 transition-all duration-300 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
               <path d="M9 4l8 8-8 8" />
             </svg>

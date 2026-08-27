@@ -57,7 +57,7 @@ function MediaManager({ label, items, ratio, onChange, kind }: {
             )}
             <div className="absolute inset-x-0 bottom-0 flex gap-1 p-1" style={{ background: "color-mix(in srgb, var(--page) 78%, transparent)" }}>
               <button onClick={() => { targetRef.current = i; fileRef.current?.click(); }}
-                className="flex-1 f-tech font-bold text-[8px] tracking-[0.14em] px-1 py-1 rounded bg-[var(--crimson)] text-[#ddddd8]">{m.src ? "REPLACE" : "UPLOAD"}</button>
+                className="flex-1 f-tech font-bold text-[8px] tracking-[0.14em] px-1 py-1 rounded bg-[var(--crimson)] text-[#f0f8ff]">{m.src ? "REPLACE" : "UPLOAD"}</button>
               {m.src && (
                 <button onClick={() => onChange(items.map((x, j) => (j === i ? { ...x, src: null } : x)))}
                   className="f-tech font-bold text-[8px] tracking-[0.14em] px-1.5 py-1 rounded border border-[var(--line)] text-[var(--ink2)]">✕</button>
@@ -238,7 +238,7 @@ export default function Editor() {
             <button key={s.id} onClick={() => setSel(s.id)}
               className="f-tech font-bold text-[11px] tracking-[0.2em] px-4 py-3 rounded-lg text-left whitespace-nowrap transition-all duration-300"
               style={sel === s.id
-                ? { background: "var(--crimson)", color: "#ddddd8" }
+                ? { background: "var(--crimson)", color: "#f0f8ff" }
                 : { border: "1px solid var(--line)", color: "var(--ink2)" }}>
               <span className="opacity-60 mr-2">{s.num}</span>{s.label}
             </button>

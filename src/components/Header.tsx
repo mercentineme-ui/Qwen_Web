@@ -82,7 +82,7 @@ export default function Header() {
             <span className="f-clock text-[8px] tracking-[0.32em] text-[var(--ink2)] mr-1 self-center">LOCAL</span>
             <span className="clock-num f-clock font-bold text-[16px] lg:text-[17px] tracking-[0.12em]">{hh}:{mm}:{ss}</span>
             <span className={`f-clock font-bold text-[9px] tracking-[0.2em] px-1.5 py-[3px] rounded-[4px] self-center ${
-              mer === "PM" ? "bg-[var(--crimson)] text-[#ddddd8]" : "border border-[var(--ink2)] text-[var(--ink2)]"
+              mer === "PM" ? "bg-[var(--crimson)] text-[#f0f8ff]" : "border border-[var(--ink2)] text-[var(--ink2)]"
             }`}>
               {mer}
             </span>
@@ -90,7 +90,7 @@ export default function Header() {
 
           <button onClick={toggleTheme} aria-label="Toggle theme"
             className="w-9 h-9 lg:w-10 lg:h-10 grid place-items-center rounded-[8px] border transition-all duration-400 hover:-translate-y-0.5 shrink-0"
-            style={{ backgroundColor: theme === "light" ? "#222328" : "#ddddd8", borderColor: "var(--line)" }}>
+            style={{ backgroundColor: theme === "light" ? "#222328" : "#f0f8ff", borderColor: "var(--line)" }}>
             {theme === "light" ? <MoonIcon size={19} className="moon-drift" /> : <SunIcon size={20} />}
           </button>
 

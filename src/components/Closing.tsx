@@ -32,7 +32,7 @@ function Mailbox({ door, onClick }: { door: "closed" | "half" | "open"; onClick?
         </g>
       </svg>
       {door !== "open" && onClick && (
-        <span className="absolute -right-3 sm:-right-7 top-1 rotate-6 f-display text-[15px] sm:text-[17px] tracking-wide px-3 py-1.5 bg-[#ddddd8] text-[#222328] border-2 border-[#222328] shadow-[4px_4px_0_#222328] group-hover:rotate-3 group-hover:-translate-y-0.5 transition-transform duration-300">
+        <span className="absolute -right-3 sm:-right-7 top-1 rotate-6 f-display text-[15px] sm:text-[17px] tracking-wide px-3 py-1.5 bg-[#f0f8ff] text-[#222328] border-2 border-[#222328] shadow-[4px_4px_0_#222328] group-hover:rotate-3 group-hover:-translate-y-0.5 transition-transform duration-300">
           OPEN ME
         </span>
       )}
@@ -198,23 +198,23 @@ export function HowIBuild() {
             ) : (
               /* PHASE 3 — comic production archive */
               <div className="mt-6 comic-in relative rounded-xl border-4 p-6 sm:p-9 overflow-hidden"
-                style={{ borderColor: "#222328", background: "#ddddd8", backgroundImage: "radial-gradient(rgba(34,35,40,0.16) 1px, transparent 1.4px)", backgroundSize: "12px 12px", boxShadow: "10px 10px 0 #9E2237, 16px 16px 0 #59232F", color: "#222328" }}>
+                style={{ borderColor: "#222328", background: "#f0f8ff", backgroundImage: "radial-gradient(rgba(34,35,40,0.16) 1px, transparent 1.4px)", backgroundSize: "12px 12px", boxShadow: "10px 10px 0 #9E2237, 16px 16px 0 #59232F", color: "#222328" }}>
                 <span className="comic-flash absolute inset-0 border-4 pointer-events-none" style={{ borderColor: "#9E2237" }} aria-hidden />
                 <span className="absolute top-3 left-4 f-mono text-[9px] tracking-[0.3em] text-[#9E2237]">PHASE 03 — BEYOND</span>
                 <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-8 lg:gap-12 items-start mt-4">
                   <div className="relative min-w-0">
-                    <div className="bubble-settle relative z-10 mb-[-12px] ml-2 sm:ml-5 w-[92%] rounded-[16px] border-[3px] border-[#222328] bg-[#ddddd8] px-5 py-4"
+                    <div className="bubble-settle relative z-10 mb-[-12px] ml-2 sm:ml-5 w-[92%] rounded-[16px] border-[3px] border-[#222328] bg-[#f0f8ff] px-5 py-4"
                       style={{ boxShadow: "5px 5px 0 #9E2237" }}>
                       <p className="f-tech font-bold text-[14px] sm:text-[15.5px] leading-snug">{b.bubble}</p>
                       <svg className="absolute -bottom-[16px] left-10" width="34" height="20" viewBox="0 0 34 20">
-                        <path d="M0 0 H34 L12 20 Z" fill="#ddddd8" stroke="#222328" strokeWidth="3" strokeLinejoin="round" />
-                        <path d="M3 0 H31 L12 16 Z" fill="#ddddd8" />
+                        <path d="M0 0 H34 L12 20 Z" fill="#f0f8ff" stroke="#222328" strokeWidth="3" strokeLinejoin="round" />
+                        <path d="M3 0 H31 L12 16 Z" fill="#f0f8ff" />
                       </svg>
                     </div>
                     <div className="relative border-4 border-[#222328] bg-[#C3C1BC]" style={{ boxShadow: "8px 8px 0 #9E2237" }}>
                       <MediaSlot item={b.reveal.image} ratio="1/1" className="!rounded-none !border-0" showLabel={false} />
-                      <span className="absolute top-2 left-2 f-mono text-[8px] tracking-[0.26em] px-2 py-1 bg-[#222328] text-[#ddddd8]">UPLOAD SPACE</span>
-                      <span className="absolute bottom-2 right-2 f-mono text-[8px] tracking-[0.26em] px-2 py-1 bg-[#9E2237] text-[#ddddd8]">1 : 1 FRAME</span>
+                      <span className="absolute top-2 left-2 f-mono text-[8px] tracking-[0.26em] px-2 py-1 bg-[#222328] text-[#f0f8ff]">UPLOAD SPACE</span>
+                      <span className="absolute bottom-2 right-2 f-mono text-[8px] tracking-[0.26em] px-2 py-1 bg-[#9E2237] text-[#f0f8ff]">1 : 1 FRAME</span>
                     </div>
                   </div>
                   <div className="min-w-0">
@@ -224,12 +224,12 @@ export function HowIBuild() {
                       {b.reveal.heading} <span className="text-[#9E2237]">{b.reveal.headingAccent}</span>
                     </h3>
                     <div className="mt-6 relative border-2 border-[#222328] bg-[#CEB1AB] p-5" style={{ boxShadow: "6px 6px 0 #9E2237" }}>
-                      <span className="absolute -top-2.5 left-4 f-mono text-[8px] tracking-[0.3em] px-2 py-0.5 bg-[#9E2237] text-[#ddddd8]">NARRATOR</span>
+                      <span className="absolute -top-2.5 left-4 f-mono text-[8px] tracking-[0.3em] px-2 py-0.5 bg-[#9E2237] text-[#f0f8ff]">NARRATOR</span>
                       <p className="text-[14.5px] sm:text-[16px] leading-relaxed font-medium text-[#222328]">{b.reveal.narrator}</p>
                     </div>
                     <div className="mt-8 flex flex-wrap items-center gap-5">
                       <button onClick={replay}
-                        className="inline-flex items-center gap-3 f-tech font-bold text-[11px] tracking-[0.24em] px-4 py-3 rounded-lg border-2 border-[#222328] hover:bg-[#222328] hover:text-[#ddddd8] transition-all duration-300"
+                        className="inline-flex items-center gap-3 f-tech font-bold text-[11px] tracking-[0.24em] px-4 py-3 rounded-lg border-2 border-[#222328] hover:bg-[#222328] hover:text-[#f0f8ff] transition-all duration-300"
                         style={{ boxShadow: "4px 4px 0 #9E2237" }}>
                         ↻ RUN IT AGAIN
                       </button>
@@ -299,13 +299,13 @@ export function Contact() {
 
             {/* graphic-novel information panel — red + white identity is FIXED across both themes */}
             <div className="relative mt-8 p-6 sm:p-7 mat-texture max-w-[640px]"
-              style={{ background: "#ddddd8", color: "#222328", border: "2.5px solid #222328", boxShadow: "7px 7px 0 #b31b1b" }}>
+              style={{ background: "#f0f8ff", color: "#222328", border: "2.5px solid #222328", boxShadow: "7px 7px 0 #da012d" }}>
               {/* controlled red accent bar */}
-              <span className="absolute left-0 top-0 bottom-0 w-[7px]" style={{ background: "#b31b1b" }} />
+              <span className="absolute left-0 top-0 bottom-0 w-[7px]" style={{ background: "#da012d" }} />
               {/* sharp comic-panel corner details */}
               <span className="absolute top-[6px] right-[6px] w-3 h-3 border-t-2 border-r-2" style={{ borderColor: "#222328" }} />
               <span className="absolute bottom-[6px] right-[6px] w-3 h-3 border-b-2 border-r-2" style={{ borderColor: "#222328" }} />
-              <span className="absolute top-[6px] right-[24px] w-1.5 h-1.5" style={{ background: "#b31b1b" }} />
+              <span className="absolute top-[6px] right-[24px] w-1.5 h-1.5" style={{ background: "#da012d" }} />
               <p className="text-[19px] sm:text-[21px] lg:text-[22.5px] leading-relaxed font-medium pl-2">
                 Hey!, I'm Bala Krishnan —<br />
                 I make ideas come alive — and you're just in time!

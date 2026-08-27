@@ -205,7 +205,7 @@ export default function AILab() {
                   <div className="flex flex-wrap items-center gap-2.5">
                     <span className="f-mono text-[9px] tracking-[0.3em] px-2.5 py-1.5 rounded-[6px]" style={{ color: "var(--m-sub)", border: "1px solid var(--line)" }}>{lab.subLabel}</span>
                     <span className="f-striker text-[10px] tracking-[0.16em] px-2.5 py-1.5 rounded-[6px] border" style={{ borderColor: "var(--crimson-rough)", color: "var(--crimson-rough)" }}>{lab.projectType}</span>
-                    <span className="f-tech font-bold text-[9px] tracking-[0.26em] px-2.5 py-1.5 rounded-[6px] bg-[var(--crimson)] text-[#ddddd8]">{lab.projectStatus}</span>
+                    <span className="f-tech font-bold text-[9px] tracking-[0.26em] px-2.5 py-1.5 rounded-[6px] bg-[var(--crimson)] text-[#f0f8ff]">{lab.projectStatus}</span>
                   </div>
                   <h3 className="f-display text-[clamp(2rem,4.4vw,3.4rem)] leading-none mt-4 tracking-wide" style={{ color: "var(--ink)" }}>
                     {(() => { const [a, b] = lab.projectName.split("."); return b ? (<>{a}<span style={{ color: "var(--crimson-rough)" }}>.{b}</span></>) : <span>{a}<span style={{ color: "var(--crimson-rough)" }}>.</span></span>; })()}

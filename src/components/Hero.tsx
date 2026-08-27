@@ -67,6 +67,29 @@ export default function Hero() {
     [h.greetings, daypart]
   );
 
+  /* name hover — one continuous material transformation:
+     NORMAL → STONE → ARCHITECTURE → PAPER WRAP → UNWRAP → STONE → NORMAL (~2.6s).
+     Leaving mid-sequence resolves smoothly back to the original typography. */
+  const [matPhase, setMatPhase] = useState<"idle" | "seq" | "resolve">("idle");
+  const matTimer = useRef<number | null>(null);
+  const enterMat = () => {
+    if (reduced) return;
+    if (matTimer.current) clearTimeout(matTimer.current);
+    setMatPhase("seq");
+    matTimer.current = window.setTimeout(() => setMatPhase("idle"), 2600);
+  };
+  const leaveMat = () => {
+    if (reduced) return;
+    if (matPhase !== "seq") return;
+    if (matTimer.current) clearTimeout(matTimer.current);
+    setMatPhase("resolve");
+    matTimer.current = window.setTimeout(() => setMatPhase("idle"), 460);
+  };
+  useEffect(() => () => { if (matTimer.current) clearTimeout(matTimer.current); }, []);
+  const nameA = h.nameA.replace(/^C\.\s+/i, "C.");
+  const LINE1 = "text-[clamp(2.2rem,4.6vw,3.8rem)] tracking-[0.02em]";
+  const LINE2 = "text-[clamp(3rem,6.6vw,5.8rem)] tracking-[0.01em] mt-1.5";
+
   useEffect(() => {
     const iv = window.setInterval(() => {
       setIdx((i) => (i + 1) % n);
@@ -121,7 +144,7 @@ export default function Hero() {
         <div className="min-w-0">
           {/* greeting */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
-            <span className="f-tech font-bold text-[12px] tracking-[0.28em] px-3.5 py-2 w-fit rounded-[6px] bg-[var(--crimson)] text-[#ddddd8]">
+            <span className="f-tech font-bold text-[12px] tracking-[0.28em] px-3.5 py-2 w-fit rounded-[6px] bg-[var(--crimson)] text-[#f0f8ff]">
               HEY THERE!
             </span>
             <p className="text-[18px] sm:text-[20px] lg:text-[21px] leading-snug font-semibold text-[var(--ink)]">
@@ -131,12 +154,36 @@ export default function Hero() {
             </p>
           </div>
 
-          {/* name */}
-          <h1 className="mt-8 lg:mt-9 leading-[0.94] select-none">
-            <NameLine text={h.nameA.replace(/^C\.\s+/i, "C.")} resolve={!reduced}
-              className="text-[clamp(2.2rem,4.6vw,3.8rem)] tracking-[0.02em]" delay="0s" />
-            <NameLine text={h.nameB} resolve={!reduced} accent
-              className="text-[clamp(3rem,6.6vw,5.8rem)] tracking-[0.01em] mt-1.5" delay="0.12s" />
+          {/* name — hover runs the stone → architecture → paper material transformation */}
+          <h1
+            className={`mat-stage mt-8 lg:mt-9 leading-[0.94] select-none ${matPhase === "seq" ? "mat-seq" : matPhase === "resolve" ? "mat-resolve" : ""}`}
+            onMouseEnter={enterMat} onMouseLeave={leaveMat} onClick={enterMat}
+          >
+            <span className="name-base block">
+              <NameLine text={nameA} resolve={!reduced} className={LINE1} delay="0s" />
+              <NameLine text={h.nameB} resolve={!reduced} accent className={LINE2} delay="0.12s" />
+            </span>
+            {/* stone displacement filter (material roughness for phase 1) */}
+            <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden>
+              <filter id="nameStone">
+                <feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="2" seed="11" result="n" />
+                <feDisplacementMap in="SourceGraphic" in2="n" scale="2.8" />
+              </filter>
+            </svg>
+            {/* material duplicates — same letter geometry, physically transformed materials */}
+            <span aria-hidden className="name-dup dup-stone">
+              <span className={`block f-display ${LINE1}`}>{nameA}</span>
+              <span className={`block f-display ${LINE2}`}>{h.nameB}</span>
+            </span>
+            <span aria-hidden className="name-dup dup-arch">
+              <span className={`block f-display ${LINE1}`}>{nameA}</span>
+              <span className={`block f-display ${LINE2}`}>{h.nameB}</span>
+            </span>
+            <span aria-hidden className="name-dup dup-paper">
+              <span className={`block f-display ${LINE1}`}>{nameA}</span>
+              <span className={`block f-display ${LINE2}`}>{h.nameB}</span>
+            </span>
+            <span className="mat-sheet" aria-hidden />
           </h1>
 
           {/* ABOUT ME */}
@@ -179,7 +226,7 @@ export default function Hero() {
                 className="group mat-outer mat-texture relative overflow-hidden px-4 py-3.5 flex items-center gap-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_34px_-18px_rgba(0,0,0,0.6)] active:translate-y-0 active:scale-[0.99]"
                 style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--outer-ink) 20%, transparent)", clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)" }}>
                 <span className="f-mono font-semibold text-[11px] tracking-[0.14em] px-1.5 py-1 shrink-0"
-                  style={{ background: "var(--crimson)", color: "#ddddd8" }}>
+                  style={{ background: "var(--crimson)", color: "#f0f8ff" }}>
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <span className="f-striker text-[15px] sm:text-[16px] leading-[1.12] tracking-[0.06em] min-w-0" style={{ color: "var(--outer-ink)" }}>

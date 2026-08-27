@@ -38,7 +38,7 @@ function Stat({ num, value, suffix, label, start, delay, reduced }: {
 
       <div className="flex items-center justify-between">
         <span className="f-mono font-semibold text-[10px] tracking-[0.24em] px-1.5 py-0.5"
-          style={{ background: "var(--crimson)", color: "#ddddd8" }}>{num}</span>
+          style={{ background: "var(--crimson)", color: "#f0f8ff" }}>{num}</span>
         <span className="flex items-end gap-[3px]" aria-hidden>
           {[0, 1, 2, 3].map((k) => (
             <span key={k} className={`w-[3px] ${start ? "tick-grow" : "scale-x-0"}`}
