@@ -72,7 +72,7 @@ export default function Expertise() {
         />
 
         <Reveal className="mt-10">
-          <div className="mat-journey mat-texture rounded-xl p-5 sm:p-8 xl:p-10 relative overflow-hidden">
+          <div id="journey" className="mat-journey mat-texture rounded-xl p-5 sm:p-8 xl:p-10 relative overflow-hidden scroll-mt-28">
             <span className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2" style={{ borderColor: "var(--crim-panel)" }} />
             <span className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2" style={{ borderColor: "var(--crim-panel)" }} />
 
@@ -144,34 +144,30 @@ export default function Expertise() {
                         <button key={c.id}
                           onMouseEnter={() => onHover(i)}
                           onClick={() => select(i)}
-                          className="group relative w-full flex items-center gap-4 px-4 sm:px-5 py-4 text-left transition-all duration-300 border-b last:border-b-0"
+                          className="group relative w-full flex items-center gap-3.5 px-4 sm:px-5 py-3 text-left transition-all duration-300 border-b last:border-b-0"
                           style={{
                             borderColor: "var(--m-line)",
-                            background: isOn ? "color-mix(in srgb, var(--crim-panel) 14%, transparent)" : "transparent",
-                            transform: isOn ? "translateX(6px)" : "none",
+                            background: isOn ? "color-mix(in srgb, var(--crim-panel) 10%, transparent)" : "transparent",
+                            transform: isOn ? "translateX(5px)" : "none",
                           }}>
-                          {/* number block */}
-                          <span className="f-mono font-semibold text-[12px] tracking-[0.1em] w-9 h-9 grid place-items-center shrink-0 transition-colors duration-300"
-                            style={{
-                              background: isOn ? "var(--crim-panel)" : "color-mix(in srgb, var(--outer-ink) 12%, transparent)",
-                              color: isOn ? "#ddddd8" : "var(--outer-ink)",
-                            }}>
+                          {/* compact index */}
+                          <span className="f-mono font-semibold text-[10px] tracking-[0.14em] w-6 shrink-0 transition-colors duration-300"
+                            style={{ color: isOn ? "var(--crim-panel)" : "var(--m-sub)" }}>
                             {c.num}
                           </span>
                           {/* name + meta */}
                           <span className="min-w-0 flex-1">
-                            <span className="block f-tech font-bold text-[16px] sm:text-[18px] tracking-[0.12em] leading-tight transition-colors duration-300"
-                              style={{ color: isOn ? "var(--outer-ink)" : "color-mix(in srgb, var(--outer-ink) 72%, transparent)" }}>
+                            <span className="block f-tech font-bold text-[13.5px] sm:text-[15px] tracking-[0.14em] leading-tight transition-colors duration-300"
+                              style={{ color: isOn ? "var(--outer-ink)" : "color-mix(in srgb, var(--outer-ink) 68%, transparent)" }}>
                               {c.short}
                             </span>
-                            <span className="block f-mono text-[9px] tracking-[0.2em] mt-1" style={{ color: "var(--m-sub)" }}>{c.role}</span>
+                            <span className="block f-mono text-[8.5px] tracking-[0.2em] mt-0.5" style={{ color: "var(--m-sub)" }}>{c.role}</span>
                           </span>
-                          {/* active indicator bar */}
-                          <span className="w-[3px] self-stretch shrink-0 transition-all duration-300"
-                            style={{ background: isOn ? "var(--crim-panel)" : "color-mix(in srgb, var(--outer-ink) 18%, transparent)" }} />
-                          <span className="f-mono text-[9px] tracking-[0.2em] shrink-0" style={{ color: isOn ? "var(--crim-panel)" : "var(--m-sub)" }}>
-                            {isOn ? "●" : "○"}
-                          </span>
+                          {/* restrained active indicator */}
+                          <span className="w-[2px] self-stretch shrink-0 transition-all duration-300"
+                            style={{ background: isOn ? "var(--crim-panel)" : "color-mix(in srgb, var(--outer-ink) 14%, transparent)" }} />
+                          <span className="w-1.5 h-1.5 rotate-45 shrink-0 transition-all duration-300"
+                            style={{ background: isOn ? "var(--crim-panel)" : "color-mix(in srgb, var(--outer-ink) 22%, transparent)" }} />
                         </button>
                       );
                     })}

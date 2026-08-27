@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { MediaItem } from "../lib/data";
 
 /* ---------- scroll reveal ---------- */
@@ -152,7 +153,9 @@ export function FullscreenViewer({
   const ctl = "absolute w-12 h-12 grid place-items-center rounded-lg transition-all duration-300 hover:-translate-y-0.5 shadow-[0_10px_24px_-12px_rgba(0,0,0,0.85)]";
   const ctlStyle = { background: "#ddddd8", color: "#222328" };
 
-  return (
+  /* rendered through a portal to document.body so the viewer is a true
+     page-level layer — never clipped or trapped by an ancestor container. */
+  return createPortal(
     <div className="fixed inset-0 z-[100] viewer-in" role="dialog" aria-modal="true"
       style={{ background: "rgba(20,20,24,0.82)", backdropFilter: "blur(20px) saturate(0.75)", WebkitBackdropFilter: "blur(20px) saturate(0.75)" }}
       onClick={onClose}>
@@ -186,21 +189,30 @@ export function FullscreenViewer({
       </button>
       {n > 1 && (
         <>
+          {/* cinematic chevron controls — large invisible hit area, bold transparent curved chevron.
+              Navigation only; they never close the viewer. */}
           <button onClick={(e) => { e.stopPropagation(); setIndex((index - 1 + n) % n); }} aria-label="Previous media"
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-14 h-14 grid place-items-center rounded-lg opacity-70 hover:opacity-100 hover:scale-110 transition-all duration-300"
-            style={{ color: "#ddddd8", background: "transparent" }}>
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5l-7 7 7 7" /></svg>
+            className="group absolute left-0 sm:left-3 top-1/2 -translate-y-1/2 w-20 sm:w-24 h-40 sm:h-52 grid place-items-center cursor-pointer"
+            style={{ background: "transparent", border: "none" }}>
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#ddddd8" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"
+              className="opacity-60 group-hover:opacity-100 group-hover:-translate-x-1.5 transition-all duration-300 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+              <path d="M15 4l-8 8 8 8" />
+            </svg>
           </button>
           <button onClick={(e) => { e.stopPropagation(); setIndex((index + 1 + n) % n); }} aria-label="Next media"
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-14 h-14 grid place-items-center rounded-lg opacity-70 hover:opacity-100 hover:scale-110 transition-all duration-300"
-            style={{ color: "#ddddd8", background: "transparent" }}>
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 5l7 7-7 7" /></svg>
+            className="group absolute right-0 sm:right-3 top-1/2 -translate-y-1/2 w-20 sm:w-24 h-40 sm:h-52 grid place-items-center cursor-pointer"
+            style={{ background: "transparent", border: "none" }}>
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#ddddd8" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"
+              className="opacity-60 group-hover:opacity-100 group-hover:translate-x-1.5 transition-all duration-300 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+              <path d="M9 4l8 8-8 8" />
+            </svg>
           </button>
           <span className="absolute bottom-5 left-1/2 -translate-x-1/2 f-mono text-[10px] tracking-[0.3em]" style={{ color: "rgba(221,221,216,0.75)" }}>
             {String(index + 1).padStart(2, "0")} / {String(n).padStart(2, "0")}
           </span>
         </>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }

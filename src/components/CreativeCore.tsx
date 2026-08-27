@@ -545,8 +545,8 @@ export default function CreativeCore() {
     <section id="core" className="relative py-20 lg:py-28 scroll-mt-20">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8">
         <SectionHead
-          label="02 — THE CORE"
-          title="THE CORE"
+          label="02 — WHAT I BRING"
+          title="WHAT I BRING"
           desc="Nine disciplines drive one machine — direction, generation and story transmitted through a single radial clockwork engine."
           meta="09 MODULES · ONE ENGINE"
         />

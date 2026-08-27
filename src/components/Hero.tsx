@@ -202,7 +202,7 @@ export default function Hero() {
           {/* CTAs + rotation counter */}
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <a href="#showreel" className="btn btn-crimson">{h.ctaPrimary}</a>
-            <a href="#expertise" className="btn btn-ghost border-[var(--ink)] text-[var(--ink)]">{h.ctaSecondary}</a>
+            <a href="#journey" className="btn btn-ghost border-[var(--ink)] text-[var(--ink)]">{h.ctaSecondary}</a>
             <span className="f-mono text-[11px] tracking-[0.26em] text-[var(--ink2)] tabular-nums ml-1">
               <span style={{ color: "var(--crimson-rough)" }}>{String(idx + 1).padStart(2, "0")}</span> / {String(n).padStart(2, "0")}
             </span>

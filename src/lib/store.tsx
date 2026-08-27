@@ -41,6 +41,11 @@ function normalize(d: PortfolioData): PortfolioData {
       })),
     },
     byNumbers: d.byNumbers ?? defaultData.byNumbers,
+    hero: {
+      ...d.hero,
+      /* migrate the legacy secondary CTA label so persisted "INDEX" reads EXPERIENCE */
+      ctaSecondary: /INDEX/i.test(d.hero?.ctaSecondary ?? "") ? "EXPERIENCE ↓" : d.hero?.ctaSecondary,
+    },
   };
 }
 
