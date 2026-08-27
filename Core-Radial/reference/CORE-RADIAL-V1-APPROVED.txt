@@ -1,0 +1,61 @@
+CORE-RADIAL-V1-APPROVED — VISUAL REFERENCE NOTE
+===============================================
+
+A screenshot (CORE-RADIAL-V1-APPROVED.png) was NOT captured: this workspace
+has no browser/screen-capture capability, and generating an interpretation
+image is explicitly prohibited for this project. Per the archival
+instructions, this text file records what the approved Core looks like so the
+snapshot can still be visually verified against a live render.
+
+HOW TO CAPTURE THE REFERENCE YOURSELF
+-------------------------------------
+1. Run the project (npm run dev / deployed preview), light theme.
+2. Scroll to section "02 — THE CORE".
+3. Screenshot the full section (machine + nine nodes + detail card) and save
+   it in this folder as CORE-RADIAL-V1-APPROVED.png.
+4. Repeat in dark theme if desired (name it ...-DARK.png).
+
+WHAT THE APPROVED CORE LOOKS LIKE (structural ground truth)
+-----------------------------------------------------------
+Layout: 620px-max square machine on the left (~1.22fr), matte status card on
+the right (~0.78fr). SVG viewBox 600×600, centre (300,300).
+
+Concentric build, outside → inside:
+  r184  outer structural wall, matte plate, 12 radial divisions + 12 bolts
+  r177  housing face line; recessed channel at r174
+  r162–148  outer index ring — 36 rectangular teeth every 10° (every 9th
+            emphasised), static
+  r142–120  primary rotating ring (slow CW): 16px track bed, 48 timing marks
+            (major every 6th), 12 segment divisions, one crimson timing block
+            that travels with the ring
+  r114–102  secondary ring (slow CCW) with dashed mid-track; faint crimson
+            surge arc rides it during the 20s surge
+  r98   recessed engine plate: machining circles r86/r74, 12 construction
+        lines, 8 mounts, 4 structural arms at 0/90/180/270
+  r58   central hub plate + segmented gear housing (12 ticks)
+  lower regulator at 215°, d76 (housing r24, gear r14/t9)
+  central gear r40/t18 + two offset gears r16/t8 at 45° and 160° (mesh
+        distance 56), bearing r13/r7
+
+Pointer: articulated linkage permanently mounted on the axle — drive gear
+r15/t9, support link, articulation gear r8/t7 at joint 1, telescoping second
+link (span 24→58), folding 68° when retracted, crimson mechanical tip;
+extends to radius ~84 (never reaches the nodes at r≈234).
+
+Nodes: nine 74×74 chamfered chips at 39% of container, every 40°, titles in
+two lines (CREATIVE/DIRECTION … PROMPT/ARCHITECTURE) on fixed sides. Each has
+a wall-mount + extending shaft + toothed joint coupling on the housing.
+Idle chip = matte outer-bg; hover/lock = crimson chip, off-white icon.
+
+Detail card: matte flip panel (light page → #222328 card; dark page → #e7e6e1
+card). Standby: "ON STAND BY / Pick a node to explore". Active: module number,
+Anton title, blurb, tag chips, three meshed gears (CONTROL / REPEATABILITY /
+SYSTEM) with per-node direction/speed sets.
+
+Motion to confirm in a live capture: rings rotating in opposite directions,
+gears spinning at different rates, crimson timing block orbiting, pointer
+unfolding on hover, exploded disassemble/reassemble on theme toggle, surge
+impulse every 20 s.
+
+This description + the archived source are the binding reference; the PNG is
+optional corroboration only.
