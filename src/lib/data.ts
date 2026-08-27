@@ -152,7 +152,7 @@ export const defaultData: PortfolioData = {
       { num: "02", title: "Diploma in Mechanical", school: "Anurag College of Engineering", year: "2020" },
     ],
     ctaPrimary: "CREATIVES →",
-    ctaSecondary: "CORE ↓",
+    ctaSecondary: "EXPERIENCE ↓",
     images: [
       slot("IMAGE 01", "image", ["ADD PORTRAIT", "IN STUDIO"]),
       slot("IMAGE 02", "image", ["ADD PORTRAIT", "IN STUDIO"]),

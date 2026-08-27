@@ -172,19 +172,33 @@ body {
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 52px) 100%, 52px 100%, 0 calc(100% - 12px));
 }
 .clock-num { color: var(--clock-col); }
-.logo-letter-in { animation: logoLetterIn 0.5s cubic-bezier(0.25,0.9,0.3,1) both; }
-@keyframes logoLetterIn {
-  0% { opacity: 0; transform: translateY(110%); filter: blur(2px); }
-  60% { opacity: 1; filter: blur(0); }
-  100% { opacity: 1; transform: none; }
+/* ---------- DESIGNFOLIO typographic identity (continuous loop) ---------- */
+.logo-word { --amp: 1; }
+.logo-word:hover { --amp: 1.7; }
+.dfl {
+  display: inline-block;
+  font-family: "Chakra Petch", sans-serif;
+  font-weight: 600;
+  will-change: transform, filter;
+  animation: dflCycle 5.85s cubic-bezier(0.45,0.05,0.55,0.95) infinite;
+  animation-delay: calc(var(--i, 0) * 0.05s);
 }
-.logo-track { display: inline-block; animation: logoTrack 0.9s cubic-bezier(0.3,0.8,0.3,1) 0.1s both; }
-@keyframes logoTrack { from { letter-spacing: 0.62em; } to { letter-spacing: 0.42em; } }
-.logo-scan { animation: logoScan 0.7s cubic-bezier(0.4,0.4,0.4,1) 0.45s both; }
-@keyframes logoScan {
-  0% { transform: translateX(-130%); opacity: 0; }
-  15% { opacity: 1; } 85% { opacity: 1; }
-  100% { transform: translateX(340%); opacity: 0; }
+/* NORMAL → THIN → BOLD → MIXED → COLOR → GLITCH → HOP → RESOLVE → HOLD */
+@keyframes dflCycle {
+  0%, 20.5% { font-weight: 600; color: inherit; transform: none; filter: none; text-shadow: none; }
+  29%   { font-weight: 300; transform: scaleY(1.06); }
+  37.6% { font-weight: 700; transform: scaleY(0.95); }
+  46.2% { font-weight: var(--wmix, 600); transform: none; }
+  53%   { color: color-mix(in srgb, var(--crimson) calc(var(--tint, 0) * 90%), var(--ink2)); transform: none; }
+  57.3% { color: color-mix(in srgb, var(--crimson) calc(var(--tint, 0) * 90%), var(--ink2));
+          transform: translateX(calc(1.6px * var(--amp, 1))) skewX(calc(-5deg * var(--amp, 1)));
+          text-shadow: calc(1.2px * var(--amp, 1)) 0 color-mix(in srgb, var(--crimson) 55%, transparent),
+                       calc(-1.2px * var(--amp, 1)) 0 color-mix(in srgb, var(--ink2) 55%, transparent);
+          filter: blur(calc(0.7px * var(--amp, 1))); }
+  62.4% { color: inherit; transform: translateY(calc(-4px * var(--amp, 1)));
+          filter: blur(calc(0.4px * var(--amp, 1))); text-shadow: none; }
+  72.6% { font-weight: 600; color: inherit; transform: none; filter: none; text-shadow: none; }
+  100%  { font-weight: 600; color: inherit; transform: none; filter: none; text-shadow: none; }
 }
 .moon-drift { animation: moonDrift 5s ease-in-out infinite; }
 @keyframes moonDrift { 0%,100% { transform: translate(0,0) rotate(0); } 50% { transform: translate(1px,-1.4px) rotate(-7deg); } }

@@ -80,6 +80,20 @@ export const LinkedInIcon = (p: P) => (
 export const ArrowRight = (p: P) => (
   <svg {...base(p)}><path d="M4 12h15M13 6l6 6-6 6" /></svg>
 );
+
+/* ---- contact social icons (monochrome, match portfolio line language) ---- */
+export const MailIcon = (p: P) => (
+  <svg {...base(p)}><rect x="3" y="5" width="18" height="14" rx="1" /><path d="M3 6.5l9 7 9-7" /></svg>
+);
+export const WhatsAppIcon = (p: P) => (
+  <svg {...base(p)}><path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.1-1.1A9 9 0 1 0 12 3z" /><path d="M8.8 8.6c.4-.9 1-.7 1.3-.1l.7 1.5c.2.4 0 .8-.3 1.1-.3.3-.3.7 0 1.1.6.9 1.6 1.9 2.7 2.5.4.2.8.2 1.1-.1.3-.3.7-.5 1.1-.3l1.5.7c.6.3.8.9-.1 1.3-1.6.8-4.6.2-6.6-1.8S8 10.2 8.8 8.6z" strokeWidth="1.2" /></svg>
+);
+export const InstagramIcon = (p: P) => (
+  <svg {...base(p)}><rect x="3.5" y="3.5" width="17" height="17" rx="4.5" /><circle cx="12" cy="12" r="4" /><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none" /></svg>
+);
+export const ArtstationIcon = (p: P) => (
+  <svg {...base(p)}><path d="M2 17.5h13.6l2.3 4H4.7z" /><path d="M6.5 15.5L12.7 4l6.2 11.5z" /><path d="M16.9 15.5l3.3 6h3.2z" /></svg>
+);
 export const ArrowDown = (p: P) => (
   <svg {...base(p)}><path d="M12 4v15M6 13l6 6 6-6" /></svg>
 );

@@ -93,8 +93,8 @@ export default function Expertise() {
             <div className="grid lg:grid-cols-[1fr_1.15fr] gap-8 lg:gap-12 items-start"
               onMouseEnter={() => setHover(true)} onMouseLeave={() => { setHover(false); setHoverIdx(null); }}>
 
-              {/* ================= LEFT — career text info ================= */}
-              <div className={`min-w-0 ${leaving ? "career-wipe-out" : "career-wipe-in"}`} key={`info-${featured}`}>
+              {/* ================= LEFT — career text info (fixed footprint; content scrolls inside) ================= */}
+              <div className={`min-w-0 flex flex-col min-h-0 lg:h-[540px] xl:h-[580px] ${leaving ? "career-wipe-out" : "career-wipe-in"}`} key={`info-${featured}`}>
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <span className="f-striker text-[12px] sm:text-[13px] tracking-[0.14em]" style={{ color: "var(--crim-panel)" }}>{co.role}</span>
@@ -103,14 +103,14 @@ export default function Expertise() {
                   <span className="f-display text-[2.4rem] leading-none opacity-15 shrink-0" style={{ color: "var(--outer-ink)" }}>{co.num}</span>
                 </div>
                 <span className="f-mono text-[10px] tracking-[0.2em] block mt-2" style={{ color: "var(--m-sub)" }}>{co.date}</span>
-                <div className="mt-5"><Description text={co.description} /></div>
+                <div className="mt-5 flex-1 min-h-0 overflow-y-auto pr-1.5"><Description text={co.description} /></div>
                 {co.domain && (
-                  <div className="mt-5 f-tech font-bold text-[12px] tracking-[0.18em]" style={{ color: "var(--outer-ink)" }}>
-                    PROJECT / DOMAIN — <span className="text-[14px]" style={{ color: "var(--crim-panel)" }}>{co.domain}</span>
+                  <div className="mt-5 shrink-0 f-tech font-bold text-[12px] tracking-[0.18em]" style={{ color: "var(--outer-ink)" }}>
+                    PROJECT — <span className="text-[14px]" style={{ color: "var(--crim-panel)" }}>{co.domain}</span>
                   </div>
                 )}
 
-                <div className="mt-6 pt-5 flex flex-col gap-4" style={{ borderTop: "1px solid var(--m-line)" }}>
+                <div className="mt-6 pt-5 flex flex-col gap-4 shrink-0" style={{ borderTop: "1px solid var(--m-line)" }}>
                   <div className="flex flex-wrap gap-x-3 gap-y-1.5">
                     <span className="f-mono text-[9px] tracking-[0.28em] w-full" style={{ color: "var(--m-sub)" }}>DISCIPLINES</span>
                     {co.skills.map((s) => (
@@ -129,10 +129,10 @@ export default function Expertise() {
                 </div>
               </div>
 
-              {/* ================= RIGHT — company index + large media area ================= */}
-              <div className="min-w-0 flex flex-col gap-6">
+              {/* ================= RIGHT — company index + large media area (fixed footprint) ================= */}
+              <div className="min-w-0 flex flex-col gap-6 min-h-0 lg:h-[540px] xl:h-[580px]">
                 {/* COMPANY INDEX — full-width rows */}
-                <div>
+                <div className="shrink-0">
                   <div className="flex items-center justify-between mb-3">
                     <span className="f-mono text-[10px] tracking-[0.28em]" style={{ color: "var(--m-sub)" }}>COMPANY INDEX</span>
                     <span className="f-mono text-[10px] tracking-[0.2em]" style={{ color: "var(--m-sub)" }}>{String(featured + 1).padStart(2, "0")} / {String(n).padStart(2, "0")}</span>
@@ -178,8 +178,8 @@ export default function Expertise() {
                   </div>
                 </div>
 
-                {/* MEDIA / VIDEO AREA — large dedicated region beneath the index */}
-                <div key={`media-${featured}`} className={leaving ? "career-wipe-out" : "career-wipe-in"}>
+                {/* MEDIA / VIDEO AREA — occupies the full remaining media-designated region */}
+                <div key={`media-${featured}`} className={`flex-1 min-h-0 overflow-y-auto ${leaving ? "career-wipe-out" : "career-wipe-in"}`}>
                   <div className="flex items-center justify-between mb-3">
                     <span className="f-mono text-[10px] tracking-[0.28em]" style={{ color: "var(--m-sub)" }}>PRODUCTION MEDIA — {String(co.media.length).padStart(2, "0")} SLOTS</span>
                     <span className="f-mono text-[10px] tracking-[0.2em]" style={{ color: "var(--crim-panel)" }}>{co.short}</span>

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useHashRoute, useReducedMotion, useStore } from "../lib/store";
-import { ArrowDown, ArrowRight, LinkedInIcon, PaperPlane } from "./icons";
+import { ArrowDown, ArrowRight, ArtstationIcon, InstagramIcon, LinkedInIcon, MailIcon, PaperPlane, WhatsAppIcon } from "./icons";
 import { FullscreenViewer, MediaSlot, Reveal, SectionHead } from "./ui";
 
 /* ================= 06 — THE PIPELINE ================= */
@@ -156,7 +156,7 @@ export function HowIBuild() {
 
                       {!planeDone && !reduced && (
                         <span className="absolute top-1/2 left-0 plane-cross" style={{ "--flight": `${flight}px` } as React.CSSProperties}>
-                          <PaperPlane size={34} className="text-[#e72241]" />
+                          <PaperPlane size={34} className="text-[#e72241] -scale-x-100" />
                         </span>
                       )}
 
@@ -300,8 +300,8 @@ export function Contact() {
             {/* warm message card */}
             <div className="relative mt-8 p-6 mat-texture max-w-[640px]" style={{ background: "var(--ct-card)", color: "var(--ct-card-ink)", boxShadow: "8px 8px 0 var(--crim-panel)" }}>
               <span className="absolute left-0 top-0 bottom-0 w-[6px]" style={{ background: "var(--crim-panel)" }} />
-              <p className="text-[14.5px] sm:text-[16px] leading-relaxed font-medium pl-2">{c.message}</p>
-              <span className="mt-4 block f-mono text-[9px] tracking-[0.26em] pl-2" style={{ color: "var(--ct-card-sub)" }}>{c.signature}</span>
+              <p className="text-[16.5px] sm:text-[18px] lg:text-[19px] leading-relaxed font-medium pl-2">{c.message}</p>
+              <span className="mt-4 block f-mono font-semibold text-[10px] tracking-[0.26em] pl-2" style={{ color: "var(--ct-card-sub)" }}>{c.signature}</span>
             </div>
 
             <h3 className="f-display text-[clamp(2rem,4.6vw,3.6rem)] leading-[0.98] mt-10">
@@ -314,19 +314,27 @@ export function Contact() {
                 style={{ border: "1.5px solid var(--ct-line)", color: "var(--ct-ink)" }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--crim-panel)"; e.currentTarget.style.color = "var(--crim-panel)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--ct-line)"; e.currentTarget.style.color = "var(--ct-ink)"; }}>
+                <MailIcon size={15} strokeWidth={1.8} />
                 {c.emailLabel}
-                <ArrowRight size={14} strokeWidth={2.2} />
               </a>
-              {c.socials.map((s) => (
-                <a key={s.label} href={s.url || "#contact"} target={s.url ? "_blank" : undefined} rel="noreferrer"
-                  className="group inline-flex items-center gap-3 px-5 py-3.5 rounded-lg f-tech font-bold text-[12px] tracking-[0.2em] transition-all duration-300 hover:-translate-y-0.5"
-                  style={{ border: "1.5px solid var(--ct-line)", color: "var(--ct-ink)" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--crim-panel)"; e.currentTarget.style.color = "var(--crim-panel)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--ct-line)"; e.currentTarget.style.color = "var(--ct-ink)"; }}>
-                  {s.label === "LINKEDIN" ? <LinkedInIcon size={13} /> : s.label}
-                  <ArrowRight size={14} strokeWidth={2.2} />
-                </a>
-              ))}
+              {c.socials.map((s) => {
+                const icon =
+                  s.label === "LINKEDIN" ? <LinkedInIcon size={15} strokeWidth={1.8} /> :
+                  s.label === "WHATSAPP" ? <WhatsAppIcon size={15} strokeWidth={1.8} /> :
+                  s.label === "INSTAGRAM" ? <InstagramIcon size={15} strokeWidth={1.8} /> :
+                  s.label === "ARTSTATION" ? <ArtstationIcon size={15} strokeWidth={1.8} /> :
+                  <MailIcon size={15} strokeWidth={1.8} />;
+                return (
+                  <a key={s.label} href={s.url || "#contact"} target={s.url ? "_blank" : undefined} rel="noreferrer"
+                    className="group inline-flex items-center gap-3 px-5 py-3.5 rounded-lg f-tech font-bold text-[12px] tracking-[0.2em] transition-all duration-300 hover:-translate-y-0.5"
+                    style={{ border: "1.5px solid var(--ct-line)", color: "var(--ct-ink)" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--crim-panel)"; e.currentTarget.style.color = "var(--crim-panel)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--ct-line)"; e.currentTarget.style.color = "var(--ct-ink)"; }}>
+                    {icon}
+                    {s.label}
+                  </a>
+                );
+              })}
             </div>
 
             <a href={c.resumeUrl || "#contact"} target={c.resumeUrl ? "_blank" : undefined} rel="noreferrer"

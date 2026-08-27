@@ -187,12 +187,14 @@ export function FullscreenViewer({
       {n > 1 && (
         <>
           <button onClick={(e) => { e.stopPropagation(); setIndex((index - 1 + n) % n); }} aria-label="Previous media"
-            className={`${ctl} left-4 top-1/2 -translate-y-1/2`} style={ctlStyle}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M15 5l-7 7 7 7" /></svg>
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-14 h-14 grid place-items-center rounded-lg opacity-70 hover:opacity-100 hover:scale-110 transition-all duration-300"
+            style={{ color: "#ddddd8", background: "transparent" }}>
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5l-7 7 7 7" /></svg>
           </button>
           <button onClick={(e) => { e.stopPropagation(); setIndex((index + 1 + n) % n); }} aria-label="Next media"
-            className={`${ctl} right-4 top-1/2 -translate-y-1/2`} style={ctlStyle}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M9 5l7 7-7 7" /></svg>
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-14 h-14 grid place-items-center rounded-lg opacity-70 hover:opacity-100 hover:scale-110 transition-all duration-300"
+            style={{ color: "#ddddd8", background: "transparent" }}>
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 5l7 7-7 7" /></svg>
           </button>
           <span className="absolute bottom-5 left-1/2 -translate-x-1/2 f-mono text-[10px] tracking-[0.3em]" style={{ color: "rgba(221,221,216,0.75)" }}>
             {String(index + 1).padStart(2, "0")} / {String(n).padStart(2, "0")}

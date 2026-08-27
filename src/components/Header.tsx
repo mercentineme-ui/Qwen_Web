@@ -43,21 +43,17 @@ export default function Header() {
           {/* CBK identity — clean mark, no strike */}
           <a href="#about" className="flex items-baseline gap-3 shrink-0" aria-label="CBK Designfolio — home">
             <span className="f-automata text-[21px] lg:text-[23px] leading-none tracking-[0.08em] text-[var(--ink)]">CBK</span>
-            <span className="relative hidden sm:inline-flex overflow-hidden">
-              <span className={`f-tech font-semibold text-[11px] lg:text-[12px] text-[var(--ink2)] ${reduced ? "" : "logo-track"}`}
-                style={reduced ? { letterSpacing: "0.42em" } : undefined}>
-                {DESIGNFOLIO.map((ch, i) => (
-                  <span key={i} className={reduced ? "inline-block" : "logo-letter-in inline-block"}
-                    style={reduced ? undefined : { animationDelay: `${0.08 + i * 0.035}s` }}>
-                    {ch}
-                  </span>
-                ))}
-              </span>
-              {!reduced && (
-                <span className="logo-scan pointer-events-none absolute top-0 bottom-0 left-0 w-[18px]"
-                  style={{ background: "linear-gradient(90deg, transparent, color-mix(in srgb, var(--crimson) 55%, transparent), transparent)" }}
-                  aria-hidden />
-              )}
+            <span className="logo-word hidden sm:inline-flex text-[11px] lg:text-[12px] text-[var(--ink2)]" style={{ letterSpacing: "0.42em" }} aria-label="DESIGNFOLIO">
+              {DESIGNFOLIO.map((ch, i) => (
+                <span key={i} className={reduced ? "inline-block" : "dfl"}
+                  style={reduced ? undefined : ({
+                    "--i": i,
+                    "--wmix": i % 2 === 0 ? 700 : 300,
+                    "--tint": i === 2 || i === 7 ? 1 : 0,
+                  } as React.CSSProperties)}>
+                  {ch}
+                </span>
+              ))}
             </span>
           </a>
 

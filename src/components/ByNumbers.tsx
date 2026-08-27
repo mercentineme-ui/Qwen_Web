@@ -84,7 +84,7 @@ export default function ByNumbers() {
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8" ref={ref}>
         <SectionHead
           label="00 — OUTPUT LOG"
-          title="BY THE NUMBERS"
+          title="IMPACT METRICS"
           desc="The output, counted. Everything below is produced, directed and shipped through the same AI pipeline."
           meta="AI ARTIST · PRODUCTION STATISTICS"
         />
