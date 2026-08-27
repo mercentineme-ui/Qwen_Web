@@ -9,6 +9,15 @@ const CLIP =
 
 const yearOf = (d: string) => (d.match(/\d{4}/) || [""])[0];
 
+/* Split a company name into compact vertical columns (upright letters).
+   Short names stay one column; longer names break into two adjacent columns
+   so every letter keeps the same large display size. */
+function nameColumns(name: string): string[] {
+  if (name.length <= 5) return [name];
+  const mid = Math.ceil(name.length / 2);
+  return [name.slice(0, mid), name.slice(mid)];
+}
+
 function Chip({ children }: { children: React.ReactNode }) {
   return (
     <span className="inline-flex items-center f-tech font-semibold text-[9px] sm:text-[10px] tracking-[0.12em] px-2 py-[3px]"
@@ -27,6 +36,37 @@ function Block({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+/* tiny machined fastener */
+function Screw({ className = "" }: { className?: string }) {
+  return (
+    <span className={`w-[7px] h-[7px] rounded-full grid place-items-center shrink-0 ${className}`}
+      style={{ background: "color-mix(in srgb, var(--outer-ink) 16%, transparent)", boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--outer-ink) 32%, transparent)" }}>
+      <span className="w-[4px] h-[1px] rotate-45" style={{ background: "color-mix(in srgb, var(--outer-ink) 48%, transparent)" }} />
+    </span>
+  );
+}
+
+/* L-shaped corner registration mark */
+function CornerMark({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
+  const map = {
+    tl: "top-[13px] left-[13px] border-t border-l",
+    tr: "top-[13px] right-[13px] border-t border-r",
+    bl: "bottom-[13px] left-[13px] border-b border-l",
+    br: "bottom-[13px] right-[13px] border-b border-r",
+  } as const;
+  return <span className={`absolute w-[9px] h-[9px] pointer-events-none ${map[pos]}`} style={{ borderColor: "color-mix(in srgb, var(--outer-ink) 34%, transparent)" }} />;
+}
+
+/* thin segmented data rail */
+function DataRail({ className = "" }: { className?: string }) {
+  return (
+    <span className={`relative block h-px w-full ${className}`} style={{ background: "color-mix(in srgb, var(--outer-ink) 22%, transparent)" }}>
+      <span className="absolute left-0 -top-[2px] w-[5px] h-[5px]" style={{ background: "var(--crim-panel)" }} />
+      <span className="absolute right-[18%] -top-[2px] w-[3px] h-[3px] rotate-45" style={{ background: "color-mix(in srgb, var(--outer-ink) 40%, transparent)" }} />
+    </span>
+  );
+}
+
 export default function Expertise() {
   const { data } = useStore();
   const { statement, statementAccent, supporting, companies } = data.expertise;
@@ -41,9 +81,10 @@ export default function Expertise() {
   const expanded = locked ?? hovered;
   const activeCo: Company | null = expanded != null ? companies[expanded] : null;
 
-  /* rail column template — expanded card claims real layout space, neighbors physically shift */
+  /* rail column template — expanded card claims ~50% MORE real layout space,
+     so neighbors are physically pushed farther away (no overlay). */
   const cols = companies
-    .map((_, i) => (i === expanded ? "minmax(0, 3.4fr)" : "minmax(0, 1fr)"))
+    .map((_, i) => (i === expanded ? "minmax(0, 5fr)" : "minmax(0, 1fr)"))
     .join(" ");
 
   const toggleLock = (i: number) => setLocked((prev) => (prev === i ? null : i));
@@ -97,6 +138,7 @@ export default function Expertise() {
               {companies.map((c, i) => {
                 const isOpen = expanded === i;
                 const isActive = locked === i;
+                const colsArr = nameColumns(c.short);
                 return (
                   <div
                     key={c.id}
@@ -108,7 +150,7 @@ export default function Expertise() {
                     onMouseLeave={() => setHovered((h) => (h === i ? null : h))}
                     onClick={() => toggleLock(i)}
                     onKeyDown={(e) => onKey(e, i)}
-                    className="journey-card relative outline-none cursor-pointer mat-texture"
+                    className="journey-card relative outline-none cursor-pointer mat-texture overflow-hidden"
                     style={{
                       background: "var(--outer-bg)",
                       color: "var(--outer-ink)",
@@ -120,53 +162,84 @@ export default function Expertise() {
                     }}
                   >
                     {/* inner recessed frame — visible gap between shell and frame */}
-                    <div className="absolute inset-[7px] pointer-events-none" style={{ clipPath: CLIP, border: "1px solid color-mix(in srgb, var(--outer-ink) 24%, transparent)" }} />
+                    <div className="absolute inset-[7px] pointer-events-none z-0" style={{ clipPath: CLIP, border: "1px solid color-mix(in srgb, var(--outer-ink) 24%, transparent)" }} />
+                    {/* panel seam — vertical machined line */}
+                    <span className="absolute top-[10px] bottom-[10px] left-[22px] w-px pointer-events-none z-0 hidden lg:block" style={{ background: "color-mix(in srgb, var(--outer-ink) 14%, transparent)" }} />
 
                     {/* ---------- CLOSED VERTICAL FACE (desktop, when collapsed) ---------- */}
                     <div
-                      className={"absolute inset-0 hidden flex-col items-stretch " + (isOpen ? "" : "lg:flex ")}
+                      className={"absolute inset-0 z-10 hidden flex-col " + (isOpen ? "" : "lg:flex ")}
                       style={{ opacity: isOpen ? 0 : 1, pointerEvents: isOpen ? "none" : "auto", transition: reduced ? "none" : "opacity 300ms ease" }}
                     >
+                      {/* ghosted serial number — large, embedded, low-opacity */}
+                      <span className="absolute inset-0 flex items-center justify-center pointer-events-none select-none f-display font-bold z-0"
+                        style={{ fontSize: "clamp(96px, 8.5vw, 148px)", lineHeight: 1, color: "var(--outer-ink)", opacity: 0.055, transform: "translateY(6px)" }}>
+                        {c.num}
+                      </span>
+
+                      {/* corner registration marks + micro screws */}
+                      <CornerMark pos="tl" /><CornerMark pos="tr" /><CornerMark pos="bl" /><CornerMark pos="br" />
+                      <Screw className="absolute top-[16px] left-[16px]" />
+                      <Screw className="absolute top-[16px] right-[34px]" />
+                      <Screw className="absolute bottom-[16px] left-[16px]" />
+                      <Screw className="absolute bottom-[16px] right-[34px]" />
+
                       {/* top technical header */}
-                      <div className="flex items-center justify-between px-4 pt-4">
+                      <div className="relative z-10 flex items-center justify-between px-4 pt-4 shrink-0">
                         <span className="f-mono font-semibold text-[12px] tracking-[0.14em]" style={{ color: "var(--crim-panel)" }}>{c.num}</span>
                         <span className="f-mono text-[8px] tracking-[0.2em]" style={{ color: "var(--m-sub)" }}>EXP/{yearOf(c.date)}</span>
                       </div>
-                      {/* upright stacked letters */}
-                      <div className="flex-1 flex flex-col items-center justify-center gap-[3px] px-2 select-none">
-                        {c.short.split("").map((ch, k) => (
-                          <span key={k} className="f-tech font-bold text-[15px] leading-[1.05] tracking-[0.06em]" style={{ color: "var(--outer-ink)" }}>
-                            {ch}
-                          </span>
-                        ))}
+                      <div className="px-4 mt-2 shrink-0"><DataRail /></div>
+
+                      {/* large multi-column stacked company name — vertically centered */}
+                      <div className="relative z-10 flex-1 flex items-center justify-center px-2 select-none min-h-0">
+                        <div className="flex items-start justify-center gap-[12px]">
+                          {colsArr.map((col, ci) => (
+                            <div key={ci} className="flex flex-col items-center gap-[3px]">
+                              {col.split("").map((ch, k) => (
+                                <span key={k} className="name-letter"
+                                  style={{ fontSize: "clamp(24px, 2vw, 32px)", color: "var(--outer-ink)" }}>
+                                  {ch}
+                                </span>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      {/* bottom status */}
-                      <div className="flex items-center justify-between px-4 pb-4">
+
+                      {/* bottom status rail */}
+                      <div className="relative z-10 px-4 pb-2 shrink-0"><DataRail /></div>
+                      <div className="relative z-10 flex items-center justify-between px-4 pb-4 shrink-0">
                         <span className="f-mono text-[8px] tracking-[0.2em]" style={{ color: "var(--m-sub)" }}>
                           {isActive ? "STATUS / LOCKED" : isOpen ? "STATUS / OPEN" : "STATUS / IDLE"}
                         </span>
-                        <span className="w-2 h-2 rotate-45" style={{ background: isOpen ? "var(--crim-panel)" : "color-mix(in srgb, var(--outer-ink) 30%, transparent)" }} />
+                        <span className="flex items-center gap-1.5">
+                          {/* indicator light */}
+                          <span className="w-[5px] h-[5px] rounded-full transition-colors duration-300"
+                            style={{ background: isOpen ? "var(--crim-panel)" : "color-mix(in srgb, var(--outer-ink) 28%, transparent)", boxShadow: isOpen ? "0 0 6px var(--crim-panel)" : "none" }} />
+                          <span className="w-2 h-2 rotate-45 transition-colors duration-300" style={{ background: isOpen ? "var(--crim-panel)" : "color-mix(in srgb, var(--outer-ink) 30%, transparent)" }} />
+                        </span>
                       </div>
                     </div>
 
                     {/* ---------- MOBILE CLOSED HEADER ---------- */}
-                    <div className={"flex lg:hidden items-center gap-3 px-4 py-4 " + (isOpen ? "hidden" : "")}>
+                    <div className={"relative z-10 flex lg:hidden items-center gap-3 px-4 py-4 " + (isOpen ? "hidden" : "")}>
                       <span className="f-mono font-semibold text-[12px] tracking-[0.14em]" style={{ color: "var(--crim-panel)" }}>{c.num}</span>
-                      <span className="f-tech font-bold text-[13px] tracking-[0.1em] flex-1" style={{ color: "var(--outer-ink)" }}>{c.name}</span>
+                      <span className="name-letter flex-1 text-[17px] tracking-[0.06em]" style={{ color: "var(--outer-ink)" }}>{c.short}</span>
                       <span className="w-2 h-2 rotate-45" style={{ background: isOpen ? "var(--crim-panel)" : "color-mix(in srgb, var(--outer-ink) 30%, transparent)" }} />
                     </div>
 
                     {/* ---------- EXPANDED DOSSIER ---------- */}
-                    <div className={isOpen ? "block h-full" : "hidden lg:block lg:invisible"}>
+                    <div className={isOpen ? "relative z-10 block h-full" : "hidden lg:block lg:invisible relative z-10"}>
                       <div className="h-full flex flex-col px-5 py-4 overflow-y-auto" style={{ scrollbarWidth: "thin" }}>
-                        {/* TOP: number + company + role + date */}
+                        {/* TOP: number + company + role + date/location */}
                         <div className="flex items-start justify-between gap-3 shrink-0">
                           <div className="min-w-0">
                             <div className="flex items-center gap-2.5">
                               <span className="f-mono font-semibold text-[12px] tracking-[0.14em]" style={{ color: "var(--crim-panel)" }}>{c.num}</span>
                               {c.discipline && <Chip>{c.discipline}</Chip>}
                             </div>
-                            <h4 className="f-display text-[clamp(1.15rem,1.8vw,1.6rem)] leading-[1.02] mt-1.5 break-words" style={{ color: "var(--outer-ink)" }}>
+                            <h4 className="name-letter text-[clamp(1.15rem,1.8vw,1.55rem)] leading-[1.06] mt-1.5 break-words" style={{ color: "var(--outer-ink)", fontWeight: 700 }}>
                               {c.expandedName ?? c.name}
                             </h4>
                             <span className="block f-tech font-semibold text-[10px] tracking-[0.16em] mt-1" style={{ color: "var(--crim-panel)" }}>{c.role}</span>
@@ -179,24 +252,31 @@ export default function Expertise() {
                           </div>
                         </div>
 
-                        {/* MEDIA — horizontal production strip */}
-                        {c.media.length > 0 && (
-                          <div className="mt-4 shrink-0">
-                            <Block label={`MEDIA / ${String(c.media.length).padStart(2, "0")}`}>
-                              <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(c.media.length, 3)}, minmax(0,1fr))` }}>
-                                {c.media.slice(0, 3).map((m, k) => (
-                                  <MediaSlot key={m.id} item={m} ratio="16/9" fill className="mat-inner rounded-[4px]! border-0!" showLabel={false} onClick={() => setMediaView(k)} />
-                                ))}
-                              </div>
-                            </Block>
-                          </div>
-                        )}
-
                         {/* SUMMARY */}
                         {c.summary && (
                           <div className="mt-4 shrink-0">
                             <Block label="EXPERIENCE">
                               <p className="text-[12px] leading-relaxed" style={{ color: "var(--outer-ink)", opacity: 0.88 }}>{c.summary}</p>
+                            </Block>
+                          </div>
+                        )}
+
+                        {/* TOOLS / METHODS */}
+                        {c.tools && c.tools.length > 0 && (
+                          <div className="mt-4 shrink-0">
+                            <Block label="TOOLS / METHODS">
+                              <div className="flex flex-wrap gap-1.5">{c.tools.map((t) => <Chip key={t}>{t}</Chip>)}</div>
+                            </Block>
+                          </div>
+                        )}
+
+                        {/* ONE primary company media slot — large, prominent */}
+                        {c.media.length > 0 && (
+                          <div className="mt-4 shrink-0">
+                            <Block label="MEDIA / 01">
+                              <div style={{ height: 190 }}>
+                                <MediaSlot item={c.media[0]} ratio="16/9" fill className="mat-inner rounded-[4px]! border-0!" showLabel={false} onClick={() => setMediaView(0)} />
+                              </div>
                             </Block>
                           </div>
                         )}
@@ -213,15 +293,6 @@ export default function Expertise() {
                                   </li>
                                 ))}
                               </ul>
-                            </Block>
-                          </div>
-                        )}
-
-                        {/* TOOLS / METHODS */}
-                        {c.tools && c.tools.length > 0 && (
-                          <div className="mt-4 shrink-0">
-                            <Block label="TOOLS / METHODS">
-                              <div className="flex flex-wrap gap-1.5">{c.tools.map((t) => <Chip key={t}>{t}</Chip>)}</div>
                             </Block>
                           </div>
                         )}

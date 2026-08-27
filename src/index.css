@@ -120,6 +120,15 @@ body {
 .f-magola { font-family: "Oswald", "Archivo", sans-serif; font-weight: 600; }
 .f-clock { font-family: "Share Tech Mono", monospace; }
 .f-serif { font-family: "Playfair Display", Georgia, serif; }
+/* Company-name display face (robotic / technical archive). "Infusive" is the
+   intended commercial face; Oxanium is the closest loaded robotic substitute. */
+.f-infusive { font-family: "Oxanium", "Chakra Petch", sans-serif; }
+.name-letter {
+  font-family: "Oxanium", "Chakra Petch", sans-serif;
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: 0.02em;
+}
 
 /* ---------- matte materials ---------- */
 .mat-texture { position: relative; }
