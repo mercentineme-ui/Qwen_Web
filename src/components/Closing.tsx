@@ -156,7 +156,7 @@ export function HowIBuild() {
 
                       {!planeDone && !reduced && (
                         <span className="absolute top-1/2 left-0 plane-cross" style={{ "--flight": `${flight}px` } as React.CSSProperties}>
-                          <PaperPlane size={34} className="text-[#e72241] -scale-x-100" />
+                          <PaperPlane size={34} className="text-[#e72241]" />
                         </span>
                       )}
 
@@ -300,8 +300,8 @@ export function Contact() {
             {/* warm message card */}
             <div className="relative mt-8 p-6 mat-texture max-w-[640px]" style={{ background: "var(--ct-card)", color: "var(--ct-card-ink)", boxShadow: "8px 8px 0 var(--crim-panel)" }}>
               <span className="absolute left-0 top-0 bottom-0 w-[6px]" style={{ background: "var(--crim-panel)" }} />
-              <p className="text-[16.5px] sm:text-[18px] lg:text-[19px] leading-relaxed font-medium pl-2">{c.message}</p>
-              <span className="mt-4 block f-mono font-semibold text-[10px] tracking-[0.26em] pl-2" style={{ color: "var(--ct-card-sub)" }}>{c.signature}</span>
+              <p className="text-[19px] sm:text-[21px] lg:text-[22.5px] leading-relaxed font-medium pl-2">{c.message}</p>
+              <span className="mt-4 block f-mono font-bold text-[10px] tracking-[0.26em] pl-2" style={{ color: "var(--ct-card-sub)" }}>{c.signature}</span>
             </div>
 
             <h3 className="f-display text-[clamp(2rem,4.6vw,3.6rem)] leading-[0.98] mt-10">

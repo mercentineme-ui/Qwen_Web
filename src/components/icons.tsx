@@ -101,11 +101,11 @@ export const ArrowUp = (p: P) => (
   <svg {...base(p)}><path d="M12 20V5M6 11l6-6 6 6" /></svg>
 );
 
-/* ---- paper plane (nose points RIGHT) ---- */
+/* ---- paper plane (nose points RIGHT — direction of flight) ---- */
 export const PaperPlane = (p: P) => (
   <svg width={p.size ?? 20} height={p.size ?? 20} viewBox="0 0 24 24" className={p.className}>
-    <path d="M2.5 12 L21.5 4.5 L16 12 L21.5 19.5 Z" fill="currentColor" />
-    <path d="M2.5 12 L16 12" stroke="rgba(0,0,0,0.28)" strokeWidth="1.2" />
+    <path d="M21.5 12 L2.5 4.5 L8 12 L2.5 19.5 Z" fill="currentColor" />
+    <path d="M21.5 12 L8 12" stroke="rgba(0,0,0,0.28)" strokeWidth="1.2" />
   </svg>
 );
 
