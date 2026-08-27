@@ -8,7 +8,7 @@
 
 :root {
   /* LIGHT PAGE — warm off-white architectural background */
-  --page: #e9e7e2;
+  --page: #f8f8ff;
   --sup1: #dfddd7;
   --sup2: #d3d1ca;
   --ink: #222328;
@@ -16,9 +16,9 @@
   --line: rgba(34, 35, 40, 0.16);
   --line-soft: rgba(34, 35, 40, 0.07);
 
-  --crimson: #e72241;        /* primary active crimson */
-  --crimson-strong: #e72241;
-  --crimson-rough: #9e2237;  /* dark rough crimson — on light page surfaces */
+  --crimson: #b31b1b;        /* light-theme accent — Cornell Red, printed-ink editorial */
+  --crimson-strong: #b31b1b;
+  --crimson-rough: #b31b1b;  /* Cornell Red — on light page surfaces */
   --crimson-shadow: #59232f;
 
   /* matte panel system — LIGHT: matte black embedded components */
@@ -40,7 +40,7 @@
   --ct-card: #ddddd8;
   --ct-card-ink: #222328;
   --ct-card-sub: #59595b;
-  --crim-panel: #e72241;
+  --crim-panel: #b31b1b;
 
   /* MY JOURNEY section material — LIGHT: matte-white section, dark expanded card text */
   --journey-bg: #ddddd8;

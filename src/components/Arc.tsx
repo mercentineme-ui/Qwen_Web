@@ -13,9 +13,10 @@ function Carousel({ items, idx, setIdx, ratio }: { items: ArcEntry[]; idx: numbe
   };
   const [open, setOpen] = useState<number | null>(null);
   const isPortrait = ratio === "9/16";
+  const vertical = !isPortrait; /* Worlds — vertical carousel */
 
   return (
-    <div className="relative w-full overflow-hidden py-3" style={{ aspectRatio: isPortrait ? "16/14.5" : "16/14" }}>
+    <div className="relative w-full overflow-hidden py-3" style={{ aspectRatio: isPortrait ? "16/14.5" : "16/12" }}>
       {items.map((it, i) => {
         const r = rel(i);
         const active = r === 0;
@@ -25,9 +26,11 @@ function Carousel({ items, idx, setIdx, ratio }: { items: ArcEntry[]; idx: numbe
             aria-label={active ? `Open ${it.name}` : `Select ${it.name}`}
             className={`absolute top-1/2 left-1/2 rounded-xl overflow-hidden border transition-all ${active ? "border-[var(--crimson)] z-20" : "border-[var(--line)] z-10 cursor-pointer hover:border-[var(--ink2)]"}`}
             style={{
-              width: isPortrait ? "47%" : "74%",
+              width: isPortrait ? "47%" : "90%",
               aspectRatio: ratio,
-              transform: `translate(-50%, -50%) translateX(${r * (isPortrait ? 105 : 95)}%) scale(${active ? 1 : 0.8})`,
+              transform: vertical
+                ? `translate(-50%, -50%) translateY(${r * 108}%) scale(${active ? 1 : 0.8})`
+                : `translate(-50%, -50%) translateX(${r * 105}%) scale(${active ? 1 : 0.8})`,
               opacity: active ? 1 : 0.42,
               filter: active ? "none" : "saturate(0.65)",
               transition: reduced ? "none" : "transform .55s cubic-bezier(.3,.85,.3,1), opacity .45s ease, filter .45s ease",
@@ -96,6 +99,13 @@ export default function Arc() {
       <path d="M6.5 12 C11.5 6.5 15.5 4.4 18.5 3.8 C15.8 8 15.8 16 18.5 20.2 C15.5 19.6 11.5 17.5 6.5 12 Z" fill="currentColor" />
     </svg>
   );
+  /* vertical carousel: left control = UP / previous, right control = DOWN / next */
+  const curveV = (dir: "up" | "down") => (
+    <svg width="26" height="30" viewBox="0 0 24 24" className={`transition-all duration-300 opacity-60 group-hover:opacity-100 group-hover:text-[var(--crimson)] ${reduced ? "" : "group-hover:scale-110"}`}
+      style={{ transform: dir === "up" ? "rotate(90deg)" : "rotate(-90deg)" }} aria-hidden>
+      <path d="M6.5 12 C11.5 6.5 15.5 4.4 18.5 3.8 C15.8 8 15.8 16 18.5 20.2 C15.5 19.6 11.5 17.5 6.5 12 Z" fill="currentColor" />
+    </svg>
+  );
 
   return (
     <section id="arc" className="relative py-20 lg:py-28 scroll-mt-20">
@@ -150,18 +160,20 @@ export default function Arc() {
                 onMouseLeave={() => setMediaHover(false)}
               >
                 <div className="w-[48px] lg:w-[64px] grid place-items-center shrink-0">
-                  <button onClick={() => setIdx((idx - 1 + n) % n)} aria-label="Previous"
+                  <button onClick={() => setIdx((idx - 1 + n) % n)}
+                    aria-label={isChar ? "Previous" : "Up / previous world"}
                     className={`${arrowCls} transition-opacity duration-300 ${mediaHover ? "opacity-100" : "opacity-0"}`} style={arrowStyle}>
-                    {curve(-1)}
+                    {isChar ? curve(-1) : curveV("up")}
                   </button>
                 </div>
                 <div className="min-w-0 flex-1 flex items-center">
                   <Carousel items={items} idx={idx} setIdx={setIdx} ratio={ratio} />
                 </div>
                 <div className="w-[48px] lg:w-[64px] grid place-items-center shrink-0">
-                  <button onClick={() => setIdx((idx + 1) % n)} aria-label="Next"
+                  <button onClick={() => setIdx((idx + 1) % n)}
+                    aria-label={isChar ? "Next" : "Down / next world"}
                     className={`${arrowCls} transition-opacity duration-300 ${mediaHover ? "opacity-100" : "opacity-0"}`} style={arrowStyle}>
-                    {curve(1)}
+                    {isChar ? curve(1) : curveV("down")}
                   </button>
                 </div>
               </div>

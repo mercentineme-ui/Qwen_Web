@@ -45,7 +45,7 @@ function NameLine({ text, resolve, accent, className, delay }: {
   text: string; resolve: boolean; accent?: boolean; className: string; delay?: string;
 }) {
   return (
-    <span className={`block f-magola ${accent ? "print-matte" : ""} ${resolve ? "name-resolve" : ""} ${className}`}
+    <span className={`block f-display ${accent ? "print-matte" : ""} ${resolve ? "name-resolve" : ""} ${className}`}
       style={{ color: accent ? undefined : "var(--hero-ink)", animationDelay: resolve ? delay : undefined }}>
       {text}
     </span>

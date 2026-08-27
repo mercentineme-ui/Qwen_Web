@@ -134,9 +134,9 @@ export function HowIBuild() {
                             {above ? (
                               <>
                                 <div className="relative px-3.5 py-2 text-center mat-texture dossier-clip-sm pop-in"
-                                  style={{ background: isCurrent ? "#3C3D42" : "var(--outer-bg)", boxShadow: `inset 0 0 0 1.5px ${isCurrent ? "var(--crimson-strong)" : "rgba(221,221,216,0.22)"}`, animationDelay: reduced ? "0s" : `${0.3 + i * 0.5}s` }}>
-                                  <span className="f-mono text-[9px] tracking-[0.2em] block" style={{ color: isCurrent ? "var(--crimson-strong)" : "var(--m-sub)" }}>{nd.num}</span>
-                                  <span className="f-tech font-bold text-[11px] sm:text-[12.5px] tracking-[0.16em] block mt-0.5 whitespace-nowrap" style={{ color: "var(--outer-ink)", opacity: isCurrent || isPassed ? 1 : 0.85 }}>{nd.title}</span>
+                                  style={{ background: "var(--outer-ink)", boxShadow: `inset 0 0 0 1.5px ${isCurrent ? "var(--crimson-strong)" : "color-mix(in srgb, var(--outer-bg) 30%, transparent)"}`, animationDelay: reduced ? "0s" : `${0.3 + i * 0.5}s` }}>
+                                  <span className="f-mono text-[9px] tracking-[0.2em] block" style={{ color: isCurrent ? "var(--crimson-strong)" : "var(--outer-bg)", opacity: isCurrent ? 1 : 0.8 }}>{nd.num}</span>
+                                  <span className="f-tech font-bold text-[11px] sm:text-[12.5px] tracking-[0.16em] block mt-0.5 whitespace-nowrap" style={{ color: "var(--outer-bg)" }}>{nd.title}</span>
                                 </div>
                                 <span className="w-[3px] rounded" style={{ height: 10, background: isCurrent ? "var(--crimson-strong)" : "#59595B" }} />
                               </>
@@ -144,9 +144,9 @@ export function HowIBuild() {
                               <>
                                 <span className="w-[3px] rounded" style={{ height: 10, background: isCurrent ? "var(--crimson-strong)" : "#59595B" }} />
                                 <div className="relative px-3.5 py-2 text-center mat-texture dossier-clip-sm pop-in"
-                                  style={{ background: isCurrent ? "#3C3D42" : "var(--outer-bg)", boxShadow: `inset 0 0 0 1.5px ${isCurrent ? "var(--crimson-strong)" : "rgba(221,221,216,0.22)"}`, animationDelay: reduced ? "0s" : `${0.3 + i * 0.5}s` }}>
-                                  <span className="f-mono text-[9px] tracking-[0.2em] block" style={{ color: isCurrent ? "var(--crimson-strong)" : "var(--m-sub)" }}>{nd.num}</span>
-                                  <span className="f-tech font-bold text-[11px] sm:text-[12.5px] tracking-[0.16em] block mt-0.5 whitespace-nowrap" style={{ color: "var(--outer-ink)", opacity: isCurrent || isPassed ? 1 : 0.85 }}>{nd.title}</span>
+                                  style={{ background: "var(--outer-ink)", boxShadow: `inset 0 0 0 1.5px ${isCurrent ? "var(--crimson-strong)" : "color-mix(in srgb, var(--outer-bg) 30%, transparent)"}`, animationDelay: reduced ? "0s" : `${0.3 + i * 0.5}s` }}>
+                                  <span className="f-mono text-[9px] tracking-[0.2em] block" style={{ color: isCurrent ? "var(--crimson-strong)" : "var(--outer-bg)", opacity: isCurrent ? 1 : 0.8 }}>{nd.num}</span>
+                                  <span className="f-tech font-bold text-[11px] sm:text-[12.5px] tracking-[0.16em] block mt-0.5 whitespace-nowrap" style={{ color: "var(--outer-bg)" }}>{nd.title}</span>
                                 </div>
                               </>
                             )}
@@ -283,13 +283,13 @@ export function Contact() {
                 <span className="absolute -top-[5px] -left-[5px] w-3 h-3 border-t-2 border-l-2" style={{ borderColor: "var(--crim-panel)" }} />
                 <span className="absolute -bottom-[5px] -right-[5px] w-3 h-3 border-b-2 border-r-2" style={{ borderColor: "var(--crim-panel)" }} />
                 <span className="f-mono text-[9px] tracking-[0.3em] block" style={{ color: "var(--ct-sub)" }}>IDENTITY</span>
-                <h3 className="f-display text-[clamp(2.5rem,4.4vw,3.9rem)] leading-[1.02] mt-2 whitespace-nowrap">
+                <h3 className="f-display text-[clamp(2.4rem,7.2vw,5.6rem)] leading-[1.02] mt-2 whitespace-nowrap" style={{ letterSpacing: "-0.01em" }}>
                   <span style={{ color: "var(--ct-ink)" }}>{c.identityA}</span>{" "}
                   <span style={{ color: "var(--crim-panel)" }}>{c.identityB}</span>
                 </h3>
               </div>
-              {/* manifesto — clean readable Arial editorial statement, ~3 lines */}
-              <p className="font-semibold text-[clamp(1.15rem,1.9vw,1.55rem)] leading-[1.45] max-w-[34ch]"
+              {/* manifesto — clean readable Arial editorial statement, semi-bold, compact */}
+              <p className="font-semibold text-[clamp(0.72rem,1.05vw,0.85rem)] leading-[1.55] max-w-[34ch]"
                 style={{ fontFamily: "Arial, Helvetica, sans-serif", color: "var(--ct-ink)", opacity: 0.95 }}>
                 {c.statement}
               </p>
@@ -297,11 +297,24 @@ export function Contact() {
 
             <span className="mt-8 block f-mono text-[11px] tracking-[0.3em]" style={{ color: "var(--crim-panel)" }}>C. BALA KRISHNAN</span>
 
-            {/* warm message card */}
-            <div className="relative mt-8 p-6 mat-texture max-w-[640px]" style={{ background: "var(--ct-card)", color: "var(--ct-card-ink)", boxShadow: "8px 8px 0 var(--crim-panel)" }}>
-              <span className="absolute left-0 top-0 bottom-0 w-[6px]" style={{ background: "var(--crim-panel)" }} />
-              <p className="text-[19px] sm:text-[21px] lg:text-[22.5px] leading-relaxed font-medium pl-2">{c.message}</p>
-              <span className="mt-4 block f-mono font-bold text-[10px] tracking-[0.26em] pl-2" style={{ color: "var(--ct-card-sub)" }}>{c.signature}</span>
+            {/* graphic-novel information panel — red + white identity is FIXED across both themes */}
+            <div className="relative mt-8 p-6 sm:p-7 mat-texture max-w-[640px]"
+              style={{ background: "#ddddd8", color: "#222328", border: "2.5px solid #222328", boxShadow: "7px 7px 0 #b31b1b" }}>
+              {/* controlled red accent bar */}
+              <span className="absolute left-0 top-0 bottom-0 w-[7px]" style={{ background: "#b31b1b" }} />
+              {/* sharp comic-panel corner details */}
+              <span className="absolute top-[6px] right-[6px] w-3 h-3 border-t-2 border-r-2" style={{ borderColor: "#222328" }} />
+              <span className="absolute bottom-[6px] right-[6px] w-3 h-3 border-b-2 border-r-2" style={{ borderColor: "#222328" }} />
+              <span className="absolute top-[6px] right-[24px] w-1.5 h-1.5" style={{ background: "#b31b1b" }} />
+              <p className="text-[19px] sm:text-[21px] lg:text-[22.5px] leading-relaxed font-medium pl-2">
+                Hey!, I'm Bala Krishnan —<br />
+                I make ideas come alive — and you're just in time!
+              </p>
+              <div className="mt-4 pt-3 pl-2" style={{ borderTop: "1.5px solid #222328" }}>
+                <span className="block f-mono font-bold text-[10.5px] tracking-[0.26em]" style={{ color: "#222328" }}>
+                  — WRITTEN BY THE ONE WHO BUILDS THE WORLDS
+                </span>
+              </div>
             </div>
 
             <h3 className="f-display text-[clamp(2rem,4.6vw,3.6rem)] leading-[0.98] mt-10">
