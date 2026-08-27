@@ -84,9 +84,15 @@ export default function Arc() {
   const n = items.length;
   const ratio = isChar ? "9/16" : "16/9";
 
-  /* large carousel arrows — the only arrow treatment */
-  const arrowCls = "self-center justify-self-center w-14 h-14 lg:w-16 lg:h-16 grid place-items-center rounded-[10px] border transition-all duration-300 hover:-translate-y-0.5 mat-texture";
-  const arrowStyle = { background: "var(--outer-bg)", borderColor: "var(--crimson)", color: "var(--outer-ink)" };
+  /* transparent curved-triangle arrows — bold, minimal, no box */
+  const arrowCls = "group self-center justify-self-center w-12 h-16 lg:w-14 lg:h-20 grid place-items-center bg-transparent transition-all duration-300";
+  const arrowStyle = { color: "var(--outer-ink)" };
+  const curve = (dir: 1 | -1) => (
+    <svg width="26" height="30" viewBox="0 0 24 24" className={`transition-all duration-300 opacity-60 group-hover:opacity-100 group-hover:text-[var(--crimson)] ${reduced ? "" : "group-hover:scale-110"}`}
+      style={{ transform: dir === -1 ? "scaleX(-1)" : undefined }} aria-hidden>
+      <path d="M6.5 12 C11.5 6.5 15.5 4.4 18.5 3.8 C15.8 8 15.8 16 18.5 20.2 C15.5 19.6 11.5 17.5 6.5 12 Z" fill="currentColor" />
+    </svg>
+  );
 
   return (
     <section id="arc" className="relative py-20 lg:py-28 scroll-mt-20">
@@ -135,9 +141,8 @@ export default function Arc() {
               </div>
 
               {/* LEFT arrow */}
-              <button onClick={() => setIdx((idx - 1 + n) % n)} aria-label="Previous"
-                className={`${arrowCls} ${reduced ? "" : "hover:scale-105"}`} style={arrowStyle}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M15 5l-7 7 7 7" /></svg>
+              <button onClick={() => setIdx((idx - 1 + n) % n)} aria-label="Previous" className={arrowCls} style={arrowStyle}>
+                {curve(-1)}
               </button>
 
               {/* CENTER — carousel */}
@@ -146,9 +151,8 @@ export default function Arc() {
               </div>
 
               {/* RIGHT arrow */}
-              <button onClick={() => setIdx((idx + 1) % n)} aria-label="Next"
-                className={`${arrowCls} ${reduced ? "" : "hover:scale-105"}`} style={arrowStyle}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M9 5l7 7-7 7" /></svg>
+              <button onClick={() => setIdx((idx + 1) % n)} aria-label="Next" className={arrowCls} style={arrowStyle}>
+                {curve(1)}
               </button>
 
               {/* RIGHT — dossier */}

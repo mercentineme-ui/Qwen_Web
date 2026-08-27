@@ -237,6 +237,19 @@ body {
 @keyframes tickGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
 /* ---------- career ---------- */
+/* ---------- MY JOURNEY archival rail ---------- */
+.journey-rail { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 1024px) {
+  .journey-rail {
+    grid-template-columns: var(--rail-cols, repeat(4, minmax(0, 1fr)));
+    transition: grid-template-columns 460ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+.journey-card { height: auto; }
+@media (min-width: 1024px) {
+  .journey-card { height: 560px; }
+}
+
 .career-wipe-in { animation: careerWipeIn 0.42s cubic-bezier(0.3,0.8,0.3,1) both; }
 @keyframes careerWipeIn {
   0% { opacity: 0; transform: translateX(16px); clip-path: inset(0 0 0 10%); filter: blur(2px); }

@@ -1,7 +1,8 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { defaultData, PortfolioData } from "./data";
 
-const DATA_KEY = "cbk-portfolio-v1";
+/* v2 — company dossier content updated (My Journey archival rail); invalidates stale caches */
+const DATA_KEY = "cbk-portfolio-v2";
 const THEME_KEY = "cbk-theme";
 
 type Theme = "light" | "dark";

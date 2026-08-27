@@ -43,6 +43,16 @@ export interface Company {
   tools: string[];
   domain: string;
   media: MediaItem[];
+  /* extended dossier fields for the archival rail (all optional — back-compatible) */
+  expandedName?: string;
+  location?: string;
+  summary?: string;
+  highlightsLabel?: string;
+  highlights?: string[];
+  extrasLabel?: string;
+  extras?: string[];
+  discipline?: string;
+  disciplineNote?: string;
 }
 
 export interface ExpertiseData {
@@ -181,45 +191,125 @@ export const defaultData: PortfolioData = {
     companies: [
       {
         id: "impromp2", num: "01", name: "IMPROMP2LABS", short: "IMPROMP2LABS",
-        role: "AI CREATIVE DIRECTOR",
-        date: "NOV 2025 — PRESENT · HYDERABAD · HYBRID",
+        role: "Co-Founder / Gen AI Creative Director",
+        date: "Nov 2025 — Present",
+        location: "Hyderabad, India · Hybrid",
+        summary:
+          "Lead AI-first creative production across film, entertainment and visual-content projects, owning concept development, visual generation, pipeline design and delivery.",
+        highlightsLabel: "KEY HIGHLIGHTS",
+        highlights: [
+          "450+ Creative Assets | AI Film Project - Veer Bhadra",
+          "20+ video deliverables",
+          "4-month production period",
+          "2 entertainment projects",
+          "50+ images and one song each",
+          "7 production AI workflows",
+          "15+ total workflows including R&D",
+          "5 workflows built from scratch",
+          "7 workflows modified for production",
+          "62.5% reduction in AI concept-generation workflow time",
+          "40% reduction in prompt/testing iteration time",
+          "10+ artists trained",
+          "25+ people whose outputs were reviewed",
+          "25+ users supported with workflow standards",
+          "Prompt standards used across 80+ people",
+        ],
+        tools: ["GPT", "Claude", "Dzine", "Higgsfield", "AI production", "Workflow design", "Prompt architecture", "Batch generation"],
         description:
-          "Built an end-to-end AI filmmaking pipeline from scratch — from concept and story through world-building, character locking, visual consistency, shot generation, sequence continuity, editing and final delivery.",
+          "Lead AI-first creative production across film, entertainment and visual-content projects, owning concept development, visual generation, pipeline design and delivery.",
         skills: ["AI CONCEPT ART", "VISUAL R&D", "LOOKDEV", "PIPELINE INTEGRATION"],
-        tools: ["HIGGSFIELD", "DZINE", "CLAUDE", "QWEN"],
         domain: "",
         media: [slot("IMAGE 01"), slot("IMAGE 02"), slot("IMAGE 03")],
       },
       {
         id: "dneg", num: "02", name: "DNEG", short: "DNEG",
-        role: "GEN AI ARTIST",
-        date: "JAN 2026 — APR 2026 · REMOTE",
+        expandedName: "DNEG (DOUBLE NEGATIVE)",
+        role: "Generative AI Artist",
+        date: "Jan 2026 — Apr 2026",
+        location: "Remote",
+        summary:
+          "Contributed to AI production and R&D for Ramayana, working on identity and performance-transfer workflows for cinematic production.",
+        highlightsLabel: "KEY EXPERIENCE",
+        highlights: [
+          "AI production",
+          "AI R&D",
+          "Ramayana",
+          "identity-preserving workflows",
+          "face-swap workflows",
+          "lip-sync workflows",
+          "performance transfer",
+          "digital-human face recreation",
+          "ComfyUI",
+          "VFX collaboration",
+          "cinematic AI workflows",
+          "Nuke publishing",
+          "color correction",
+        ],
+        tools: [],
         description:
-          "Joined DNEG's core GenAI team during the early integration of Generative AI into world-class feature film [ RAMAYANA ], developing workflows for face swap, lip sync, persona transfer, digital humans, identity preservation and AI-generated synthetic media for VFX post-production.",
+          "Contributed to AI production and R&D for Ramayana, working on identity and performance-transfer workflows for cinematic production.",
         skills: ["VFX", "GENERATIVE AI", "DIGITAL HUMANS", "SYNTHETIC MEDIA"],
-        tools: ["COMFYUI", "METAFACE", "DGX", "NUKE"],
-        domain: "RAMAYANA / DUNE 3",
+        domain: "RAMAYANA",
         media: [slot("IMAGE 01"), slot("IMAGE 02"), slot("IMAGE 03")],
       },
       {
         id: "cyberedge", num: "03", name: "CYBEREDGE", short: "CYBEREDGE",
-        role: "AI DESIGN ENGINEER · UX DESIGNER",
-        date: "NOV 2024 — NOV 2025 · HYDERABAD · HYBRID",
+        role: "Graphic Designer / UX Designer",
+        date: "Nov 2024 — Nov 2025",
+        location: "Hyderabad, India · Hybrid",
+        summary:
+          "Combined graphic design, UX thinking, short-form video, AI-assisted creative production and campaign strategy to deliver multi-format content at scale.",
+        highlightsLabel: "METRICS",
+        highlights: [
+          "1,000+ social media posts",
+          "750+ reels/videos",
+          "450+ AI-driven creatives",
+          "250+ digital-marketing campaigns",
+          "80+ clients",
+          "50+ clients with revisions",
+          "35+ client accounts with direct content strategy",
+        ],
+        extrasLabel: "KEY EXPERIENCE",
+        extras: [
+          "Graphic design",
+          "UX",
+          "Short-form video",
+          "AI-assisted creative production",
+          "Content strategy",
+          "Campaign strategy",
+          "Client presentations",
+          "Creative revisions",
+        ],
+        tools: [],
         description:
-          "Bridged design and emerging AI technologies, turning creative concepts into faster, more iterative and scalable visual workflows across design, UX and AI-assisted production.",
+          "Combined graphic design, UX thinking, short-form video, AI-assisted creative production and campaign strategy to deliver multi-format content at scale.",
         skills: ["AI DESIGN", "UX DESIGN", "PROMPT ENGINEERING"],
-        tools: ["MIDJOURNEY", "SORA", "FIGMA", "CAPCUT"],
         domain: "",
         media: [slot("IMAGE 01"), slot("IMAGE 02")],
       },
       {
         id: "premasai", num: "04", name: "PREMA SAI DESIGNERS", short: "PSD",
-        role: "GRAPHIC DESIGNER · PROMPT ENGINEER",
-        date: "AUG 2018 — OCT 2024 · HYDERABAD · ONSITE",
+        expandedName: "PREMA SAI DESIGNERS (PSD)",
+        role: "Designer",
+        discipline: "BRAND IDENTITY",
+        disciplineNote: "BRAND IDENTITY FOR JEWELLERY-STORE BUSINESSES",
+        date: "Aug 2018 — Oct 2024",
+        location: "Hyderabad, India",
+        summary:
+          "Created logos, visiting cards, marketing materials and brand identity systems for jewellery-store businesses.",
+        highlightsLabel: "METRICS",
+        highlights: [
+          "24K+ design assets",
+          "6+ years",
+          "~120 jewellery-store clients",
+          "~50 logos",
+          "120 visiting-card designs",
+          "60+ additional design deliverables",
+        ],
+        tools: ["logos", "visiting cards", "marketing materials", "brand identity", "visual communication"],
         description:
-          "Built a strong foundation in graphic design, branding and advertising, evolving from traditional visual communication into AI-assisted ideation and prompt-driven creative production.",
+          "Created logos, visiting cards, marketing materials and brand identity systems for jewellery-store businesses.",
         skills: ["GRAPHIC DESIGN", "BRANDING", "ADVERTISING"],
-        tools: ["PHOTOSHOP", "ILLUSTRATOR", "CANVA", "AI TOOLS"],
         domain: "",
         media: [slot("IMAGE 01")],
       },

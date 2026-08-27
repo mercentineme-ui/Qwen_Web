@@ -283,7 +283,7 @@ export function Contact() {
                 <span className="absolute -top-[5px] -left-[5px] w-3 h-3 border-t-2 border-l-2" style={{ borderColor: "var(--crim-panel)" }} />
                 <span className="absolute -bottom-[5px] -right-[5px] w-3 h-3 border-b-2 border-r-2" style={{ borderColor: "var(--crim-panel)" }} />
                 <span className="f-mono text-[9px] tracking-[0.3em] block" style={{ color: "var(--ct-sub)" }}>IDENTITY</span>
-                <h3 className="f-display text-[clamp(2.4rem,4.6vw,3.8rem)] leading-[0.98] mt-2 whitespace-nowrap">
+                <h3 className="f-serif font-bold text-[clamp(2rem,3.4vw,2.9rem)] leading-[1.04] mt-2 whitespace-nowrap">
                   <span style={{ color: "var(--ct-ink)" }}>{c.identityA}</span>{" "}
                   <span style={{ color: "var(--crim-panel)" }}>{c.identityB}</span>
                 </h3>
