@@ -1,8 +1,10 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { defaultData, PortfolioData } from "./data";
 
-/* v2 — company dossier content updated (My Journey archival rail); invalidates stale caches */
-const DATA_KEY = "cbk-portfolio-v2";
+/* v3 — ARC two-slide redesign + metrics update (80+ CLIENTS).
+   Bumped so stale persisted portfolio data (old stats / old ARC) is
+   invalidated and the new defaults render immediately. */
+const DATA_KEY = "cbk-portfolio-v3";
 const THEME_KEY = "cbk-theme";
 
 type Theme = "light" | "dark";
