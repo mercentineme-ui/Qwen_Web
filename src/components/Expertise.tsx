@@ -334,50 +334,53 @@ export default function Expertise() {
                             RIGHT = TRACK RECORD · MEDIA (media bottom-right) */}
                     <div className={isOpen ? "relative z-10 block h-full" : "hidden lg:block lg:invisible relative z-10"}>
                       <div className={`journey-dossier h-full flex flex-col px-5 py-4 overflow-y-auto ${isOpen ? "journey-open" : ""}`} style={{ scrollbarWidth: "thin" }}>
-                        {/* TOP HEADER — shallow: number + company name + date/location */}
-                        <div className="ji shrink-0" style={{ animationDelay: "0.04s" }}>
-                          <div className="flex items-center gap-2.5">
+                        {/* TOP HEADER — shallow: number + company name + role + date/location */}
+                        <div className="ji shrink-0 pb-4" style={{ animationDelay: "0.04s", borderBottom: "1px solid var(--journey-line)" }}>
+                          <div className="flex items-baseline gap-3 flex-wrap">
                             <span className="f-mono font-semibold text-[12px] tracking-[0.14em]" style={{ color: "var(--crim-journey)" }}>{c.num}</span>
+                            <h4 className="name-letter leading-[1.04] break-words" style={{ color: "var(--journey-ink)", fontWeight: 800, fontSize: "clamp(1.9rem,3vw,2.6rem)" }}>
+                              {c.expandedName ?? c.name}
+                            </h4>
                             {c.discipline && <Chip>{c.discipline}</Chip>}
                           </div>
-                          <h4 className="name-letter text-[clamp(1.15rem,1.8vw,1.55rem)] leading-[1.06] mt-1.5 break-words" style={{ color: "var(--journey-ink)", fontWeight: 700 }}>
-                            {c.expandedName ?? c.name}
-                          </h4>
-                          <span className="block f-mono text-[9px] tracking-[0.14em] mt-1" style={{ color: "var(--journey-sub)" }}>
-                            {c.date}{c.location ? ` · ${c.location}` : ""}
-                          </span>
+                          <div className="mt-2 flex items-baseline gap-3 flex-wrap">
+                            <span className="f-tech font-semibold text-[13px] sm:text-[14px] tracking-[0.06em]" style={{ color: "var(--crim-journey)" }}>{c.role}</span>
+                            <span className="f-mono text-[10px] tracking-[0.12em]" style={{ color: "var(--journey-sub)" }}>
+                              {c.date}{c.location ? ` · ${c.location}` : ""}
+                            </span>
+                          </div>
                         </div>
 
                         {/* MAIN CONTENT — two columns */}
                         <div className="ji mt-4 grid lg:grid-cols-2 gap-x-6 gap-y-5 shrink-0" style={{ animationDelay: "0.10s" }}>
                           {/* ===== LEFT COLUMN: ROLE · DESCRIPTION · DISCIPLINES · TOOLS ===== */}
-                          <div className="flex flex-col gap-4 min-w-0">
+                          <div className="flex flex-col gap-5 min-w-0">
                             {/* ROLE */}
                             <Block label="ROLE">
-                              <p className="f-tech font-semibold text-[12.5px] leading-snug tracking-[0.04em]" style={{ color: "var(--journey-ink)" }}>{c.role}</p>
+                              <p className="f-tech font-semibold text-[15px] sm:text-[16.5px] leading-snug tracking-[0.03em]" style={{ color: "var(--journey-ink)" }}>{c.role}</p>
                             </Block>
 
-                            {/* DESCRIPTION */}
+                            {/* DESCRIPTION — directly below Role */}
                             {c.summary && (
                               <Block label="DESCRIPTION">
-                                <p className="text-[11.5px] leading-relaxed" style={{ color: "var(--journey-ink)", opacity: 0.88 }}>{c.summary}</p>
+                                <p className="text-[13.5px] sm:text-[14.5px] leading-relaxed" style={{ color: "var(--journey-ink)", opacity: 0.9 }}>{c.summary}</p>
                               </Block>
                             )}
                             {c.disciplineNote && (
-                              <p className="f-mono text-[8.5px] tracking-[0.14em]" style={{ color: "var(--journey-sub)" }}>{c.disciplineNote}</p>
+                              <p className="f-mono text-[10px] tracking-[0.12em]" style={{ color: "var(--journey-sub)" }}>{c.disciplineNote}</p>
                             )}
 
-                            {/* DISCIPLINES */}
+                            {/* DISCIPLINES — below Description */}
                             {c.skills && c.skills.length > 0 && (
                               <Block label="DISCIPLINES">
-                                <div className="flex flex-wrap gap-1.5">{c.skills.map((s) => <Chip key={s}>{s}</Chip>)}</div>
+                                <div className="flex flex-wrap gap-2">{c.skills.map((s) => <Chip key={s}>{s}</Chip>)}</div>
                               </Block>
                             )}
 
-                            {/* TOOLS */}
+                            {/* TOOLS — below Disciplines */}
                             {c.tools && c.tools.length > 0 && (
                               <Block label="TOOLS">
-                                <div className="flex flex-wrap gap-1.5">{c.tools.map((t) => <Chip key={t}>{t}</Chip>)}</div>
+                                <div className="flex flex-wrap gap-2">{c.tools.map((t) => <Chip key={t}>{t}</Chip>)}</div>
                               </Block>
                             )}
                           </div>
