@@ -21,8 +21,9 @@
   --crimson-rough: #da012d;  /* Amarnath Red — on light page surfaces */
   --crimson-shadow: #59232f;
 
-  /* outlined-word stroke for company names — medium neutral grey on light cards */
-  --name-outline: #8a8d92;
+  /* outlined-word stroke for company names. Light page renders DARK cards, so the
+     outline is white/light to stay clearly visible against the dark card. */
+  --name-outline: #f0f8ff;
 
   /* matte panel system — LIGHT: matte black embedded components */
   --outer-bg: #222328;
@@ -82,8 +83,9 @@
   --crimson-rough: #e72241;
   --crimson-shadow: #59232f;
 
-  /* outlined-word stroke for company names — white / light-grey on dark cards */
-  --name-outline: #f0f8ff;
+  /* outlined-word stroke for company names. Dark page renders WHITE cards, so the
+     outline is black to stay clearly visible against the white card. */
+  --name-outline: #222328;
 
   /* matte panel system — DARK: matte off-white embedded components (Alice Blue material) */
   --outer-bg: #f0f8ff;

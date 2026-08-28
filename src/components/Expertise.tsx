@@ -22,9 +22,9 @@ const NAME_STACKS: Record<string, StackCfg> = {
   /* CYBEREDGE ~30% larger than the default two-column scale */
   CYBEREDGE: { g1: "CYBER", g2: "EDGE", offset: 1, font: "clamp(44px, 3.9vw, 62px)" },
   /* DNEG + PSD carry the active red accent (light: Amarnath #DA012D · dark: crimson #E72241)
-     and render ~2X the single-column company-name size. */
-  DNEG: { g1: "DNEG", color: "var(--crimson)", font: "clamp(90px, 8.4vw, 124px)" },
-  PSD: { g1: "PSD", color: "var(--crimson)", font: "clamp(90px, 8.4vw, 124px)" },
+     at the standard single-column company-name scale (1X). */
+  DNEG: { g1: "DNEG", color: "var(--crimson)" },
+  PSD: { g1: "PSD", color: "var(--crimson)" },
 };
 const fallbackStack = (name: string): StackCfg => {
   if (name.length <= 5) return { g1: name };
