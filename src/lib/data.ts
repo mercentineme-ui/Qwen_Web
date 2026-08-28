@@ -211,7 +211,6 @@ export const defaultData: PortfolioData = {
       },
       {
         id: "dneg", num: "02", name: "DNEG", short: "DNEG",
-        expandedName: "DNEG (DOUBLE NEGATIVE)",
         role: "GENERATIVE AI ARTIST",
         date: "JAN 2026 — APR 2026",
         location: "REMOTE",
@@ -252,10 +251,7 @@ export const defaultData: PortfolioData = {
       },
       {
         id: "premasai", num: "04", name: "PREMA SAI DESIGNERS", short: "PSD",
-        expandedName: "PREMA SAI DESIGNERS (PSD)",
         role: "DESIGNER",
-        discipline: "BRAND IDENTITY",
-        disciplineNote: "BRAND IDENTITY FOR JEWELLERY-STORE BUSINESSES",
         date: "AUG 2018 — OCT 2024",
         location: "HYDERABAD · INDIA",
         summary:

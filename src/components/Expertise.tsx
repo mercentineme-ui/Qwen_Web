@@ -426,7 +426,7 @@ export default function Expertise() {
                                     <li key={h} className="flex items-start gap-3 text-[12px] sm:text-[12.5px] leading-snug py-2.5 first:pt-0 last:pb-0 border-b last:border-b-0"
                                       style={{ color: "var(--journey-ink)", opacity: 0.9, borderColor: "var(--journey-line)" }}>
                                       <span className="f-mono font-semibold text-[11px] tracking-[0.08em] shrink-0 mt-[1px]" style={{ color: "var(--crim-journey)" }}>
-                                        {String(i + 1).padStart(2, "0")}
+                                        {String(i + 1).padStart(2, "0")} —
                                       </span>
                                       <span>{h}</span>
                                     </li>
