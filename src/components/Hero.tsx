@@ -146,8 +146,10 @@ export default function Hero() {
   };
   useEffect(() => () => { if (matTimer.current) clearTimeout(matTimer.current); }, []);
   const nameA = h.nameA.replace(/^C\.\s+/i, "C.");
-  const LINE1 = "text-[clamp(2.2rem,4.6vw,3.8rem)] tracking-[0.02em]";
-  const LINE2 = "text-[clamp(3rem,6.6vw,5.8rem)] tracking-[0.01em] mt-1.5";
+  /* one dominant red identity heading — both lines share the same display font,
+     same red treatment, heavy condensed presence. Two-line composition kept. */
+  const LINE1 = "text-[clamp(3rem,5.8vw,4.8rem)] tracking-[0.015em]";
+  const LINE2 = "text-[clamp(3.6rem,7vw,6rem)] tracking-[0.005em] mt-1.5";
 
   useEffect(() => {
     const iv = window.setInterval(() => {
@@ -220,7 +222,7 @@ export default function Hero() {
           >
             <span className="name-base block" style={{ perspective: "700px" }}>
               {/* "C. BALA" = 6 letter-objects, so KRISHNAN continues the wave at index 6 */}
-              <NameLine text={nameA} resolve={!reduced} className={LINE1} delay="0s" startIndex={0} />
+              <NameLine text={nameA} resolve={!reduced} accent className={LINE1} delay="0s" startIndex={0} />
               <NameLine text={h.nameB} resolve={!reduced} accent className={LINE2} delay="0.12s" startIndex={nameA.replace(/ /g, "").length} />
             </span>
           </h1>
