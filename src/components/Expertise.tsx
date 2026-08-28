@@ -21,10 +21,10 @@ const NAME_STACKS: Record<string, StackCfg> = {
   IMPROMP2LABS: { g1: "IMPROMP2", g2: "LABS", offset: 4 },
   /* CYBEREDGE ~30% larger than the default two-column scale */
   CYBEREDGE: { g1: "CYBER", g2: "EDGE", offset: 1, font: "clamp(44px, 3.9vw, 62px)" },
-  /* DNEG + PSD carry the active red accent (light: Amarnath #DA012D · dark: crimson #E72241)
-     at the standard single-column company-name scale (1X). */
-  DNEG: { g1: "DNEG", color: "var(--crimson)" },
-  PSD: { g1: "PSD", color: "var(--crimson)" },
+  /* DNEG + PSD carry the active red accent (light: Amarnath #DA012D · dark: crimson #E72241).
+     Sized back to 1X — the standard company-name scale matching the other cards. */
+  DNEG: { g1: "DNEG", color: "var(--crimson)", font: "clamp(34px, 3vw, 48px)" },
+  PSD: { g1: "PSD", color: "var(--crimson)", font: "clamp(34px, 3vw, 48px)" },
 };
 const fallbackStack = (name: string): StackCfg => {
   if (name.length <= 5) return { g1: name };
@@ -169,6 +169,34 @@ function TechTicks({ className = "" }: { className?: string }) {
   );
 }
 
+/* Restrained internal cyberpunk technical field — fine grid fragment, a small
+   circuit path and indexing marks at very low opacity. Sits behind the company
+   name (z-0) and never competes with content. Adapts to the card material via
+   --outer-ink (black on a white card, white on a dark card). */
+function TechField({ className = "" }: { className?: string }) {
+  const ln = "color-mix(in srgb, var(--outer-ink) 12%, transparent)";
+  const grid = "color-mix(in srgb, var(--outer-ink) 7%, transparent)";
+  return (
+    <span className={`absolute inset-0 pointer-events-none z-0 ${className}`} aria-hidden>
+      {/* fine grid fragment — top-right corner region */}
+      <span className="absolute top-[30px] right-[12px] w-[30px] h-[22px] opacity-70"
+        style={{ backgroundImage: `linear-gradient(${grid} 1px, transparent 1px), linear-gradient(90deg, ${grid} 1px, transparent 1px)`, backgroundSize: "6px 6px" }} />
+      {/* small circuit path — bottom-left corner region */}
+      <span className="absolute bottom-[30px] left-[30px] w-[38px] h-[16px]">
+        <span className="absolute left-0 top-1/2 right-[14px] h-px" style={{ background: ln }} />
+        <span className="absolute right-[14px] top-1/2 -translate-y-1/2 h-[9px] w-px" style={{ background: ln }} />
+        <span className="absolute right-[6px] top-1/2 -translate-y-1/2 w-[4px] h-[4px] rotate-45" style={{ border: `1px solid ${ln}` }} />
+      </span>
+      {/* indexing ticks — bottom-right corner region */}
+      <span className="absolute bottom-[44px] right-[12px] flex flex-col gap-[5px]">
+        <span className="w-[6px] h-px" style={{ background: ln }} />
+        <span className="w-[4px] h-px" style={{ background: ln }} />
+        <span className="w-[6px] h-px" style={{ background: ln }} />
+      </span>
+    </span>
+  );
+}
+
 export default function Expertise() {
   const { data } = useStore();
   const { statement, statementAccent, supporting, companies } = data.expertise;
@@ -299,6 +327,9 @@ export default function Expertise() {
                         style={{ fontSize: "clamp(96px, 8.5vw, 148px)", lineHeight: 1, color: "var(--outer-ink)", opacity: 0.055, transform: "translateY(6px)" }}>
                         {c.num}
                       </span>
+
+                      {/* restrained internal cyberpunk technical field (behind the name) */}
+                      <TechField />
 
                       {/* corner registration marks + micro screws */}
                       <CornerMark pos="tl" /><CornerMark pos="tr" /><CornerMark pos="bl" /><CornerMark pos="br" />
