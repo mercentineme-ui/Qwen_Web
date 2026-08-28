@@ -80,7 +80,7 @@ export default function Header() {
           {/* refined technical clock — Race Sport numeric display + normal-body AM/PM */}
           <div className="hidden sm:flex items-baseline gap-1.5 leading-none tabular-nums">
             <span className="f-clock text-[8px] tracking-[0.32em] text-[var(--ink2)] mr-1 self-center">LOCAL</span>
-            <span className="clock-num f-race text-[17px] lg:text-[18px] tracking-[0.08em]">{hh}:{mm}:{ss}</span>
+            <span className="clock-num f-slim text-[17px] lg:text-[18px] tracking-[0.08em]">{hh}:{mm}:{ss}</span>
             <span className={`text-[10px] font-semibold tracking-[0.18em] px-1.5 py-[3px] rounded-[4px] self-center ${
               theme === "light" ? "bg-[#222328] text-[#f0f8ff]" : "bg-[#f0f8ff] text-[#222328]"
             }`}>

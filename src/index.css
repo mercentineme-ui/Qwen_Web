@@ -21,6 +21,9 @@
   --crimson-rough: #da012d;  /* Amarnath Red — on light page surfaces */
   --crimson-shadow: #59232f;
 
+  /* outlined-word stroke for company names — medium neutral grey on light cards */
+  --name-outline: #8a8d92;
+
   /* matte panel system — LIGHT: matte black embedded components */
   --outer-bg: #222328;
   --outer-ink: #f0f8ff;      /* universal light material — Alice Blue */
@@ -78,6 +81,9 @@
   --crimson-strong: #e72241;
   --crimson-rough: #e72241;
   --crimson-shadow: #59232f;
+
+  /* outlined-word stroke for company names — white / light-grey on dark cards */
+  --name-outline: #f0f8ff;
 
   /* matte panel system — DARK: matte off-white embedded components (Alice Blue material) */
   --outer-bg: #f0f8ff;
@@ -173,6 +179,19 @@ body {
 .mat-outer { background-color: var(--outer-bg); color: var(--outer-ink); }
 .mat-inner { background-color: var(--sup1); color: var(--ink); }
 .mat-page-card { background-color: var(--sup1); color: var(--ink); }
+
+/* WORLD dossier — follows the active page theme (light = ghost white, dark = dark surface) */
+.mat-inner.mat-dossier-theme { background-color: #f8f8ff; }
+.dark .mat-inner.mat-dossier-theme { background-color: var(--sup1); }
+
+/* AI LAB "RECENT PROJECT" mini block — inverts with the page theme.
+   Light page (white card) → matte black + white text.
+   Dark page (dark card)   → matte white + black text. Flat matte, no glow. */
+.recent-proj-block { background-color: #222328; color: #f0f8ff; border: 1px solid #222328; }
+.dark .recent-proj-block { background-color: #f0f8ff; color: #222328; border-color: #f0f8ff; }
+
+/* slim condensed display for the numeric clock (Slim Fit substitute) */
+.f-slim { font-family: "Oswald", "Archivo Narrow", sans-serif; }
 /* Alice Blue light-material surface — applied ONLY to the GHOST.EXE card and
    the ARC Character Dossier (Change 1). Dark theme keeps its existing material. */
 .mat-alice { background-color: #f0f8ff; }

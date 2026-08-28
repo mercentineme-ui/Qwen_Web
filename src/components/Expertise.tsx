@@ -21,9 +21,10 @@ const NAME_STACKS: Record<string, StackCfg> = {
   IMPROMP2LABS: { g1: "IMPROMP2", g2: "LABS", offset: 4 },
   /* CYBEREDGE ~30% larger than the default two-column scale */
   CYBEREDGE: { g1: "CYBER", g2: "EDGE", offset: 1, font: "clamp(44px, 3.9vw, 62px)" },
-  /* DNEG + PSD carry the active red accent (light: Amarnath #DA012D · dark: crimson #E72241) */
-  DNEG: { g1: "DNEG", color: "var(--crimson)" },
-  PSD: { g1: "PSD", color: "var(--crimson)" },
+  /* DNEG + PSD carry the active red accent (light: Amarnath #DA012D · dark: crimson #E72241)
+     and render ~2X the single-column company-name size. */
+  DNEG: { g1: "DNEG", color: "var(--crimson)", font: "clamp(90px, 8.4vw, 124px)" },
+  PSD: { g1: "PSD", color: "var(--crimson)", font: "clamp(90px, 8.4vw, 124px)" },
 };
 const fallbackStack = (name: string): StackCfg => {
   if (name.length <= 5) return { g1: name };
@@ -71,9 +72,11 @@ function NameStack({ name, accent }: { name: string; accent: string }) {
                   gridColumn: c.col,
                   gridRow: c.row,
                   fontSize: "inherit",
-                  /* semi-bold outline in the same accent family — subtle, no glow */
+                  /* outlined word (LABS / EDGE): transparent fill + theme-aware stroke.
+                     Light card → medium neutral grey · Dark card → white / light-grey.
+                     Deliberate typographic treatment — not a shadow, not red, no glow. */
                   color: "transparent",
-                  WebkitTextStroke: `1.3px ${accent}`,
+                  WebkitTextStroke: "1.3px var(--name-outline)",
                   fontWeight: 600,
                 }
               : { gridColumn: c.col, gridRow: c.row, color: c.color, fontSize: "inherit" }
@@ -256,9 +259,11 @@ export default function Expertise() {
                     className="journey-card relative outline-none cursor-pointer mat-texture overflow-hidden"
                     style={{
                       /* closed = journey's own contrasting card material (kept original,
-                         isolated from the global light-material token); open = journey material */
-                      background: isOpen ? "var(--journey-bg)" : "var(--journey-card-bg)",
-                      color: isOpen ? "var(--journey-ink)" : "var(--outer-ink)",
+                         isolated from the global light-material token).
+                         open  = INTERNAL extended card is ALWAYS #F0F8FF in BOTH themes,
+                                 with dark dossier content overridden below for readability. */
+                      background: isOpen ? "#f0f8ff" : "var(--journey-card-bg)",
+                      color: isOpen ? "#222328" : "var(--outer-ink)",
                       clipPath: CLIP,
                       boxShadow: isOpen
                         ? "inset 0 0 0 1.5px var(--crim-journey), 0 18px 40px -18px rgba(0,0,0,0.5)"
@@ -266,6 +271,15 @@ export default function Expertise() {
                       transition: reduced
                         ? "none"
                         : "box-shadow 520ms cubic-bezier(0.22,1,0.36,1), background-color 520ms cubic-bezier(0.22,1,0.36,1), color 520ms cubic-bezier(0.22,1,0.36,1)",
+                      /* keep the internal dossier readable on the fixed light #f0f8ff surface */
+                      ...(isOpen
+                        ? ({
+                            "--journey-ink": "#222328",
+                            "--journey-sub": "rgba(34,35,40,0.62)",
+                            "--journey-line": "rgba(34,35,40,0.18)",
+                            "--crim-journey": "#da012d",
+                          } as React.CSSProperties)
+                        : {}),
                     }}
                   >
                     {/* inner recessed frame — visible gap between shell and frame */}

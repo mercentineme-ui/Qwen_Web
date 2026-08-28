@@ -203,7 +203,7 @@ export default function AILab() {
               <div className="grid lg:grid-cols-[1.35fr_0.65fr] gap-7 lg:gap-10">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="f-mono text-[9px] tracking-[0.3em] px-2.5 py-1.5 rounded-[6px]" style={{ color: "var(--m-sub)", border: "1px solid var(--line)" }}>{lab.subLabel}</span>
+                    <span className="recent-proj-block f-mono text-[9px] tracking-[0.3em] px-2.5 py-1.5 rounded-[6px]">{lab.subLabel}</span>
                     <span className="f-striker text-[10px] tracking-[0.16em] px-2.5 py-1.5 rounded-[6px] border" style={{ borderColor: "var(--crimson-rough)", color: "var(--crimson-rough)" }}>{lab.projectType}</span>
                     <span className="f-tech font-bold text-[9px] tracking-[0.26em] px-2.5 py-1.5 rounded-[6px] bg-[var(--crimson)] text-[#f0f8ff]">{lab.projectStatus}</span>
                   </div>
