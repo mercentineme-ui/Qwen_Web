@@ -24,7 +24,6 @@ function TriNav({ dir, onClick, disabled, label }: { dir: 1 | -1; onClick: () =>
 
 export default function ShowReel() {
   const { data } = useStore();
-  const reduced = useReducedMotion();
   const { portraits, landscapes } = data.showReel;
 
   const [pView, setPView] = useState<number | null>(null);
