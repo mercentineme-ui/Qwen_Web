@@ -42,12 +42,15 @@
   --ct-card-sub: #59595b;
   --crim-panel: #da012d;
 
-  /* MY JOURNEY section material — LIGHT: matte-white section, dark expanded card text */
-  --journey-bg: #f0f8ff;
+  /* MY JOURNEY section material — LIGHT: matte-white section, dark expanded card text.
+     KEPT on its ORIGINAL warm-white / muted-crimson material (isolated from the
+     global Alice-Blue + Amarnath update) so the journey is preserved exactly. */
+  --journey-bg: #ddddd8;
   --journey-ink: #222328;
   --journey-sub: rgba(34, 35, 40, 0.62);
   --journey-line: rgba(34, 35, 40, 0.18);
-  --crim-journey: #da012d;
+  --journey-card-bg: #222328;   /* closed company card — matte black on light page */
+  --crim-journey: #9e2237;
 
   /* creative core machine — LIGHT: dark machine on light page */
   --core-plate: #222328;
@@ -96,11 +99,14 @@
   --ct-card-sub: #a6a6a4;
   --crim-panel: #9e2237;   /* dark-theme red stays deliberately muted */
 
-  /* MY JOURNEY section material — DARK: matte-black section, light expanded card text */
+  /* MY JOURNEY section material — DARK: matte-black section, warm-white expanded card text.
+     KEPT on its ORIGINAL warm-white text / muted material (isolated from the
+     global Alice-Blue update) so the journey is preserved exactly. */
   --journey-bg: #222328;
-  --journey-ink: #f0f8ff;
+  --journey-ink: #ddddd8;
   --journey-sub: rgba(221, 221, 216, 0.62);
   --journey-line: rgba(221, 221, 216, 0.18);
+  --journey-card-bg: #ddddd8;   /* closed company card — warm white on dark page */
   --crim-journey: #e72241;
 
   /* creative core machine — DARK: light precision machine on dark page.

@@ -209,8 +209,9 @@ export default function Expertise() {
                     onKeyDown={(e) => onKey(e, i)}
                     className="journey-card relative outline-none cursor-pointer mat-texture overflow-hidden"
                     style={{
-                      /* closed = contrasting archive material; open = journey material */
-                      background: isOpen ? "var(--journey-bg)" : "var(--outer-bg)",
+                      /* closed = journey's own contrasting card material (kept original,
+                         isolated from the global light-material token); open = journey material */
+                      background: isOpen ? "var(--journey-bg)" : "var(--journey-card-bg)",
                       color: isOpen ? "var(--journey-ink)" : "var(--outer-ink)",
                       clipPath: CLIP,
                       boxShadow: isOpen
