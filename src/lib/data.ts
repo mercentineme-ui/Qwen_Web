@@ -330,6 +330,20 @@ export const defaultData: PortfolioData = {
       { id: "w3", name: "WORLD SLOT 03", image: slot("LANDSCAPE 03", "image", ["ADD IMAGE", "16 : 9"]), tools: "", description: "" },
       { id: "w4", name: "WORLD SLOT 04", image: slot("LANDSCAPE 04", "image", ["ADD IMAGE", "16 : 9"]), tools: "", description: "" },
     ],
+    slides: [
+      {
+        id: "s1",
+        image: slot("IMAGE 01", "image", ["ADD IMAGE"]),
+        text: "Character came first, like a memory from a story never told.",
+        textPos: "top-left",
+      },
+      {
+        id: "s2",
+        image: slot("IMAGE 02", "image", ["ADD IMAGE"]),
+        text: "I only followed the trail until it opened into worlds.",
+        textPos: "bottom-right",
+      },
+    ],
   },
 
   build: {
