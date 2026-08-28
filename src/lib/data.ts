@@ -207,7 +207,7 @@ export const defaultData: PortfolioData = {
         tools: ["HIGGSFIELD", "DZINE", "CLAUDE", "QWEN"],
         description:
           "Built and led AI-first creative production across film, entertainment and visual-content projects — from concept development and visual generation to workflow architecture, continuity, production and final delivery.",
-        skills: ["AI CONCEPT ART", "VISUAL R&D", "LOOKDEV", "PIPELINE INTEGRATION"],
+        skills: ["CREATIVE DIRECTION", "GENERATIVE AI", "VISUAL DEVELOPMENT", "AI CREATIVE WORKFLOWS"],
         domain: "",
         media: [slot("IMAGE 01")],
       },
@@ -230,9 +230,9 @@ export const defaultData: PortfolioData = {
         tools: ["COMFYUI", "METAFACE", "DGX", "NUKE"],
         description:
           "Contributed to production AI and R&D for cinematic workflows, working across identity preservation, performance transfer, face recreation, synthetic media and AI-assisted VFX within a collaborative production environment.",
-        skills: ["VFX", "GENERATIVE AI", "DIGITAL HUMANS", "SYNTHETIC MEDIA"],
+        skills: ["GENERATIVE AI", "VISUAL DEVELOPMENT", "AI MEDIA", "CHARACTER DEVELOPMENT"],
         domain: "RAMAYANA",
-        media: [slot("IMAGE 01"), slot("IMAGE 02")],
+        media: [slot("IMAGE 01")],
       },
       {
         id: "cyberedge", num: "03", name: "CYBEREDGE", short: "CYBEREDGE",
@@ -252,7 +252,7 @@ export const defaultData: PortfolioData = {
         tools: ["MIDJOURNEY", "SORA", "FIGMA", "CAPCUT"],
         description:
           "Produced high-volume visual and digital content across diverse brands, combining AI-assisted design, UX thinking, prompt engineering, short-form content and campaign strategy to deliver scalable creative output.",
-        skills: ["AI DESIGN", "UX DESIGN", "PROMPT ENGINEERING"],
+        skills: ["CREATIVE DIRECTION", "GENERATIVE AI", "AI MEDIA", "PROMPT ARCHITECTURE"],
         domain: "",
         media: [slot("IMAGE 01")],
       },
@@ -277,7 +277,7 @@ export const defaultData: PortfolioData = {
         tools: ["PHOTOSHOP", "ILLUSTRATOR", "CANVA"],
         description:
           "Built a long-term foundation in high-volume visual communication, branding and advertising design, producing marketing and identity assets for jewellery businesses while maintaining consistent visual presentation across client work.",
-        skills: ["GRAPHIC DESIGN", "BRANDING", "ADVERTISING"],
+        skills: ["CREATIVE DIRECTION", "VISUAL DEVELOPMENT", "CHARACTER DEVELOPMENT", "ENVIRONMENT DESIGN"],
         domain: "",
         media: [slot("IMAGE 01")],
       },

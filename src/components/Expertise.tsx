@@ -392,9 +392,9 @@ export default function Expertise() {
                               <Block label={c.highlightsLabel ?? "TRACK RECORD"}>
                                 <ul className="flex flex-col">
                                   {c.highlights.map((h, i) => (
-                                    <li key={h} className="flex items-start gap-2.5 text-[10.5px] leading-snug py-2 first:pt-0 last:pb-0 border-b last:border-b-0"
-                                      style={{ color: "var(--journey-ink)", opacity: 0.88, borderColor: "var(--journey-line)" }}>
-                                      <span className="f-mono font-semibold text-[10px] tracking-[0.08em] shrink-0" style={{ color: "var(--crim-journey)" }}>
+                                    <li key={h} className="flex items-start gap-3 text-[12px] sm:text-[12.5px] leading-snug py-2.5 first:pt-0 last:pb-0 border-b last:border-b-0"
+                                      style={{ color: "var(--journey-ink)", opacity: 0.9, borderColor: "var(--journey-line)" }}>
+                                      <span className="f-mono font-semibold text-[11px] tracking-[0.08em] shrink-0 mt-[1px]" style={{ color: "var(--crim-journey)" }}>
                                         {String(i + 1).padStart(2, "0")}
                                       </span>
                                       <span>{h}</span>
@@ -404,15 +404,11 @@ export default function Expertise() {
                               </Block>
                             )}
 
-                            {/* MEDIA — below Track Record (bottom-right). DNEG = 2 slots, others = 1. */}
+                            {/* MEDIA — exactly one 16:9 slot below Track Record (bottom-right) */}
                             {c.media && c.media.length > 0 && (
-                              <Block label={`MEDIA / ${String(c.media.length).padStart(2, "0")}`}>
-                                <div className={c.media.length > 1 ? "grid grid-cols-1 gap-2" : ""}>
-                                  {c.media.map((m, i) => (
-                                    <div key={m.id} style={{ height: c.media.length > 1 ? 96 : 150 }}>
-                                      <MediaSlot item={m} ratio="16/9" fill className="rounded-[4px]! border-0!" showLabel={false} onClick={() => setMediaView(i)} />
-                                    </div>
-                                  ))}
+                              <Block label="MEDIA">
+                                <div className="w-full">
+                                  <MediaSlot item={c.media[0]} ratio="16/9" className="rounded-[4px]! border-0! w-full" showLabel={false} onClick={() => setMediaView(0)} />
                                 </div>
                               </Block>
                             )}
