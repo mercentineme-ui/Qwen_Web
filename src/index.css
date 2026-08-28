@@ -107,7 +107,7 @@
   --journey-ink: #ddddd8;
   --journey-sub: rgba(221, 221, 216, 0.62);
   --journey-line: rgba(221, 221, 216, 0.18);
-  --journey-card-bg: #ddddd8;   /* closed company card — matte rough white on dark page */
+  --journey-card-bg: #f0f8ff;   /* closed company card — matte rough white (Alice Blue) on dark page */
   --journey-card-accent: #b31b1b; /* closed-card red accent — dark theme stays muted */
   --crim-journey: #e72241;
 
@@ -193,7 +193,7 @@ body {
 }
 .btn:hover { transform: translateY(-2px); }
 .btn:active { transform: translateY(0) scale(0.98); }
-.btn-crimson { background: var(--crimson); color: #ddddd8; box-shadow: 0 14px 30px -14px rgba(231,34,65,0.75); }
+.btn-crimson { background: var(--crimson); color: #f0f8ff; box-shadow: 0 14px 30px -14px rgba(231,34,65,0.75); }
 .btn-crimson:hover { background: #c81d38; }
 .btn-ghost { background: transparent; }
 .btn-ghost:hover { border-color: var(--crimson) !important; color: var(--crimson) !important; }

@@ -16,12 +16,14 @@ const yearOf = (d: string) => (d.match(/\d{4}/) || [""])[0];
    colour. Short names stay a single tall column at a larger size so every
    letter keeps a consistent, large display scale.
    ------------------------------------------------------------------ */
-type StackCfg = { g1: string; g2?: string; offset?: number };
+type StackCfg = { g1: string; g2?: string; offset?: number; font?: string; color?: string };
 const NAME_STACKS: Record<string, StackCfg> = {
   IMPROMP2LABS: { g1: "IMPROMP2", g2: "LABS", offset: 4 },
-  CYBEREDGE: { g1: "CYBER", g2: "EDGE", offset: 1 },
-  DNEG: { g1: "DNEG" },
-  PSD: { g1: "PSD" },
+  /* CYBEREDGE ~30% larger than the default two-column scale */
+  CYBEREDGE: { g1: "CYBER", g2: "EDGE", offset: 1, font: "clamp(44px, 3.9vw, 62px)" },
+  /* DNEG + PSD carry the active red accent (light: Amarnath #DA012D · dark: crimson #E72241) */
+  DNEG: { g1: "DNEG", color: "var(--crimson)" },
+  PSD: { g1: "PSD", color: "var(--crimson)" },
 };
 const fallbackStack = (name: string): StackCfg => {
   if (name.length <= 5) return { g1: name };
@@ -32,16 +34,18 @@ const fallbackStack = (name: string): StackCfg => {
 function NameStack({ name, accent }: { name: string; accent: string }) {
   const cfg = NAME_STACKS[name] ?? fallbackStack(name);
   const twoCol = Boolean(cfg.g2);
-  /* previous max was 32px → long two-column names at ~1.5× (48px),
-     short single-column names at ~2× (64px). Both stay large & readable. */
-  const font = twoCol ? "clamp(34px, 3vw, 48px)" : "clamp(46px, 4.3vw, 64px)";
+  /* long two-column names (48px), short single-column names (64px);
+     CYBEREDGE overrides to ~30% larger. All stay large & readable. */
+  const font = cfg.font ?? (twoCol ? "clamp(34px, 3vw, 48px)" : "clamp(46px, 4.3vw, 64px)");
 
-  type Cell = { ch: string; col: number; row: number; color: string };
+  type Cell = { ch: string; col: number; row: number; color: string; outline?: boolean };
   const cells: Cell[] = [];
-  cfg.g1.split("").forEach((ch, k) => cells.push({ ch, col: 1, row: k + 1, color: "var(--outer-ink)" }));
+  cfg.g1.split("").forEach((ch, k) =>
+    cells.push({ ch, col: 1, row: k + 1, color: cfg.color ?? "var(--outer-ink)" })
+  );
   if (cfg.g2)
     cfg.g2.split("").forEach((ch, k) =>
-      cells.push({ ch, col: 2, row: (cfg.offset ?? 0) + k + 1, color: accent })
+      cells.push({ ch, col: 2, row: (cfg.offset ?? 0) + k + 1, color: accent, outline: true })
     );
 
   return (
@@ -61,7 +65,19 @@ function NameStack({ name, accent }: { name: string; accent: string }) {
           key={i}
           aria-hidden
           className="name-letter"
-          style={{ gridColumn: c.col, gridRow: c.row, color: c.color, fontSize: "inherit" }}
+          style={
+            c.outline
+              ? {
+                  gridColumn: c.col,
+                  gridRow: c.row,
+                  fontSize: "inherit",
+                  /* semi-bold outline in the same accent family — subtle, no glow */
+                  color: "transparent",
+                  WebkitTextStroke: `1.3px ${accent}`,
+                  fontWeight: 600,
+                }
+              : { gridColumn: c.col, gridRow: c.row, color: c.color, fontSize: "inherit" }
+          }
         >
           {c.ch}
         </span>

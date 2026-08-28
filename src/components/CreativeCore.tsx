@@ -137,15 +137,15 @@ function GearTrio({ reduced, node }: { reduced: boolean; node: number }) {
 const CORE_PALETTES: Record<"light" | "dark", Record<string, string>> = {
   light: {
     "--core-plate": "#222328", "--core-deep": "#3c3d42", "--core-line": "#59595b",
-    "--core-mid": "#a6a6a4", "--core-inv": "#ddddd8", "--core-ring": "#59595b",
+    "--core-mid": "#a6a6a4", "--core-inv": "#f0f8ff", "--core-ring": "#59595b",
     "--core-gear": "#222328", "--core-crimson": "#e72241", "--crimson": "#e72241",
-    "--line": "rgba(34,35,40,0.16)", "--outer-bg": "#222328", "--outer-ink": "#ddddd8",
+    "--line": "rgba(34,35,40,0.16)", "--outer-bg": "#222328", "--outer-ink": "#f0f8ff",
   },
   dark: {
     "--core-plate": "#d3d4ce", "--core-deep": "#3c3d42", "--core-line": "#4a4b50",
     "--core-mid": "#59595b", "--core-inv": "#f2f2ee", "--core-ring": "#c8c9c3",
     "--core-gear": "#cdcec8", "--core-crimson": "#e72241", "--crimson": "#e72241",
-    "--line": "rgba(221,221,216,0.15)", "--outer-bg": "#ddddd8", "--outer-ink": "#222328",
+    "--line": "rgba(221,221,216,0.15)", "--outer-bg": "#f0f8ff", "--outer-ink": "#222328",
   },
 };
 const FREEZE_KEYS = Object.keys(CORE_PALETTES.light);
@@ -537,8 +537,8 @@ export default function CreativeCore() {
   /* every active-node card flips to a matte mechanical status panel:
      graphite on a light page, rough off-white on a dark page */
   const cardActive = active !== null;
-  const cardBg = theme === "light" ? "#222328" : "#e7e6e1";
-  const cardInk = theme === "light" ? "#e7e6e1" : "#222328";
+  const cardBg = theme === "light" ? "#222328" : "#f0f8ff";
+  const cardInk = theme === "light" ? "#f0f8ff" : "#222328";
   const cardSub = theme === "light" ? "#9b9c96" : "#59595b";
 
   return (

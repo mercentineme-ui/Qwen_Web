@@ -113,8 +113,8 @@ function Cube() {
     }
   };
 
-  const body = theme === "light" ? "#ddddd8" : "#222328";
-  const seam = theme === "light" ? "#222328" : "#ddddd8";
+  const body = theme === "light" ? "#f0f8ff" : "#222328";
+  const seam = theme === "light" ? "#222328" : "#f0f8ff";
 
   return (
     <div className="select-none touch-none" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}

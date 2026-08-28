@@ -102,7 +102,7 @@ export function MediaSlot({
       )}
 
       {onClick && (
-        <span className="absolute top-2.5 right-2.5 z-10 f-tech font-bold text-[9px] tracking-[0.22em] px-2.5 py-1.5 rounded-[6px] bg-[var(--crimson)] text-[#ddddd8] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-1.5">
+        <span className="absolute top-2.5 right-2.5 z-10 f-tech font-bold text-[9px] tracking-[0.22em] px-2.5 py-1.5 rounded-[6px] bg-[var(--crimson)] text-[#f0f8ff] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-1.5">
           <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z" /></svg>
           VIEW
         </span>
