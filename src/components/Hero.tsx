@@ -41,13 +41,72 @@ function Frame({ idx }: { idx: number }) {
   );
 }
 
-function NameLine({ text, resolve, accent, className, delay }: {
-  text: string; resolve: boolean; accent?: boolean; className: string; delay?: string;
+/* ---- per-letter dimensional-transformation profiles -----------------------
+   Each letter is an independent letter-object with its own deterministic
+   depth / offset / rotation / fold-direction / construction-angle / timing.
+   Values are fixed (never random per-frame) so every letter behaves the same
+   way on every run, while remaining distinct from its neighbours.
+   ------------------------------------------------------------------------ */
+const P_LX  = [ 4,-5, 3,-3, 5,-4, 3,-5, 4,-3, 5,-4, 3,-5];
+const P_LY  = [ 3, 4,-3, 5,-4, 3,-3, 4,-4, 3, 5,-3, 4,-4];
+const P_LZ  = [ 2,-2, 3,-1, 2,-3, 3,-2, 2,-1, 3,-2, 2,-3];
+const P_ROT = [-2, 2,-1.5,2.5,-2,1.5,-2.5, 2,-1.5,2.5,-2,1.5,-2.5, 2];
+const P_FD  = ["left","top","right","diag","bottom","left","right","top","bottom","left","diag","right","top","bottom"];
+const P_CA  = [ 45,-30, 60,  0,-45, 30,-60, 15,-15, 50,-50, 20,-20, 40];
+const P_JIT = [  0, 18, 36, 54, 72, 90, 12, 30, 48, 66, 84, 24, 42, 60];
+
+const foldOrigin = (fd: string) =>
+  fd === "left" ? "left center" : fd === "right" ? "right center"
+  : fd === "top" ? "center top" : fd === "bottom" ? "center bottom" : "center center";
+
+function letterVars(gi: number, _accent: boolean): React.CSSProperties {
+  const i = ((gi % 14) + 14) % 14;
+  const fd = P_FD[i];
+  return {
+    "--ld":    `${gi * 55 + P_JIT[i]}ms`,
+    "--lx":    `${P_LX[i]}px`,
+    "--ly":    `${P_LY[i]}px`,
+    "--lz":    `${P_LZ[i]}px`,
+    "--lrot":  `${P_ROT[i]}deg`,
+    "--lca":   `${P_CA[i]}deg`,
+    "--pfrom": fd === "left"  ? "rotateY(72deg)"  : fd === "right" ? "rotateY(-72deg)"
+             : fd === "top"   ? "rotateX(-72deg)" : fd === "bottom" ? "rotateX(72deg)"
+             : "rotate(24deg) scale(.72)",
+    "--lt-dur": "2.3s",
+  } as React.CSSProperties;
+}
+
+function NameLine({ text, resolve, accent, className, delay, startIndex = 0 }: {
+  text: string; resolve: boolean; accent?: boolean; className: string; delay?: string; startIndex?: number;
 }) {
+  let gi = startIndex;
   return (
     <span className={`block f-display ${accent ? "print-matte" : ""} ${resolve ? "name-resolve" : ""} ${className}`}
       style={{ color: accent ? undefined : "var(--hero-ink)", animationDelay: resolve ? delay : undefined }}>
-      {text}
+      {text.split("").map((ch, k) => {
+        if (ch === " ") return <span key={k} className="inline-block w-[0.32em]" aria-hidden />;
+        const i = ((gi % 14) + 14) % 14;
+        const fd = P_FD[i];
+        const org = foldOrigin(fd);
+        const dimc = i % 3 === 1 ? "var(--ink2)" : "var(--crimson)";
+        const stonc = accent ? "#8f1528" : "#191a1f";
+        const v = letterVars(gi, Boolean(accent));
+        gi++;
+        return (
+          <span key={k} className="lt" style={v}>
+            {/* dimensional offset duplicate (registration / alternate dimension) */}
+            <span className="lt-dim" aria-hidden style={{ color: dimc }}>{ch}</span>
+            {/* stone / mass extrusion layer */}
+            <span className="lt-stone" aria-hidden style={{ color: stonc }}>{ch}</span>
+            {/* architectural construction layer (beams clipped to the glyph) */}
+            <span className="lt-arch" aria-hidden>{ch}</span>
+            {/* paper fold fragment */}
+            <span className="lt-paper" aria-hidden style={{ transformOrigin: org }} />
+            {/* base anchor letter — stays spatially fixed */}
+            <span className="lt-base">{ch}</span>
+          </span>
+        );
+      })}
     </span>
   );
 }
@@ -159,31 +218,11 @@ export default function Hero() {
             className={`mat-stage mt-8 lg:mt-9 leading-[0.94] select-none ${matPhase === "seq" ? "mat-seq" : matPhase === "resolve" ? "mat-resolve" : ""}`}
             onMouseEnter={enterMat} onMouseLeave={leaveMat} onClick={enterMat}
           >
-            <span className="name-base block">
-              <NameLine text={nameA} resolve={!reduced} className={LINE1} delay="0s" />
-              <NameLine text={h.nameB} resolve={!reduced} accent className={LINE2} delay="0.12s" />
+            <span className="name-base block" style={{ perspective: "700px" }}>
+              {/* "C. BALA" = 6 letter-objects, so KRISHNAN continues the wave at index 6 */}
+              <NameLine text={nameA} resolve={!reduced} className={LINE1} delay="0s" startIndex={0} />
+              <NameLine text={h.nameB} resolve={!reduced} accent className={LINE2} delay="0.12s" startIndex={nameA.replace(/ /g, "").length} />
             </span>
-            {/* stone displacement filter (material roughness for phase 1) */}
-            <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden>
-              <filter id="nameStone">
-                <feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="2" seed="11" result="n" />
-                <feDisplacementMap in="SourceGraphic" in2="n" scale="2.8" />
-              </filter>
-            </svg>
-            {/* material duplicates — same letter geometry, physically transformed materials */}
-            <span aria-hidden className="name-dup dup-stone">
-              <span className={`block f-display ${LINE1}`}>{nameA}</span>
-              <span className={`block f-display ${LINE2}`}>{h.nameB}</span>
-            </span>
-            <span aria-hidden className="name-dup dup-arch">
-              <span className={`block f-display ${LINE1}`}>{nameA}</span>
-              <span className={`block f-display ${LINE2}`}>{h.nameB}</span>
-            </span>
-            <span aria-hidden className="name-dup dup-paper">
-              <span className={`block f-display ${LINE1}`}>{nameA}</span>
-              <span className={`block f-display ${LINE2}`}>{h.nameB}</span>
-            </span>
-            <span className="mat-sheet" aria-hidden />
           </h1>
 
           {/* ABOUT ME */}
