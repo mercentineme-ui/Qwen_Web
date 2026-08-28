@@ -180,7 +180,7 @@ export const defaultData: PortfolioData = {
       { num: "01", value: 1000, suffix: "+", label: "POSTS" },
       { num: "02", value: 750, suffix: "+", label: "CONTENT" },
       { num: "03", value: 450, suffix: "+", label: "AI CREATIVES" },
-      { num: "04", value: 250, suffix: "+", label: "CAMPAIGNS" },
+      { num: "04", value: 80, suffix: "+", label: "CLIENTS" },
     ],
   },
 
