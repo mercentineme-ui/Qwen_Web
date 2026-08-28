@@ -50,6 +50,7 @@
   --journey-sub: rgba(34, 35, 40, 0.62);
   --journey-line: rgba(34, 35, 40, 0.18);
   --journey-card-bg: #222328;   /* closed company card — matte black on light page */
+  --journey-card-accent: #b31b1b; /* closed-card red accent (journey-local, decoupled from global red) */
   --crim-journey: #9e2237;
 
   /* creative core machine — LIGHT: dark machine on light page */
