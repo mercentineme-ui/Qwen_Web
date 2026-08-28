@@ -326,10 +326,15 @@ export default function Expertise() {
                       <span className="w-2 h-2 rotate-45" style={{ background: isOpen ? "var(--crim-journey)" : "var(--crim-panel)" }} />
                     </div>
 
-                    {/* ---------- EXPANDED DOSSIER (journey material) ---------- */}
+                    {/* ---------- EXPANDED DOSSIER (journey material) ----------
+                        LARGE HORIZONTAL DOSSIER:
+                        HEADER (number + name + date/location, shallow)
+                        → TWO COLUMNS:
+                            LEFT  = ROLE · DESCRIPTION · DISCIPLINES · TOOLS
+                            RIGHT = TRACK RECORD · MEDIA (media bottom-right) */}
                     <div className={isOpen ? "relative z-10 block h-full" : "hidden lg:block lg:invisible relative z-10"}>
                       <div className={`journey-dossier h-full flex flex-col px-5 py-4 overflow-y-auto ${isOpen ? "journey-open" : ""}`} style={{ scrollbarWidth: "thin" }}>
-                        {/* TOP: number + company + role + date/location */}
+                        {/* TOP HEADER — shallow: number + company name + date/location */}
                         <div className="ji shrink-0" style={{ animationDelay: "0.04s" }}>
                           <div className="flex items-center gap-2.5">
                             <span className="f-mono font-semibold text-[12px] tracking-[0.14em]" style={{ color: "var(--crim-journey)" }}>{c.num}</span>
@@ -338,74 +343,78 @@ export default function Expertise() {
                           <h4 className="name-letter text-[clamp(1.15rem,1.8vw,1.55rem)] leading-[1.06] mt-1.5 break-words" style={{ color: "var(--journey-ink)", fontWeight: 700 }}>
                             {c.expandedName ?? c.name}
                           </h4>
-                          <span className="block f-tech font-semibold text-[10px] tracking-[0.16em] mt-1" style={{ color: "var(--crim-journey)" }}>{c.role}</span>
                           <span className="block f-mono text-[9px] tracking-[0.14em] mt-1" style={{ color: "var(--journey-sub)" }}>
                             {c.date}{c.location ? ` · ${c.location}` : ""}
                           </span>
-                          {c.disciplineNote && (
-                            <span className="block f-mono text-[8px] tracking-[0.16em] mt-1.5" style={{ color: "var(--journey-sub)" }}>{c.disciplineNote}</span>
-                          )}
                         </div>
 
-                        {/* DESCRIPTION */}
-                        {c.summary && (
-                          <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.10s" }}>
-                            <Block label="DESCRIPTION">
-                              <p className="text-[12px] leading-relaxed" style={{ color: "var(--journey-ink)", opacity: 0.88 }}>{c.summary}</p>
+                        {/* MAIN CONTENT — two columns */}
+                        <div className="ji mt-4 grid lg:grid-cols-2 gap-x-6 gap-y-5 shrink-0" style={{ animationDelay: "0.10s" }}>
+                          {/* ===== LEFT COLUMN: ROLE · DESCRIPTION · DISCIPLINES · TOOLS ===== */}
+                          <div className="flex flex-col gap-4 min-w-0">
+                            {/* ROLE */}
+                            <Block label="ROLE">
+                              <p className="f-tech font-semibold text-[12.5px] leading-snug tracking-[0.04em]" style={{ color: "var(--journey-ink)" }}>{c.role}</p>
                             </Block>
-                          </div>
-                        )}
 
-                        {/* TRACK RECORD — numbered 01–05 entries */}
-                        {c.highlights && c.highlights.length > 0 && (
-                          <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.16s" }}>
-                            <Block label={c.highlightsLabel ?? "TRACK RECORD"}>
-                              <ul className="flex flex-col gap-y-2">
-                                {c.highlights.map((h, i) => (
-                                  <li key={h} className="flex items-start gap-2.5 text-[10.5px] leading-snug" style={{ color: "var(--journey-ink)", opacity: 0.85 }}>
-                                    <span className="f-mono font-semibold text-[9px] tracking-[0.08em] shrink-0" style={{ color: "var(--crim-journey)" }}>
-                                      {String(i + 1).padStart(2, "0")}.
-                                    </span>
-                                    {h}
-                                  </li>
-                                ))}
-                              </ul>
-                            </Block>
-                          </div>
-                        )}
+                            {/* DESCRIPTION */}
+                            {c.summary && (
+                              <Block label="DESCRIPTION">
+                                <p className="text-[11.5px] leading-relaxed" style={{ color: "var(--journey-ink)", opacity: 0.88 }}>{c.summary}</p>
+                              </Block>
+                            )}
+                            {c.disciplineNote && (
+                              <p className="f-mono text-[8.5px] tracking-[0.14em]" style={{ color: "var(--journey-sub)" }}>{c.disciplineNote}</p>
+                            )}
 
-                        {/* DISCIPLINES */}
-                        {c.skills && c.skills.length > 0 && (
-                          <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.22s" }}>
-                            <Block label="DISCIPLINES">
-                              <div className="flex flex-wrap gap-1.5">{c.skills.map((s) => <Chip key={s}>{s}</Chip>)}</div>
-                            </Block>
-                          </div>
-                        )}
+                            {/* DISCIPLINES */}
+                            {c.skills && c.skills.length > 0 && (
+                              <Block label="DISCIPLINES">
+                                <div className="flex flex-wrap gap-1.5">{c.skills.map((s) => <Chip key={s}>{s}</Chip>)}</div>
+                              </Block>
+                            )}
 
-                        {/* TOOLS */}
-                        {c.tools && c.tools.length > 0 && (
-                          <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.28s" }}>
-                            <Block label="TOOLS">
-                              <div className="flex flex-wrap gap-1.5">{c.tools.map((t) => <Chip key={t}>{t}</Chip>)}</div>
-                            </Block>
+                            {/* TOOLS */}
+                            {c.tools && c.tools.length > 0 && (
+                              <Block label="TOOLS">
+                                <div className="flex flex-wrap gap-1.5">{c.tools.map((t) => <Chip key={t}>{t}</Chip>)}</div>
+                              </Block>
+                            )}
                           </div>
-                        )}
 
-                        {/* MEDIA AREA — all slots (DNEG = 2, others = 1), always reserved */}
-                        {c.media && c.media.length > 0 && (
-                          <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.34s" }}>
-                            <Block label={`MEDIA / ${String(c.media.length).padStart(2, "0")}`}>
-                              <div className={c.media.length > 1 ? "grid grid-cols-2 gap-2" : ""}>
-                                {c.media.map((m, i) => (
-                                  <div key={m.id} style={{ height: c.media.length > 1 ? 100 : 190 }}>
-                                    <MediaSlot item={m} ratio="16/9" fill className="rounded-[4px]! border-0!" showLabel={false} onClick={() => setMediaView(i)} />
-                                  </div>
-                                ))}
-                              </div>
-                            </Block>
+                          {/* ===== RIGHT COLUMN: TRACK RECORD · MEDIA (bottom-right) ===== */}
+                          <div className="flex flex-col gap-4 min-w-0">
+                            {/* TRACK RECORD — numbered 01–05 entries */}
+                            {c.highlights && c.highlights.length > 0 && (
+                              <Block label={c.highlightsLabel ?? "TRACK RECORD"}>
+                                <ul className="flex flex-col">
+                                  {c.highlights.map((h, i) => (
+                                    <li key={h} className="flex items-start gap-2.5 text-[10.5px] leading-snug py-2 first:pt-0 last:pb-0 border-b last:border-b-0"
+                                      style={{ color: "var(--journey-ink)", opacity: 0.88, borderColor: "var(--journey-line)" }}>
+                                      <span className="f-mono font-semibold text-[10px] tracking-[0.08em] shrink-0" style={{ color: "var(--crim-journey)" }}>
+                                        {String(i + 1).padStart(2, "0")}
+                                      </span>
+                                      <span>{h}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </Block>
+                            )}
+
+                            {/* MEDIA — below Track Record (bottom-right). DNEG = 2 slots, others = 1. */}
+                            {c.media && c.media.length > 0 && (
+                              <Block label={`MEDIA / ${String(c.media.length).padStart(2, "0")}`}>
+                                <div className={c.media.length > 1 ? "grid grid-cols-1 gap-2" : ""}>
+                                  {c.media.map((m, i) => (
+                                    <div key={m.id} style={{ height: c.media.length > 1 ? 96 : 150 }}>
+                                      <MediaSlot item={m} ratio="16/9" fill className="rounded-[4px]! border-0!" showLabel={false} onClick={() => setMediaView(i)} />
+                                    </div>
+                                  ))}
+                                </div>
+                              </Block>
+                            )}
                           </div>
-                        )}
+                        </div>
 
                         {/* footer technical marks */}
                         <div className="ji mt-auto pt-4 flex items-center justify-between shrink-0" style={{ animationDelay: "0.4s", borderTop: "1px solid var(--journey-line)" }}>
