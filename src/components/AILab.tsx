@@ -198,7 +198,7 @@ export default function AILab() {
 
           {/* GHOST.EXE dossier */}
           <Reveal className="mt-8">
-            <div className="mat-inner mat-texture chamfer p-6 sm:p-7 relative overflow-hidden">
+            <div className="mat-inner mat-alice mat-texture chamfer p-6 sm:p-7 relative overflow-hidden">
               <span className="absolute -right-6 -top-10 f-display text-[9rem] leading-none opacity-[0.05] pointer-events-none select-none">GX</span>
               <div className="grid lg:grid-cols-[1.35fr_0.65fr] gap-7 lg:gap-10">
                 <div className="min-w-0">

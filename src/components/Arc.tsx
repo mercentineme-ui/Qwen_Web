@@ -51,7 +51,7 @@ function Carousel({ items, idx, setIdx, ratio }: { items: ArcEntry[]; idx: numbe
 
 function Dossier({ entry, kind }: { entry: ArcEntry; kind: "CHARACTER" | "WORLD" }) {
   return (
-    <div key={entry.id} className="career-wipe-in mat-inner mat-texture rounded-xl border border-[var(--line)] p-5 sm:p-6 h-full">
+    <div key={entry.id} className={`career-wipe-in mat-inner mat-texture rounded-xl border border-[var(--line)] p-5 sm:p-6 h-full ${kind === "CHARACTER" ? "mat-alice" : ""}`}>
       <span className="f-mono text-[9px] tracking-[0.3em]" style={{ color: "var(--crimson-rough)" }}>{kind} DOSSIER</span>
       <h4 className="f-display text-xl sm:text-2xl mt-2 leading-tight text-[var(--ink)]">{entry.name}</h4>
       <dl className="mt-4 flex flex-col">

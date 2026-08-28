@@ -77,12 +77,12 @@ export default function Header() {
 
           <div className="flex-1" />
 
-          {/* refined technical clock — futuristic monospace treatment */}
+          {/* refined technical clock — Race Sport numeric display + normal-body AM/PM */}
           <div className="hidden sm:flex items-baseline gap-1.5 leading-none tabular-nums">
             <span className="f-clock text-[8px] tracking-[0.32em] text-[var(--ink2)] mr-1 self-center">LOCAL</span>
-            <span className="clock-num f-clock font-bold text-[16px] lg:text-[17px] tracking-[0.12em]">{hh}:{mm}:{ss}</span>
-            <span className={`f-clock font-bold text-[9px] tracking-[0.2em] px-1.5 py-[3px] rounded-[4px] self-center ${
-              mer === "PM" ? "bg-[var(--crimson)] text-[#f0f8ff]" : "border border-[var(--ink2)] text-[var(--ink2)]"
+            <span className="clock-num f-race text-[17px] lg:text-[18px] tracking-[0.08em]">{hh}:{mm}:{ss}</span>
+            <span className={`text-[10px] font-semibold tracking-[0.18em] px-1.5 py-[3px] rounded-[4px] self-center ${
+              theme === "light" ? "bg-[#222328] text-[#f0f8ff]" : "bg-[#f0f8ff] text-[#222328]"
             }`}>
               {mer}
             </span>

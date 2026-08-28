@@ -283,35 +283,43 @@ export function Contact() {
                 <span className="absolute -top-[5px] -left-[5px] w-3 h-3 border-t-2 border-l-2" style={{ borderColor: "var(--crim-panel)" }} />
                 <span className="absolute -bottom-[5px] -right-[5px] w-3 h-3 border-b-2 border-r-2" style={{ borderColor: "var(--crim-panel)" }} />
                 <span className="f-mono text-[9px] tracking-[0.3em] block" style={{ color: "var(--ct-sub)" }}>IDENTITY</span>
-                <h3 className="f-display text-[clamp(2.4rem,7.2vw,5.6rem)] leading-[1.02] mt-2 whitespace-nowrap" style={{ letterSpacing: "-0.01em" }}>
+                <h3 className="f-display text-[clamp(1.5rem,3.6vw,2.8rem)] leading-[1.02] mt-2 whitespace-nowrap" style={{ letterSpacing: "-0.01em" }}>
                   <span style={{ color: "var(--ct-ink)" }}>{c.identityA}</span>{" "}
                   <span style={{ color: "var(--crim-panel)" }}>{c.identityB}</span>
                 </h3>
               </div>
-              {/* manifesto — clean readable Arial editorial statement, semi-bold, compact */}
-              <p className="font-semibold text-[clamp(0.72rem,1.05vw,0.85rem)] leading-[1.55] max-w-[34ch]"
+              {/* manifesto — clean readable Arial editorial statement, regular weight */}
+              <p className="font-normal text-[clamp(1.05rem,1.5vw,1.25rem)] leading-[1.55] max-w-[34ch]"
                 style={{ fontFamily: "Arial, Helvetica, sans-serif", color: "var(--ct-ink)", opacity: 0.95 }}>
                 {c.statement}
               </p>
             </div>
 
-            <span className="mt-8 block f-mono text-[11px] tracking-[0.3em]" style={{ color: "var(--crim-panel)" }}>C. BALA KRISHNAN</span>
+            <span className="mt-8 block f-mono font-semibold text-[11px] tracking-[0.3em]" style={{ color: "var(--crim-panel)" }}>CHITHAMBARAM BALA KRISHNAN</span>
 
             {/* graphic-novel information panel — red + white identity is FIXED across both themes */}
-            <div className="relative mt-8 p-6 sm:p-7 mat-texture max-w-[640px]"
+            <div className="relative mt-8 p-6 sm:p-7 mat-texture max-w-[640px] overflow-hidden"
               style={{ background: "#f0f8ff", color: "#222328", border: "2.5px solid #222328", boxShadow: "7px 7px 0 #da012d" }}>
+              {/* subtle halftone / comic-print dot texture */}
+              <span className="absolute inset-0 pointer-events-none" aria-hidden
+                style={{ backgroundImage: "radial-gradient(rgba(34,35,40,0.07) 1px, transparent 1px)", backgroundSize: "7px 7px" }} />
               {/* controlled red accent bar */}
               <span className="absolute left-0 top-0 bottom-0 w-[7px]" style={{ background: "#da012d" }} />
               {/* sharp comic-panel corner details */}
               <span className="absolute top-[6px] right-[6px] w-3 h-3 border-t-2 border-r-2" style={{ borderColor: "#222328" }} />
               <span className="absolute bottom-[6px] right-[6px] w-3 h-3 border-b-2 border-r-2" style={{ borderColor: "#222328" }} />
               <span className="absolute top-[6px] right-[24px] w-1.5 h-1.5" style={{ background: "#da012d" }} />
-              <p className="text-[19px] sm:text-[21px] lg:text-[22.5px] leading-relaxed font-medium pl-2">
+              {/* print registration mark */}
+              <span className="absolute bottom-[8px] left-[14px] w-2.5 h-2.5 rounded-full border pointer-events-none" aria-hidden
+                style={{ borderColor: "rgba(34,35,40,0.4)" }}>
+                <span className="absolute left-1/2 top-1/2 w-[130%] h-px -translate-x-1/2 -translate-y-1/2" style={{ background: "rgba(34,35,40,0.35)" }} />
+              </span>
+              <p className="relative text-[19px] sm:text-[21px] lg:text-[22.5px] leading-relaxed font-semibold pl-2">
                 Hey!, I'm Bala Krishnan —<br />
                 I make ideas come alive — and you're just in time!
               </p>
-              <div className="mt-4 pt-3 pl-2" style={{ borderTop: "1.5px solid #222328" }}>
-                <span className="block f-mono font-bold text-[10.5px] tracking-[0.26em]" style={{ color: "#222328" }}>
+              <div className="relative mt-4 pt-3 pl-2" style={{ borderTop: "1.5px solid #222328" }}>
+                <span className="glitch-sig f-mono font-bold text-[10.5px] tracking-[0.26em]" style={{ color: "#222328" }}>
                   — WRITTEN BY THE ONE WHO BUILDS THE WORLDS
                 </span>
               </div>

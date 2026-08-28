@@ -88,7 +88,7 @@
   --hero-ink: #ddddd8;
   --hero-crimson: #e72241;
   --hdr-edge: rgba(231, 34, 65, 0.42);
-  --clock-col: #e72241;
+  --clock-col: #ff7a1f;  /* dark-theme clock — neon-lit orange, no bloom */
 
   /* contact — DARK page: light matte section (Alice Blue material) */
   --ct-bg: #f0f8ff;
@@ -141,6 +141,7 @@ body {
 .f-automata { font-family: "Orbitron", "Chakra Petch", sans-serif; font-weight: 800; }
 .f-magola { font-family: "Oswald", "Archivo", sans-serif; font-weight: 600; }
 .f-clock { font-family: "Share Tech Mono", monospace; }
+.f-race { font-family: "Racing Sans One", "Orbitron", sans-serif; }
 .f-serif { font-family: "Playfair Display", Georgia, serif; }
 /* Company-name display face (robotic / technical archive). "Infusive" is the
    intended commercial face; Oxanium is the closest loaded robotic substitute. */
@@ -172,6 +173,24 @@ body {
 .mat-outer { background-color: var(--outer-bg); color: var(--outer-ink); }
 .mat-inner { background-color: var(--sup1); color: var(--ink); }
 .mat-page-card { background-color: var(--sup1); color: var(--ink); }
+/* Alice Blue light-material surface — applied ONLY to the GHOST.EXE card and
+   the ARC Character Dossier (Change 1). Dark theme keeps its existing material. */
+.mat-alice { background-color: #f0f8ff; }
+.dark .mat-alice { background-color: var(--sup1); }
+
+/* Contact signature — continuous subtle comic-print registration glitch (Change 6E).
+   Multicolor offset (crimson + muted cyan) fires briefly, text stays readable. */
+.glitch-sig { display: inline-block; animation: sigRegistration 5.5s linear infinite; }
+@keyframes sigRegistration {
+  0%, 88%, 100% { text-shadow: none; transform: none; }
+  89% { text-shadow: 1.5px 0 rgba(218,1,45,0.7), -1.5px 0 rgba(46,196,182,0.55); transform: translateX(0.6px); }
+  91% { text-shadow: -1.5px 0 rgba(218,1,45,0.7), 1.5px 0 rgba(46,196,182,0.55); transform: translateX(-0.6px); }
+  93% { text-shadow: 1px 0.5px rgba(218,1,45,0.6), -1px -0.5px rgba(46,196,182,0.5); transform: translateX(0.3px); }
+  95% { text-shadow: -1px 0 rgba(218,1,45,0.5), 1px 0 rgba(46,196,182,0.45); transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glitch-sig { animation: none; text-shadow: none; }
+}
 .mat-journey {
   background-color: var(--outer-bg);
   color: var(--outer-ink);

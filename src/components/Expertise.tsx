@@ -333,43 +333,25 @@ export default function Expertise() {
                           )}
                         </div>
 
-                        {/* SUMMARY */}
+                        {/* DESCRIPTION */}
                         {c.summary && (
                           <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.10s" }}>
-                            <Block label="EXPERIENCE">
+                            <Block label="DESCRIPTION">
                               <p className="text-[12px] leading-relaxed" style={{ color: "var(--journey-ink)", opacity: 0.88 }}>{c.summary}</p>
                             </Block>
                           </div>
                         )}
 
-                        {/* TOOLS / METHODS */}
-                        {c.tools && c.tools.length > 0 && (
-                          <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.16s" }}>
-                            <Block label="TOOLS / METHODS">
-                              <div className="flex flex-wrap gap-1.5">{c.tools.map((t) => <Chip key={t}>{t}</Chip>)}</div>
-                            </Block>
-                          </div>
-                        )}
-
-                        {/* ONE primary company media slot — only when an asset is actually loaded */}
-                        {c.media && c.media[0]?.src && (
-                          <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.22s" }}>
-                            <Block label="MEDIA / 01">
-                              <div style={{ height: 190 }}>
-                                <MediaSlot item={c.media[0]} ratio="16/9" fill className="rounded-[4px]! border-0!" showLabel={false} onClick={() => setMediaView(0)} />
-                              </div>
-                            </Block>
-                          </div>
-                        )}
-
-                        {/* HIGHLIGHTS / METRICS */}
+                        {/* TRACK RECORD — numbered 01–05 entries */}
                         {c.highlights && c.highlights.length > 0 && (
-                          <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.28s" }}>
-                            <Block label={c.highlightsLabel ?? "HIGHLIGHTS"}>
-                              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-[5px]">
-                                {c.highlights.map((h) => (
-                                  <li key={h} className="flex items-start gap-2 text-[10.5px] leading-snug" style={{ color: "var(--journey-ink)", opacity: 0.85 }}>
-                                    <span className="mt-[5px] w-[5px] h-[5px] rotate-45 shrink-0" style={{ background: "var(--crim-journey)" }} />
+                          <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.16s" }}>
+                            <Block label={c.highlightsLabel ?? "TRACK RECORD"}>
+                              <ul className="flex flex-col gap-y-2">
+                                {c.highlights.map((h, i) => (
+                                  <li key={h} className="flex items-start gap-2.5 text-[10.5px] leading-snug" style={{ color: "var(--journey-ink)", opacity: 0.85 }}>
+                                    <span className="f-mono font-semibold text-[9px] tracking-[0.08em] shrink-0" style={{ color: "var(--crim-journey)" }}>
+                                      {String(i + 1).padStart(2, "0")}.
+                                    </span>
                                     {h}
                                   </li>
                                 ))}
@@ -378,11 +360,35 @@ export default function Expertise() {
                           </div>
                         )}
 
-                        {/* EXTRAS (KEY EXPERIENCE) */}
-                        {c.extras && c.extras.length > 0 && (
+                        {/* DISCIPLINES */}
+                        {c.skills && c.skills.length > 0 && (
+                          <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.22s" }}>
+                            <Block label="DISCIPLINES">
+                              <div className="flex flex-wrap gap-1.5">{c.skills.map((s) => <Chip key={s}>{s}</Chip>)}</div>
+                            </Block>
+                          </div>
+                        )}
+
+                        {/* TOOLS */}
+                        {c.tools && c.tools.length > 0 && (
+                          <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.28s" }}>
+                            <Block label="TOOLS">
+                              <div className="flex flex-wrap gap-1.5">{c.tools.map((t) => <Chip key={t}>{t}</Chip>)}</div>
+                            </Block>
+                          </div>
+                        )}
+
+                        {/* MEDIA AREA — all slots (DNEG = 2, others = 1), always reserved */}
+                        {c.media && c.media.length > 0 && (
                           <div className="ji mt-4 shrink-0" style={{ animationDelay: "0.34s" }}>
-                            <Block label={c.extrasLabel ?? "KEY EXPERIENCE"}>
-                              <div className="flex flex-wrap gap-1.5">{c.extras.map((t) => <Chip key={t}>{t}</Chip>)}</div>
+                            <Block label={`MEDIA / ${String(c.media.length).padStart(2, "0")}`}>
+                              <div className={c.media.length > 1 ? "grid grid-cols-2 gap-2" : ""}>
+                                {c.media.map((m, i) => (
+                                  <div key={m.id} style={{ height: c.media.length > 1 ? 100 : 190 }}>
+                                    <MediaSlot item={m} ratio="16/9" fill className="rounded-[4px]! border-0!" showLabel={false} onClick={() => setMediaView(i)} />
+                                  </div>
+                                ))}
+                              </div>
                             </Block>
                           </div>
                         )}
