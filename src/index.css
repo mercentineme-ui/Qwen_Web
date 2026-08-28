@@ -32,6 +32,7 @@
   --m-sub: rgba(221, 221, 216, 0.62);
 
   --hero-ink: #222328;
+  --hero-blue: #2b3a67;
   --hero-crimson: #da012d;
   --hdr-edge: rgba(34, 35, 40, 0.3);
   --clock-col: #222328;
@@ -94,6 +95,7 @@
   --m-sub: rgba(34, 35, 40, 0.62);
 
   --hero-ink: #ddddd8;
+  --hero-blue: #ddddd8;
   --hero-crimson: #e72241;
   --hdr-edge: rgba(231, 34, 65, 0.42);
   --clock-col: #ff7a1f;  /* dark-theme clock — neon-lit orange, no bloom */

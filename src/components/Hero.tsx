@@ -1,26 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Daypart } from "../lib/data";
+import React, { useEffect, useRef, useState } from "react";
 import { useReducedMotion, useStore } from "../lib/store";
-
-const getDaypart = (): Daypart => {
-  const h = new Date().getHours();
-  if (h >= 0 && h <= 11) return "MORNING";
-  if (h >= 12 && h <= 15) return "AFTERNOON";
-  return "EVENING";
-};
-const daypartWord: Record<Daypart, string> = { MORNING: "Morning", AFTERNOON: "Afternoon", EVENING: "Evening" };
-
-/* Always renders: "A Beautiful <Daypart> to you, welcome in." — never duplicated.
-   Forces capital-B "Beautiful" even if persisted data carries a lowercase variant. */
-function buildGreeting(raw: string): [string, string] {
-  const cap = (x: string) => x.replace(/\bbeautiful\b/i, "Beautiful");
-  const s = raw.includes("{DAYPART}") ? raw : raw.replace(/\b(Morning|Afternoon|Evening)\b/i, "{DAYPART}");
-  if (s.includes("{DAYPART}")) {
-    const [a, b] = s.split("{DAYPART}");
-    return [cap(a), b ?? ""];
-  }
-  return [cap(s), ""];
-}
 
 function Frame({ idx }: { idx: number }) {
   const { data } = useStore();
@@ -76,13 +55,13 @@ function letterVars(gi: number, _accent: boolean): React.CSSProperties {
   } as React.CSSProperties;
 }
 
-function NameLine({ text, resolve, accent, className, delay, startIndex = 0 }: {
-  text: string; resolve: boolean; accent?: boolean; className: string; delay?: string; startIndex?: number;
+function NameLine({ text, resolve, accent, className, delay, startIndex = 0, color }: {
+  text: string; resolve: boolean; accent?: boolean; className: string; delay?: string; startIndex?: number; color?: string;
 }) {
   let gi = startIndex;
   return (
     <span className={`block f-display ${accent ? "print-matte" : ""} ${resolve ? "name-resolve" : ""} ${className}`}
-      style={{ color: accent ? "var(--hero-crimson)" : "var(--hero-ink)", animationDelay: resolve ? delay : undefined }}>
+      style={{ color: color ?? (accent ? "var(--hero-crimson)" : "var(--hero-ink)"), animationDelay: resolve ? delay : undefined }}>
       {text.split("").map((ch, k) => {
         if (ch === " ") return <span key={k} className="inline-block w-[0.32em]" aria-hidden />;
         const i = ((gi % 14) + 14) % 14;
@@ -120,12 +99,6 @@ export default function Hero() {
   const glitchTimer = useRef<number | null>(null);
   const n = Math.max(1, h.images.length);
 
-  const daypart = useMemo(getDaypart, []);
-  const [g0, g1] = useMemo(
-    () => buildGreeting(h.greetings?.[daypart] ?? "A Beautiful {DAYPART} to you, welcome in."),
-    [h.greetings, daypart]
-  );
-
   /* name hover — one continuous material transformation:
      NORMAL → STONE → ARCHITECTURE → PAPER WRAP → UNWRAP → STONE → NORMAL (~2.6s).
      Leaving mid-sequence resolves smoothly back to the original typography. */
@@ -146,10 +119,6 @@ export default function Hero() {
   };
   useEffect(() => () => { if (matTimer.current) clearTimeout(matTimer.current); }, []);
   const nameA = h.nameA.replace(/^C\.\s+/i, "C.");
-  /* one dominant red identity heading — both lines share the same display font,
-     same red treatment, heavy condensed presence. Two-line composition kept. */
-  const LINE1 = "text-[clamp(3rem,5.8vw,4.8rem)] tracking-[0.015em]";
-  const LINE2 = "text-[clamp(3.6rem,7vw,6rem)] tracking-[0.005em] mt-1.5";
 
   useEffect(() => {
     const iv = window.setInterval(() => {
@@ -203,88 +172,34 @@ export default function Hero() {
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8 grid lg:grid-cols-[1.06fr_0.94fr] gap-12 lg:gap-10 items-start relative">
         <div className="min-w-0">
-          {/* greeting */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
-            <span className="f-tech font-bold text-[12px] tracking-[0.28em] px-3.5 py-2 w-fit rounded-[6px] bg-[var(--crimson)] text-[#f0f8ff]">
-              HEY THERE!
-            </span>
-            <p className="text-[18px] sm:text-[20px] lg:text-[21px] leading-snug font-semibold text-[var(--ink)]">
-              {g0}
-              <span style={{ color: "var(--crimson-rough)" }}>{daypartWord[daypart]}</span>
-              {g1}
-            </p>
-          </div>
-
-          {/* name — hover runs the stone → architecture → paper material transformation */}
-          <h1
-            className={`mat-stage mt-8 lg:mt-9 leading-[0.94] select-none ${matPhase === "seq" ? "mat-seq" : matPhase === "resolve" ? "mat-resolve" : ""}`}
-            onMouseEnter={enterMat} onMouseLeave={leaveMat} onClick={enterMat}
-          >
-            <span className="name-base block" style={{ perspective: "700px" }}>
-              {/* "C. BALA" = 6 letter-objects, so KRISHNAN continues the wave at index 6 */}
-              <NameLine text={nameA} resolve={!reduced} accent className={LINE1} delay="0s" startIndex={0} />
-              <NameLine text={h.nameB} resolve={!reduced} accent className={LINE2} delay="0.12s" startIndex={nameA.replace(/ /g, "").length} />
-            </span>
+          {/* large hero statement */}
+          <h1 className="f-display leading-[0.98] select-none text-[clamp(2.5rem,5.4vw,4.4rem)]" style={{ color: "var(--ink)" }}>
+            Ideas into worlds.<br />
+            Images into sequences.
           </h1>
 
-          {/* ABOUT ME */}
-          <div className="mt-8 max-w-[56ch]">
-            <span className="f-mono text-[10px] tracking-[0.34em] px-2.5 py-1.5 rounded-[5px] inline-flex items-center gap-2.5"
-              style={{ color: "var(--crimson-rough)", background: "color-mix(in srgb, var(--crimson) 10%, transparent)", border: "1px solid color-mix(in srgb, var(--crimson) 32%, transparent)" }}>
-              <span className="w-4 h-[2px]" style={{ background: "var(--crimson-rough)" }} />
-              {h.aboutLabel}
-            </span>
-            <p className="mt-3.5 text-[15px] sm:text-[16.5px] leading-relaxed font-medium text-[var(--ink)]">
-              {h.description}
-            </p>
-          </div>
+          {/* name */}
+          <h2 className="f-display mt-6 text-[clamp(1.25rem,2.4vw,1.9rem)] leading-tight tracking-[0.05em] select-none">
+            <span style={{ color: "var(--ink)" }}>I'M BALA </span>
+            <span style={{ color: "var(--crimson-rough)" }}>KRISHNAN</span>
+          </h2>
 
-          {/* EDUCATION */}
-          <div className="mt-6 max-w-[56ch]">
-            <span className="f-mono text-[10px] tracking-[0.34em] px-2.5 py-1.5 rounded-[5px] inline-flex items-center gap-2.5"
-              style={{ color: "var(--ink2)", background: "color-mix(in srgb, var(--ink) 7%, transparent)", border: "1px solid var(--line)" }}>
-              <span className="w-4 h-[2px] bg-[var(--ink2)]" />
-              {h.educationLabel}
-            </span>
-            <ul className="mt-3.5 flex flex-col">
-              {h.education.map((e) => (
-                <li key={e.num} className="flex items-baseline gap-3.5 py-2.5 border-b last:border-b-0" style={{ borderColor: "var(--line)" }}>
-                  <span className="f-mono text-[10px] font-semibold shrink-0" style={{ color: "var(--crimson-rough)" }}>{e.num}</span>
-                  <span className="min-w-0">
-                    <span className="block f-tech font-bold text-[13.5px] sm:text-[14px] tracking-[0.06em] text-[var(--ink)] leading-snug">{e.title}</span>
-                    <span className="block text-[12.5px] text-[var(--ink2)] mt-0.5">{e.school}</span>
-                  </span>
-                  <span className="ml-auto f-mono text-[10px] tracking-[0.2em] text-[var(--ink2)] shrink-0 tabular-nums">{e.year}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* body statement */}
+          <p className="mt-5 text-[16px] sm:text-[17.5px] leading-relaxed font-semibold text-[var(--ink)] max-w-[58ch]">
+            I create AI-powered visuals, motion experiences, and workflows that shape ambitious ideas into finished realities.
+          </p>
 
-          {/* expertise — horizontal compact cyberpunk modules */}
-          <div className="mt-9 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
-            {h.chips.map((c, i) => (
-              <div key={c}
-                className="group mat-outer mat-texture relative overflow-hidden px-4 py-3.5 flex items-center gap-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_34px_-18px_rgba(0,0,0,0.6)] active:translate-y-0 active:scale-[0.99]"
-                style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--outer-ink) 20%, transparent)", clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)" }}>
-                <span className="f-mono font-semibold text-[11px] tracking-[0.14em] px-1.5 py-1 shrink-0"
-                  style={{ background: "var(--crimson)", color: "#f0f8ff" }}>
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span className="f-display text-[15px] sm:text-[16px] leading-[1.12] tracking-[0.06em] min-w-0" style={{ color: "var(--outer-ink)" }}>
-                  {c}
-                </span>
-                <span className="ml-auto flex items-center gap-1 shrink-0">
-                  {[0, 1, 2, 3].map((k) => (
-                    <span key={k} className="w-1 h-2.5 rounded-[1px]"
-                      style={{
-                        background: k <= i % 4 ? "var(--crimson)" : "color-mix(in srgb, var(--outer-ink) 28%, transparent)",
-                        transform: `scaleY(${k === 3 ? 0.55 : k === 2 ? 0.75 : k === 1 ? 0.9 : 1})`,
-                      }} />
-                  ))}
-                </span>
-                <span className="absolute bottom-0 left-0 h-[2px] w-0 group-hover:w-full transition-all duration-400" style={{ background: "var(--crimson)" }} />
-              </div>
-            ))}
+          {/* C.BALA / KRISHNAN identity lockup — keeps the textured treatment + hover
+              material transformation; C.BALA dark blue (light) / white (dark),
+              KRISHNAN rough textured red (light) / crimson (dark). */}
+          <div
+            className={`mat-stage mt-8 select-none ${matPhase === "seq" ? "mat-seq" : matPhase === "resolve" ? "mat-resolve" : ""}`}
+            onMouseEnter={enterMat} onMouseLeave={leaveMat} onClick={enterMat}
+          >
+            <span className="name-base inline-flex items-baseline gap-x-4 flex-wrap" style={{ perspective: "700px" }}>
+              <NameLine text={nameA} resolve={!reduced} color="var(--hero-blue)" className="!inline-block text-[clamp(1.2rem,2.3vw,1.7rem)] tracking-[0.06em]" delay="0s" startIndex={0} />
+              <NameLine text={h.nameB} resolve={!reduced} accent className="!inline-block text-[clamp(1.2rem,2.3vw,1.7rem)] tracking-[0.06em]" delay="0.1s" startIndex={nameA.replace(/ /g, "").length} />
+            </span>
           </div>
 
           {/* CTAs + rotation counter */}

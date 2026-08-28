@@ -283,7 +283,7 @@ export function Contact() {
                 <span className="absolute -top-[5px] -left-[5px] w-3 h-3 border-t-2 border-l-2" style={{ borderColor: "var(--crim-panel)" }} />
                 <span className="absolute -bottom-[5px] -right-[5px] w-3 h-3 border-b-2 border-r-2" style={{ borderColor: "var(--crim-panel)" }} />
                 <span className="f-mono text-[9px] tracking-[0.3em] block" style={{ color: "var(--ct-sub)" }}>IDENTITY</span>
-                <h3 className="f-display text-[clamp(1.5rem,3.6vw,2.8rem)] leading-[1.02] mt-2 whitespace-nowrap" style={{ letterSpacing: "-0.01em" }}>
+                <h3 className="f-display text-[clamp(2.2rem,5.2vw,4rem)] leading-[1.02] mt-2 whitespace-nowrap" style={{ letterSpacing: "-0.01em" }}>
                   <span style={{ color: "var(--ct-ink)" }}>{c.identityA}</span>{" "}
                   <span style={{ color: "var(--crim-panel)" }}>{c.identityB}</span>
                 </h3>
@@ -319,8 +319,8 @@ export function Contact() {
                 I make ideas come alive — and you're just in time!
               </p>
               <div className="relative mt-4 pt-3 pl-2" style={{ borderTop: "1.5px solid #222328" }}>
-                <span className="glitch-sig f-mono font-bold text-[10.5px] tracking-[0.26em]" style={{ color: "#222328" }}>
-                  — WRITTEN BY THE ONE WHO BUILDS THE WORLDS
+                <span className="glitch-sig f-mono font-semibold text-[12.5px] tracking-[0.3em]" style={{ color: "#222328" }}>
+                  - EXCELSIOR
                 </span>
               </div>
             </div>
