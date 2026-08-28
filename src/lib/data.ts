@@ -232,7 +232,7 @@ export const defaultData: PortfolioData = {
           "Contributed to production AI and R&D for cinematic workflows, working across identity preservation, performance transfer, face recreation, synthetic media and AI-assisted VFX within a collaborative production environment.",
         skills: ["GENERATIVE AI", "VISUAL DEVELOPMENT", "AI MEDIA", "CHARACTER DEVELOPMENT"],
         domain: "RAMAYANA",
-        media: [slot("IMAGE 01")],
+        media: [slot("IMAGE 01"), slot("IMAGE 02")],
       },
       {
         id: "cyberedge", num: "03", name: "CYBEREDGE", short: "CYBEREDGE",
