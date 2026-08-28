@@ -92,7 +92,7 @@ function NameStack({ name, accent }: { name: string; accent: string }) {
 /* ---------- dossier helpers (expanded card uses the journey material) ---------- */
 function Chip({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center f-tech font-semibold text-[9px] sm:text-[10px] tracking-[0.12em] px-2 py-[3px]"
+    <span className="inline-flex items-center f-tech font-semibold text-[10px] sm:text-[11px] tracking-[0.12em] px-2.5 py-[4px]"
       style={{ border: "1px solid color-mix(in srgb, var(--journey-ink) 30%, transparent)", color: "var(--journey-ink)", opacity: 0.9 }}>
       {children}
     </span>
@@ -102,7 +102,7 @@ function Chip({ children }: { children: React.ReactNode }) {
 function Block({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <span className="block f-mono text-[8px] tracking-[0.28em] mb-2" style={{ color: "var(--crim-journey)" }}>{label}</span>
+      <span className="block f-mono font-semibold text-[10px] sm:text-[11px] tracking-[0.28em] mb-2.5" style={{ color: "var(--crim-journey)" }}>{label}</span>
       {children}
     </div>
   );
