@@ -32,8 +32,9 @@
   --m-sub: rgba(221, 221, 216, 0.62);
 
   --hero-ink: #222328;
-  --hero-blue: #2b3a67;
+  --hero-blue: #223a6b;
   --hero-crimson: #da012d;
+  --ticker-col: #222328;
   --hdr-edge: rgba(34, 35, 40, 0.3);
   --clock-col: #222328;
 
@@ -95,8 +96,9 @@
   --m-sub: rgba(34, 35, 40, 0.62);
 
   --hero-ink: #ddddd8;
-  --hero-blue: #ddddd8;
+  --hero-blue: #7d9cc9;
   --hero-crimson: #e72241;
+  --ticker-col: #FFBD31;
   --hdr-edge: rgba(231, 34, 65, 0.42);
   --clock-col: #ff7a1f;  /* dark-theme clock — neon-lit orange, no bloom */
 
@@ -153,6 +155,10 @@ body {
 .f-clock { font-family: "Share Tech Mono", monospace; }
 .f-race { font-family: "Racing Sans One", "Orbitron", sans-serif; }
 .f-serif { font-family: "Playfair Display", Georgia, serif; }
+
+/* Hero display heading — MADE TOMMY (approximated by the wide geometric
+   Unbounded when the MADE Tommy face isn't installed). */
+.f-tommy { font-family: "MADE Tommy", "Unbounded", sans-serif; font-weight: 500; }
 /* Company-name display face (robotic / technical archive). "Infusive" is the
    intended commercial face; Oxanium is the closest loaded robotic substitute. */
 .f-infusive { font-family: "Oxanium", "Chakra Petch", sans-serif; }
