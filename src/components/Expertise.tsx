@@ -120,6 +120,36 @@ function DataRail({ className = "" }: { className?: string }) {
   );
 }
 
+/* Restrained cyberpunk linework — a thin circuit trace with a step, a square
+   node and a crimson node. Purely decorative (no metadata). */
+function TraceLine({ className = "" }: { className?: string }) {
+  const ln = "color-mix(in srgb, var(--outer-ink) 30%, transparent)";
+  return (
+    <span className={`relative block h-[8px] w-full pointer-events-none ${className}`} aria-hidden>
+      <span className="absolute left-0 right-0 top-1/2 h-px" style={{ background: ln }} />
+      <span className="absolute left-[16%] top-1/2 -translate-y-1/2 w-[5px] h-[5px]" style={{ background: "color-mix(in srgb, var(--outer-ink) 45%, transparent)" }} />
+      <span className="absolute left-[16%] top-1/2 h-[7px] w-px" style={{ background: ln }} />
+      <span className="absolute right-[8%] top-1/2 -translate-y-1/2 w-[4px] h-[4px] rotate-45" style={{ background: "var(--crim-panel)" }} />
+    </span>
+  );
+}
+
+/* Restrained cyberpunk linework — a cluster of vertical data ticks with a
+   crimson node. Purely decorative (no metadata). */
+function TechTicks({ className = "" }: { className?: string }) {
+  const ln = "color-mix(in srgb, var(--outer-ink) 40%, transparent)";
+  return (
+    <span className={`flex items-end gap-[6px] h-[10px] pointer-events-none ${className}`} aria-hidden>
+      <span className="w-px h-[5px]" style={{ background: ln }} />
+      <span className="w-px h-[9px]" style={{ background: ln }} />
+      <span className="w-px h-[6px]" style={{ background: ln }} />
+      <span className="w-[5px] h-[5px]" style={{ background: "var(--crim-panel)" }} />
+      <span className="w-px h-[8px]" style={{ background: ln }} />
+      <span className="w-px h-[4px]" style={{ background: ln }} />
+    </span>
+  );
+}
+
 export default function Expertise() {
   const { data } = useStore();
   const { statement, statementAccent, supporting, companies } = data.expertise;
@@ -247,30 +277,16 @@ export default function Expertise() {
                       <Screw className="absolute bottom-[16px] left-[16px]" />
                       <Screw className="absolute bottom-[16px] right-[34px]" />
 
-                      {/* top technical header */}
-                      <div className="relative z-10 flex items-center justify-between px-4 pt-4 shrink-0">
-                        <span className="f-mono font-semibold text-[12px] tracking-[0.14em]" style={{ color: "var(--crim-panel)" }}>{c.num}</span>
-                        <span className="f-mono text-[8px] tracking-[0.2em]" style={{ color: "var(--m-sub)" }}>EXP/{yearOf(c.date)}</span>
-                      </div>
-                      <div className="px-4 mt-2 shrink-0"><DataRail /></div>
+                      {/* top cyberpunk trace — decorative technical linework (metadata removed) */}
+                      <div className="relative z-10 px-4 pt-5 shrink-0"><TraceLine /></div>
 
                       {/* large stacked company name — upright letters, second group offset down + accented */}
                       <div className="relative z-10 flex-1 flex items-center justify-center px-2 min-h-0">
                         <NameStack name={c.short} accent="var(--crim-panel)" />
                       </div>
 
-                      {/* bottom status rail */}
-                      <div className="relative z-10 px-4 pb-2 shrink-0"><DataRail /></div>
-                      <div className="relative z-10 flex items-center justify-between px-4 pb-4 shrink-0">
-                        <span className="f-mono text-[8px] tracking-[0.2em]" style={{ color: "var(--m-sub)" }}>
-                          {isActive ? "STATUS / LOCKED" : isOpen ? "STATUS / OPEN" : "STATUS / IDLE"}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-[5px] h-[5px] rounded-full transition-colors duration-300"
-                            style={{ background: isOpen ? "var(--crim-panel)" : "color-mix(in srgb, var(--outer-ink) 28%, transparent)", boxShadow: isOpen ? "0 0 6px var(--crim-panel)" : "none" }} />
-                          <span className="w-2 h-2 rotate-45 transition-colors duration-300" style={{ background: isOpen ? "var(--crim-panel)" : "color-mix(in srgb, var(--outer-ink) 30%, transparent)" }} />
-                        </span>
-                      </div>
+                      {/* bottom cyberpunk ticks — decorative technical linework (metadata removed) */}
+                      <div className="relative z-10 px-4 pb-5 shrink-0 flex justify-center"><TechTicks /></div>
                     </div>
 
                     {/* ---------- MOBILE CLOSED HEADER ---------- */}

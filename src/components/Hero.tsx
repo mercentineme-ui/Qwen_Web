@@ -229,7 +229,7 @@ export default function Hero() {
                   style={{ background: "var(--crimson)", color: "#f0f8ff" }}>
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <span className="f-striker text-[15px] sm:text-[16px] leading-[1.12] tracking-[0.06em] min-w-0" style={{ color: "var(--outer-ink)" }}>
+                <span className="f-display text-[15px] sm:text-[16px] leading-[1.12] tracking-[0.06em] min-w-0" style={{ color: "var(--outer-ink)" }}>
                   {c}
                 </span>
                 <span className="ml-auto flex items-center gap-1 shrink-0">
