@@ -93,7 +93,17 @@ export interface AILabData {
 }
 
 export interface ArcEntry { id: string; name: string; image: MediaItem; tools: string; description: string }
-export interface ArcData { characters: ArcEntry[]; worlds: ArcEntry[] }
+export interface ArcSlide {
+  id: string;
+  image: MediaItem;
+  text: string;
+  textPos: "top-left" | "bottom-right";
+}
+export interface ArcData {
+  characters: ArcEntry[];
+  worlds: ArcEntry[];
+  slides: ArcSlide[];
+}
 
 export interface BuildData {
   support: string;
