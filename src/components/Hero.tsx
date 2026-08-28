@@ -82,7 +82,7 @@ function NameLine({ text, resolve, accent, className, delay, startIndex = 0 }: {
   let gi = startIndex;
   return (
     <span className={`block f-display ${accent ? "print-matte" : ""} ${resolve ? "name-resolve" : ""} ${className}`}
-      style={{ color: accent ? undefined : "var(--hero-ink)", animationDelay: resolve ? delay : undefined }}>
+      style={{ color: accent ? "var(--hero-crimson)" : "var(--hero-ink)", animationDelay: resolve ? delay : undefined }}>
       {text.split("").map((ch, k) => {
         if (ch === " ") return <span key={k} className="inline-block w-[0.32em]" aria-hidden />;
         const i = ((gi % 14) + 14) % 14;
