@@ -35,6 +35,8 @@
   --hero-blue: #223a6b;
   --hero-crimson: #da012d;
   --ticker-col: #222328;
+  --btn2-bg: #222328;
+  --btn2-ink: #f0f8ff;
   --hdr-edge: rgba(34, 35, 40, 0.3);
   --clock-col: #222328;
 
@@ -99,6 +101,8 @@
   --hero-blue: #7d9cc9;
   --hero-crimson: #e72241;
   --ticker-col: #FFBD31;
+  --btn2-bg: #f0f8ff;
+  --btn2-ink: #222328;
   --hdr-edge: rgba(231, 34, 65, 0.42);
   --clock-col: #ff7a1f;  /* dark-theme clock — neon-lit orange, no bloom */
 
@@ -156,9 +160,9 @@ body {
 .f-race { font-family: "Racing Sans One", "Orbitron", sans-serif; }
 .f-serif { font-family: "Playfair Display", Georgia, serif; }
 
-/* Hero display heading — MADE TOMMY (approximated by the wide geometric
-   Unbounded when the MADE Tommy face isn't installed). */
-.f-tommy { font-family: "MADE Tommy", "Unbounded", sans-serif; font-weight: 500; }
+/* Hero display heading — MADE TOMMY (approximated by the loaded wide
+   geometric Unbounded when the MADE Tommy face isn't installed). */
+.f-tommy { font-family: "MADE Tommy", "Unbounded", sans-serif; font-weight: 800; }
 /* Company-name display face (robotic / technical archive). "Infusive" is the
    intended commercial face; Oxanium is the closest loaded robotic substitute. */
 .f-infusive { font-family: "Oxanium", "Chakra Petch", sans-serif; }
@@ -202,8 +206,7 @@ body {
 
 /* slim condensed display for the numeric clock (Slim Fit substitute) */
 .f-slim { font-family: "Oswald", "Archivo Narrow", sans-serif; }
-/* MADE TOMMY — hero display identity (falls back to the loaded geometric display face) */
-.f-tommy { font-family: "MADE Tommy", "Oxanium", "Chakra Petch", sans-serif; font-weight: 800; }
+/* (f-tommy is defined once above — hero display identity) */
 
 /* hero role ticker — seamless left → right loop */
 .ticker-lr { animation: tickerLR 26s linear infinite; }

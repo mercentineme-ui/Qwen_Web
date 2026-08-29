@@ -3,7 +3,8 @@ import { MediaItem } from "../lib/data";
 import { useStore } from "../lib/store";
 import { FullscreenViewer, MediaSlot, Reveal, SectionHead } from "./ui";
 
-/* Two narrative slides — image + text. Auto-cycle every 10s. */
+/* Two narrative slides — one FULL image per slide, white text layered
+   directly over the image (never a separate text panel). Auto-cycles 10s. */
 const SLIDE_TEXT: [string, string] = [
   "Character came first, like a memory from a story never told.",
   "I only followed the trail until it opened into worlds.",
@@ -18,27 +19,32 @@ function Slide({ image, text, align, active }: {
       className="absolute inset-0 transition-all duration-700 ease-out"
       style={{
         opacity: active ? 1 : 0,
-        transform: active ? "translateX(0)" : `translateX(${align === "tl" ? "-4%" : "4%"})`,
+        transform: active ? "none" : `translateX(${align === "tl" ? "-3%" : "3%"})`,
         pointerEvents: active ? "auto" : "none",
       }}
     >
-      <div className="h-full grid md:grid-cols-2 rounded-xl overflow-hidden" style={{ background: "#222328" }}>
-        {/* IMAGE AREA — large upload-ready slot */}
-        <div className={`relative h-full min-h-[220px] ${align === "tl" ? "md:order-2" : "md:order-1"}`}>
-          <MediaSlot item={image} ratio="16/9" className="!rounded-none !border-0 !h-full" showLabel={false} onClick={() => setOpen(true)} />
+      {/* ONE full rectangle = ONE image; text sits directly on top of it */}
+      <div className="relative h-full rounded-xl overflow-hidden" style={{ background: "#222328" }}>
+        <div className="absolute inset-0">
+          <MediaSlot
+            item={image}
+            ratio="16/9"
+            className="h-full! w-full! rounded-none! border-0! aspect-auto!"
+            showLabel={false}
+            onClick={() => setOpen(true)}
+          />
         </div>
 
-        {/* TEXT AREA — editorial statement, positioned per slide for rhythm */}
-        <div
-          className={`flex p-7 sm:p-10 lg:p-12 ${align === "tl" ? "md:order-1 items-start justify-start" : "md:order-2 items-end justify-end"}`}
+        <p
+          className={`absolute z-10 f-display leading-[1.15] text-white max-w-[26ch] ${
+            align === "tl"
+              ? "top-8 left-7 sm:top-10 sm:left-12 text-left"
+              : "bottom-8 right-7 sm:bottom-10 sm:right-12 text-right"
+          }`}
+          style={{ fontSize: "clamp(1.3rem,2.4vw,2rem)", textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}
         >
-          <p
-            className={`f-display leading-[1.15] text-[#e7e6e1] max-w-[22ch] ${align === "tl" ? "text-left" : "text-right"}`}
-            style={{ fontSize: "clamp(1.3rem,2.4vw,2rem)" }}
-          >
-            {text}
-          </p>
-        </div>
+          {text}
+        </p>
       </div>
 
       {open && (

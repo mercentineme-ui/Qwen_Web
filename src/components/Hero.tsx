@@ -20,12 +20,8 @@ function Frame({ idx }: { idx: number }) {
   );
 }
 
-/* ---- per-letter dimensional-transformation profiles -----------------------
-   Each letter is an independent letter-object with its own deterministic
-   depth / offset / rotation / fold-direction / construction-angle / timing.
-   Values are fixed (never random per-frame) so every letter behaves the same
-   way on every run, while remaining distinct from its neighbours.
-   ------------------------------------------------------------------------ */
+/* ---- legacy per-letter profile table (retained for the material-transform
+   pipeline; unused while the hero uses the MADE TOMMY statement) ------------ */
 const P_LX  = [ 4,-5, 3,-3, 5,-4, 3,-5, 4,-3, 5,-4, 3,-5];
 const P_LY  = [ 3, 4,-3, 5,-4, 3,-3, 4,-4, 3, 5,-3, 4,-4];
 const P_LZ  = [ 2,-2, 3,-1, 2,-3, 3,-2, 2,-1, 3,-2, 2,-3];
@@ -172,48 +168,38 @@ export default function Hero() {
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8 grid lg:grid-cols-[1.06fr_0.94fr] gap-12 lg:gap-10 items-start relative">
         <div className="min-w-0">
-          {/* large hero statement */}
-          <h1 className="f-display leading-[0.98] select-none text-[clamp(2.5rem,5.4vw,4.4rem)]" style={{ color: "var(--ink)" }}>
+          {/* large hero statement — MADE TOMMY, tight editorial tracking */}
+          <h1 className="f-tommy leading-[0.98] select-none text-[clamp(2.5rem,5.4vw,4.4rem)]" style={{ color: "var(--ink)", letterSpacing: "-0.055em" }}>
             Ideas into worlds.<br />
             Images into sequences.
           </h1>
 
-          {/* name */}
-          <h2 className="f-display mt-6 text-[clamp(1.25rem,2.4vw,1.9rem)] leading-tight tracking-[0.05em] select-none">
-            <span style={{ color: "var(--ink)" }}>I'M BALA </span>
-            <span style={{ color: "var(--crimson-rough)" }}>KRISHNAN</span>
+          {/* identity — outlined I'M + navy BALA + crimson KRISHNAN */}
+          <h2 className="f-display mt-6 text-[clamp(1.7rem,3.4vw,2.7rem)] leading-tight tracking-[0.02em] select-none flex flex-wrap items-baseline gap-x-[0.35em]">
+            <span aria-label="I'M" style={{ color: "transparent", WebkitTextStroke: "2px var(--ink)" }}>I'M</span>
+            <span style={{ color: "var(--hero-blue)" }}>BALA</span>
+            <span style={{ color: "var(--hero-crimson)" }}>KRISHNAN</span>
           </h2>
 
           {/* body statement */}
-          <p className="mt-5 text-[16px] sm:text-[17.5px] leading-relaxed font-semibold text-[var(--ink)] max-w-[58ch]">
+          <p className="mt-5 text-[18px] sm:text-[20px] leading-relaxed font-medium text-[var(--ink)] max-w-[58ch]">
             I create AI-powered visuals, motion experiences, and workflows that shape ambitious ideas into finished realities.
           </p>
-
-          {/* C.BALA / KRISHNAN identity lockup — keeps the textured treatment + hover
-              material transformation; C.BALA dark blue (light) / white (dark),
-              KRISHNAN rough textured red (light) / crimson (dark). */}
-          <div
-            className={`mat-stage mt-8 select-none ${matPhase === "seq" ? "mat-seq" : matPhase === "resolve" ? "mat-resolve" : ""}`}
-            onMouseEnter={enterMat} onMouseLeave={leaveMat} onClick={enterMat}
-          >
-            <span className="name-base inline-flex items-baseline gap-x-4 flex-wrap" style={{ perspective: "700px" }}>
-              <NameLine text={nameA} resolve={!reduced} color="var(--hero-blue)" className="!inline-block text-[clamp(1.2rem,2.3vw,1.7rem)] tracking-[0.06em]" delay="0s" startIndex={0} />
-              <NameLine text={h.nameB} resolve={!reduced} accent className="!inline-block text-[clamp(1.2rem,2.3vw,1.7rem)] tracking-[0.06em]" delay="0.1s" startIndex={nameA.replace(/ /g, "").length} />
-            </span>
-          </div>
 
           {/* CTAs + rotation counter */}
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <a href="#showreel" className="btn btn-crimson">{h.ctaPrimary}</a>
-            <a href="#journey" className="btn btn-ghost border-[var(--ink)] text-[var(--ink)]">{h.ctaSecondary}</a>
+            <a href="#contact" className="btn" style={{ background: "var(--btn2-bg)", color: "var(--btn2-ink)", borderColor: "var(--btn2-bg)" }}>
+              CONTACT ME
+            </a>
             <span className="f-mono text-[11px] tracking-[0.26em] text-[var(--ink2)] tabular-nums ml-1">
               <span style={{ color: "var(--crimson-rough)" }}>{String(idx + 1).padStart(2, "0")}</span> / {String(n).padStart(2, "0")}
             </span>
           </div>
         </div>
 
-        {/* RIGHT — profile ring */}
-        <div className="relative w-full max-w-[420px] sm:max-w-[500px] lg:max-w-[560px] mx-auto lg:mr-0 lg:ml-auto aspect-square lg:mt-[56px]"
+        {/* RIGHT — studio disc, top-aligned with the hero heading */}
+        <div className="relative w-full max-w-[420px] sm:max-w-[500px] lg:max-w-[540px] mx-auto lg:mr-0 lg:ml-auto aspect-square"
           onMouseEnter={ringEnter} onMouseLeave={ringLeave}>
           {ripples.map((id, k) => (
             <span key={id} className="ring-ripple absolute inset-[4%] rounded-full pointer-events-none"
@@ -255,6 +241,22 @@ export default function Hero() {
             STUDIO DISC — {String(n).padStart(2, "0")} FRAMES
             <span className="w-8 h-px bg-[var(--line)]" />
           </div>
+        </div>
+      </div>
+
+      {/* role ticker — seamless continuous LEFT → RIGHT loop */}
+      <div className="mt-16 lg:mt-20 overflow-hidden select-none pointer-events-none" aria-hidden>
+        <div className={`ticker-lr flex w-max items-center whitespace-nowrap ${reduced ? "" : ""}`} style={{ color: "var(--ticker-col)" }}>
+          {[0, 1].map((k) => (
+            <span key={k} className="f-tommy flex items-center gap-7 pr-7 text-[clamp(1.05rem,2vw,1.55rem)] tracking-[0.1em]">
+              {["DESIGN ENGINEER", "GEN AI ARTIST", "VISUAL WORLDBUILDER", "AI PIPELINE ARCHITECT", "CREATIVE DIRECTOR"].map((r) => (
+                <span key={r} className="flex items-center gap-7">
+                  <span>{r}</span>
+                  <span aria-hidden className="opacity-60">-</span>
+                </span>
+              ))}
+            </span>
+          ))}
         </div>
       </div>
     </section>
