@@ -98,7 +98,7 @@
   --m-sub: rgba(34, 35, 40, 0.62);
 
   --hero-ink: #ddddd8;
-  --hero-blue: #7d9cc9;
+  --hero-blue: #f0f8ff;
   --hero-crimson: #e72241;
   --ticker-col: #FFBD31;
   --btn2-bg: #f0f8ff;
@@ -165,6 +165,16 @@ body {
 @font-face { font-family: "Neuhaus Headline"; src: url("/fonts/neuhaus-headline.woff2") format("woff2"); font-display: swap; }
 
 .f-neuhaus { font-family: "Neuhaus Headline", "Oxanium", sans-serif; font-weight: 800; }
+
+/* ---- multi-font name identities (hover animation) -------------------------
+   Each @font-face above points at a local /fonts/ slot (drop the licensed
+   .woff2 in to activate the true face). Until then each class resolves to the
+   closest loaded display face of the same character. ------------------------ */
+.f-gondens   { font-family: "Gondens", "Oswald", sans-serif; font-weight: 600; }
+.f-newspaper { font-family: "Newspaper", "Playfair Display", Georgia, serif; font-weight: 600; }
+.f-hpunk     { font-family: "Helvetica Punk", "Black Ops One", sans-serif; font-weight: 400; }
+.f-rc        { font-family: "R&C", "Orbitron", sans-serif; font-weight: 600; }
+.f-rogue     { font-family: "Rogue Hero", "Anton", sans-serif; font-weight: 400; }
 .f-striker { font-family: "Black Ops One", "Chakra Petch", sans-serif; font-weight: 400; }
 .f-tech { font-family: "Chakra Petch", sans-serif; }
 .f-mono { font-family: "IBM Plex Mono", monospace; }

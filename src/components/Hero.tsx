@@ -20,69 +20,88 @@ function Frame({ idx }: { idx: number }) {
   );
 }
 
-/* ---- legacy per-letter profile table (retained for the material-transform
-   pipeline; unused while the hero uses the MADE TOMMY statement) ------------ */
-const P_LX  = [ 4,-5, 3,-3, 5,-4, 3,-5, 4,-3, 5,-4, 3,-5];
-const P_LY  = [ 3, 4,-3, 5,-4, 3,-3, 4,-4, 3, 5,-3, 4,-4];
-const P_LZ  = [ 2,-2, 3,-1, 2,-3, 3,-2, 2,-1, 3,-2, 2,-3];
-const P_ROT = [-2, 2,-1.5,2.5,-2,1.5,-2.5, 2,-1.5,2.5,-2,1.5,-2.5, 2];
-const P_FD  = ["left","top","right","diag","bottom","left","right","top","bottom","left","diag","right","top","bottom"];
-const P_CA  = [ 45,-30, 60,  0,-45, 30,-60, 15,-15, 50,-50, 20,-20, 40];
-const P_JIT = [  0, 18, 36, 54, 72, 90, 12, 30, 48, 66, 84, 24, 42, 60];
+/* ---- C. BALA KRISHNAN — multi-font dimensional-shift name ------------------
+   On hover the name cycles NEWSPAPER / HELVETICA PUNK / SHATTER / R&C / GONDENS
+   through shifting letter groups (~1.5–2s), converges into ROGUE HERO (held ~1s),
+   then settles back to GONDENS. Individual letters/groups transform
+   independently so several type identities are visible at once. Letters never
+   scramble or reorder — only font, tiny transform and color change. The whole
+   thing is transform-based so the surrounding layout never shifts. ------------ */
+const NAME_FONTS = ["f-gondens", "f-newspaper", "f-hpunk", "f-rc"];
 
-const foldOrigin = (fd: string) =>
-  fd === "left" ? "left center" : fd === "right" ? "right center"
-  : fd === "top" ? "center top" : fd === "bottom" ? "center bottom" : "center center";
+function IdentityName({ line1, line2, reduced }: { line1: string; line2: string; reduced: boolean }) {
+  const [phase, setPhase] = useState<"idle" | "cycle" | "rogue" | "return">("idle");
+  const [shift, setShift] = useState(0);
 
-function letterVars(gi: number, _accent: boolean): React.CSSProperties {
-  const i = ((gi % 14) + 14) % 14;
-  const fd = P_FD[i];
-  return {
-    "--ld":    `${gi * 55 + P_JIT[i]}ms`,
-    "--lx":    `${P_LX[i]}px`,
-    "--ly":    `${P_LY[i]}px`,
-    "--lz":    `${P_LZ[i]}px`,
-    "--lrot":  `${P_ROT[i]}deg`,
-    "--lca":   `${P_CA[i]}deg`,
-    "--pfrom": fd === "left"  ? "rotateY(72deg)"  : fd === "right" ? "rotateY(-72deg)"
-             : fd === "top"   ? "rotateX(-72deg)" : fd === "bottom" ? "rotateX(72deg)"
-             : "rotate(24deg) scale(.72)",
-    "--lt-dur": "2.3s",
-  } as React.CSSProperties;
-}
+  useEffect(() => {
+    if (phase === "cycle") {
+      const iv = window.setInterval(() => setShift((s) => s + 1), 180);
+      const to = window.setTimeout(() => setPhase("rogue"), 1800);
+      return () => { clearInterval(iv); clearTimeout(to); };
+    }
+    if (phase === "rogue") {
+      const to = window.setTimeout(() => setPhase("return"), 1000);
+      return () => clearTimeout(to);
+    }
+    if (phase === "return") {
+      const to = window.setTimeout(() => setPhase("idle"), 520);
+      return () => clearTimeout(to);
+    }
+  }, [phase]);
 
-function NameLine({ text, resolve, accent, className, delay, startIndex = 0, color }: {
-  text: string; resolve: boolean; accent?: boolean; className: string; delay?: string; startIndex?: number; color?: string;
-}) {
-  let gi = startIndex;
+  const onEnter = () => { if (reduced) return; if (phase === "idle") { setShift(0); setPhase("cycle"); } };
+  const onLeave = () => { if (reduced) return; if (phase === "cycle" || phase === "rogue") setPhase("return"); };
+
+  const fontFor = (gi: number) => {
+    if (phase === "idle" || phase === "return") return "f-gondens";
+    if (phase === "rogue") return "f-rogue";
+    if ((gi + shift) % 5 === 0) return "f-hpunk"; /* shatter slots */
+    return NAME_FONTS[(gi + shift) % NAME_FONTS.length];
+  };
+
+  const colorFor = (gi: number, isKrishnan: boolean) => {
+    if (phase === "rogue") return gi % 2 === 0 ? "var(--crimson)" : "var(--ink)";
+    return isKrishnan ? "var(--hero-crimson)" : "var(--hero-blue)";
+  };
+
+  const transformFor = (gi: number) => {
+    if (phase === "idle") return "none";
+    const ox = ((gi * 7) % 5) - 2;
+    const rot = ((gi * 11) % 7) - 3;
+    if (phase === "cycle" && (gi + shift) % 5 === 0)
+      return `translate(${ox}px, ${-ox}px) rotate(${rot}deg) scale(${1 + (((gi * 3) % 3) - 1) * 0.06})`;
+    if (phase === "cycle") return `rotate(${rot * 0.4}deg) scale(${1 + (((gi * 3) % 3) - 1) * 0.03})`;
+    if (phase === "rogue") return "scale(1.04)";
+    return "none";
+  };
+
+  const renderLine = (text: string, startIdx: number, isKrishnan: boolean) => {
+    let gi = startIdx;
+    return (
+      <span className="block">
+        {text.split("").map((ch, k) => {
+          if (ch === " ") return <span key={k} className="inline-block" style={{ width: "0.32em" }} aria-hidden />;
+          const idx = gi; gi++;
+          return (
+            <span key={k} className={`inline-block ${fontFor(idx)}`}
+              style={{
+                color: colorFor(idx, isKrishnan),
+                transform: transformFor(idx),
+                transition: "transform 180ms cubic-bezier(.3,.8,.3,1), color 220ms ease",
+              }}>
+              {ch}
+            </span>
+          );
+        })}
+      </span>
+    );
+  };
+
   return (
-    <span className={`block f-display ${accent ? "print-matte" : ""} ${resolve ? "name-resolve" : ""} ${className}`}
-      style={{ color: color ?? (accent ? "var(--hero-crimson)" : "var(--hero-ink)"), animationDelay: resolve ? delay : undefined }}>
-      {text.split("").map((ch, k) => {
-        if (ch === " ") return <span key={k} className="inline-block w-[0.32em]" aria-hidden />;
-        const i = ((gi % 14) + 14) % 14;
-        const fd = P_FD[i];
-        const org = foldOrigin(fd);
-        const dimc = i % 3 === 1 ? "var(--ink2)" : "var(--crimson)";
-        const stonc = accent ? "#8f1528" : "#191a1f";
-        const v = letterVars(gi, Boolean(accent));
-        gi++;
-        return (
-          <span key={k} className="lt" style={v}>
-            {/* dimensional offset duplicate (registration / alternate dimension) */}
-            <span className="lt-dim" aria-hidden style={{ color: dimc }}>{ch}</span>
-            {/* stone / mass extrusion layer */}
-            <span className="lt-stone" aria-hidden style={{ color: stonc }}>{ch}</span>
-            {/* architectural construction layer (beams clipped to the glyph) */}
-            <span className="lt-arch" aria-hidden>{ch}</span>
-            {/* paper fold fragment */}
-            <span className="lt-paper" aria-hidden style={{ transformOrigin: org }} />
-            {/* base anchor letter — stays spatially fixed */}
-            <span className="lt-base">{ch}</span>
-          </span>
-        );
-      })}
-    </span>
+    <div className="select-none" onMouseEnter={onEnter} onMouseLeave={onLeave} aria-label={`${line1} ${line2}`}>
+      {renderLine(line1, 0, false)}
+      {renderLine(line2, line1.replace(/ /g, "").length, true)}
+    </div>
   );
 }
 
@@ -94,27 +113,6 @@ export default function Hero() {
   const [glitch, setGlitch] = useState(false);
   const glitchTimer = useRef<number | null>(null);
   const n = Math.max(1, h.images.length);
-
-  /* name hover — one continuous material transformation:
-     NORMAL → STONE → ARCHITECTURE → PAPER WRAP → UNWRAP → STONE → NORMAL (~2.6s).
-     Leaving mid-sequence resolves smoothly back to the original typography. */
-  const [matPhase, setMatPhase] = useState<"idle" | "seq" | "resolve">("idle");
-  const matTimer = useRef<number | null>(null);
-  const enterMat = () => {
-    if (reduced) return;
-    if (matTimer.current) clearTimeout(matTimer.current);
-    setMatPhase("seq");
-    matTimer.current = window.setTimeout(() => setMatPhase("idle"), 2600);
-  };
-  const leaveMat = () => {
-    if (reduced) return;
-    if (matPhase !== "seq") return;
-    if (matTimer.current) clearTimeout(matTimer.current);
-    setMatPhase("resolve");
-    matTimer.current = window.setTimeout(() => setMatPhase("idle"), 460);
-  };
-  useEffect(() => () => { if (matTimer.current) clearTimeout(matTimer.current); }, []);
-  const nameA = h.nameA.replace(/^C\.\s+/i, "C.");
 
   useEffect(() => {
     const iv = window.setInterval(() => {
@@ -168,18 +166,21 @@ export default function Hero() {
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8 grid lg:grid-cols-[1.06fr_0.94fr] gap-12 lg:gap-10 items-start relative">
         <div className="min-w-0">
-          {/* large hero statement — MADE TOMMY, tight editorial tracking */}
-          <h1 className="f-tommy leading-[0.98] select-none text-[clamp(2.5rem,5.4vw,4.4rem)]" style={{ color: "var(--ink)", letterSpacing: "-0.055em" }}>
+          {/* hero statement — MADE TOMMY, subheading-scale, tight (-15) tracking */}
+          <h1 className="f-tommy leading-[1.08] select-none text-[clamp(1.25rem,2.7vw,2.2rem)]" style={{ color: "var(--ink)", letterSpacing: "-0.02em" }}>
             Ideas into worlds.<br />
             Images into sequences.
           </h1>
 
-          {/* identity — outlined I'M + navy BALA + crimson KRISHNAN */}
-          <h2 className="f-display mt-6 text-[clamp(1.7rem,3.4vw,2.7rem)] leading-tight tracking-[0.02em] select-none flex flex-wrap items-baseline gap-x-[0.35em]">
-            <span aria-label="I'M" style={{ color: "transparent", WebkitTextStroke: "2px var(--ink)" }}>I'M</span>
-            <span style={{ color: "var(--hero-blue)" }}>BALA</span>
-            <span style={{ color: "var(--hero-crimson)" }}>KRISHNAN</span>
-          </h2>
+          {/* identity — static I'M label above the animated C. BALA KRISHNAN name */}
+          <div className="mt-7">
+            <span className="block f-tech font-bold tracking-[0.35em] text-[clamp(0.85rem,1.4vw,1.05rem)]" style={{ color: "var(--ink2)" }}>
+              I&rsquo;M
+            </span>
+            <h2 className="mt-2 leading-[1.04] text-[clamp(2rem,4vw,3.2rem)]">
+              <IdentityName line1="C. BALA" line2="KRISHNAN" reduced={reduced} />
+            </h2>
+          </div>
 
           {/* body statement */}
           <p className="mt-5 text-[18px] sm:text-[20px] leading-relaxed font-medium text-[var(--ink)] max-w-[58ch]">
@@ -244,15 +245,19 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* role ticker — seamless continuous LEFT → RIGHT loop */}
-      <div className="mt-16 lg:mt-20 overflow-hidden select-none pointer-events-none" aria-hidden>
-        <div className={`ticker-lr flex w-max items-center whitespace-nowrap ${reduced ? "" : ""}`} style={{ color: "var(--ticker-col)" }}>
-          {[0, 1].map((k) => (
-            <span key={k} className="f-tommy flex items-center gap-7 pr-7 text-[clamp(1.05rem,2vw,1.55rem)] tracking-[0.1em]">
-              {["DESIGN ENGINEER", "GEN AI ARTIST", "VISUAL WORLDBUILDER", "AI PIPELINE ARCHITECT", "CREATIVE DIRECTOR"].map((r) => (
-                <span key={r} className="flex items-center gap-7">
-                  <span>{r}</span>
-                  <span aria-hidden className="opacity-60">-</span>
+      {/* discipline ticker — Neuhaus Headline, between two fixed rules, seamless LEFT → RIGHT loop */}
+      <div
+        className="mt-16 lg:mt-20 overflow-hidden select-none pointer-events-none border-y py-3.5"
+        style={{ color: "var(--ticker-col)", borderColor: "color-mix(in srgb, var(--ticker-col) 55%, transparent)" }}
+        aria-hidden
+      >
+        <div className="ticker-lr flex w-max items-center whitespace-nowrap">
+          {[0, 1].map((copy) => (
+            <span key={copy} className="f-neuhaus flex items-center text-[clamp(0.9rem,1.7vw,1.3rem)] tracking-[0.14em]">
+              {["GRAPHIC DESIGN", "AI MOTION DESIGN", "VISUAL DEVELOPMENT", "GENERATIVE AI", "CREATIVE DIRECTION", "PIPELINE INTEGRATION"].map((d) => (
+                <span key={d} className="flex items-center">
+                  <span className="px-6">{d}</span>
+                  <span aria-hidden className="text-[0.72em] leading-none">&bull;</span>
                 </span>
               ))}
             </span>
