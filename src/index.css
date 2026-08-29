@@ -151,6 +151,20 @@ body {
 
 /* ---------- typography ---------- */
 .f-display { font-family: "Anton", "Archivo", sans-serif; font-weight: 400; }
+
+/* ---------- display identity fonts ------------------------------------
+   Exact dafont identities with local asset slots. Drop the licensed
+   .woff2 files into public/fonts/ to activate the true faces; until
+   then each stack resolves to a loaded display face of the same
+   character (never a banned generic). --------------------------------- */
+@font-face { font-family: "Gondens"; src: url("/fonts/gondens.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Newspaper"; src: url("/fonts/newspaper.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Helvetica Punk"; src: url("/fonts/helvetica-punk.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "R&C"; src: url("/fonts/r-and-c.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Rogue Hero"; src: url("/fonts/rogue-hero.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Neuhaus Headline"; src: url("/fonts/neuhaus-headline.woff2") format("woff2"); font-display: swap; }
+
+.f-neuhaus { font-family: "Neuhaus Headline", "Oxanium", sans-serif; font-weight: 800; }
 .f-striker { font-family: "Black Ops One", "Chakra Petch", sans-serif; font-weight: 400; }
 .f-tech { font-family: "Chakra Petch", sans-serif; }
 .f-mono { font-family: "IBM Plex Mono", monospace; }
