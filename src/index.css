@@ -99,7 +99,7 @@
 
   --hero-ink: #ddddd8;
   --hero-blue: #f0f8ff;
-  --hero-crimson: #e72241;
+  --hero-crimson: #e0334b;
   --ticker-col: #FFBD31;
   --btn2-bg: #f0f8ff;
   --btn2-ink: #222328;
@@ -163,8 +163,36 @@ body {
 @font-face { font-family: "R&C"; src: url("/fonts/r-and-c.woff2") format("woff2"); font-display: swap; }
 @font-face { font-family: "Rogue Hero"; src: url("/fonts/rogue-hero.woff2") format("woff2"); font-display: swap; }
 @font-face { font-family: "Neuhaus Headline"; src: url("/fonts/neuhaus-headline.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Nura Semi Bold"; src: url("/fonts/nura-semi-bold.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "DrukCond-Super"; src: url("/fonts/drukcond-super.woff2") format("woff2"); font-display: swap; }
 
 .f-neuhaus { font-family: "Neuhaus Headline", "Oxanium", sans-serif; font-weight: 800; }
+/* Hero statement — NURA SEMI BOLD (geometric sans; Archivo 600 as loaded stand-in) */
+.f-nura { font-family: "Nura Semi Bold", "Archivo", sans-serif; font-weight: 600; }
+/* Identity / name face — DRUKCOND-SUPER (heavy condensed; Anton as loaded stand-in) */
+.f-druk { font-family: "DrukCond-Super", "Anton", sans-serif; font-weight: 400; }
+
+/* ---- name quick-glitch → hollow → restore (per-letter, ~0.7s) --------------
+   Driven per-letter via --lc (the letter's own theme color) so the hollow
+   outline follows each letterform. Registration uses small red/cyan offsets.
+   Letters never reorder — only displacement / hollow / registration change. -- */
+.name-run .nl {
+  animation: letterGlitchHollow 620ms cubic-bezier(.3,.7,.3,1) both;
+  animation-delay: calc(var(--li, 0) * 14ms);
+}
+@keyframes letterGlitchHollow {
+  0%   { transform: none; color: var(--lc); -webkit-text-stroke: 0 transparent; text-shadow: none; }
+  10%  { transform: translate(3px,-2px) rotate(3deg);  text-shadow: 2px 0 rgba(227,34,64,.55), -2px 0 rgba(0,195,225,.45); }
+  20%  { transform: translate(-3px,2px) rotate(-2deg); text-shadow: -2px 0 rgba(227,34,64,.55), 2px 0 rgba(0,195,225,.45); }
+  30%  { transform: translate(2px,1px); color: transparent; -webkit-text-stroke: 1.6px var(--lc); text-shadow: 2px 0 rgba(227,34,64,.4), -2px 0 rgba(0,195,225,.35); }
+  42%  { transform: translate(-1px,-1px) rotate(1deg); color: transparent; -webkit-text-stroke: 1.6px var(--lc); text-shadow: 1.5px 0 rgba(227,34,64,.35), -1.5px 0 rgba(0,195,225,.3); }
+  52%  { transform: translate(1px,0); color: transparent; -webkit-text-stroke: 1.5px var(--lc); text-shadow: 1px 0 rgba(227,34,64,.3), -1px 0 rgba(0,195,225,.25); }
+  64%  { transform: translate(-0.5px,0); color: transparent; -webkit-text-stroke: 1.2px var(--lc); text-shadow: .5px 0 rgba(227,34,64,.2), -.5px 0 rgba(0,195,225,.2); }
+  78%  { transform: translate(.5px,0); color: var(--lc); -webkit-text-stroke: .8px transparent; text-shadow: none; }
+  100% { transform: none; color: var(--lc); -webkit-text-stroke: 0 transparent; text-shadow: none; }
+}
+/* hollow/outlined static treatment (used for the static "I'M" label) */
+.hollow-outline { color: transparent; -webkit-text-stroke: 1.6px var(--lc, currentColor); }
 
 /* ---- multi-font name identities (hover animation) -------------------------
    Each @font-face above points at a local /fonts/ slot (drop the licensed

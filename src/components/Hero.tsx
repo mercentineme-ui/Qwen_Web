@@ -20,87 +20,57 @@ function Frame({ idx }: { idx: number }) {
   );
 }
 
-/* ---- C. BALA KRISHNAN — multi-font dimensional-shift name ------------------
-   On hover the name cycles NEWSPAPER / HELVETICA PUNK / SHATTER / R&C / GONDENS
-   through shifting letter groups (~1.5–2s), converges into ROGUE HERO (held ~1s),
-   then settles back to GONDENS. Individual letters/groups transform
-   independently so several type identities are visible at once. Letters never
-   scramble or reorder — only font, tiny transform and color change. The whole
-   thing is transform-based so the surrounding layout never shifts. ------------ */
-const NAME_FONTS = ["f-gondens", "f-newspaper", "f-hpunk", "f-rc"];
+/* ---- C. BALA KRISHNAN — quick glitch → hollow → restore ---------------------
+   Resting face is DRUKCOND-SUPER on ONE continuous line. On hover the whole
+   name runs one fast (~0.7s) per-letter sequence: micro-glitch (registration
+   displacement) → hollow outlines → snap back to solid DrukCond-SUPER. Each
+   letter animates independently (tiny displacement / hollow / registration)
+   but never reorders or changes spelling. Transform/opacity only, so the
+   surrounding layout never shifts. ------------------------------------------- */
+const NAME_TOTAL_MS = 620 + 15 * 14; /* keyframe duration + max per-letter stagger */
 
-function IdentityName({ line1, line2, reduced }: { line1: string; line2: string; reduced: boolean }) {
-  const [phase, setPhase] = useState<"idle" | "cycle" | "rogue" | "return">("idle");
-  const [shift, setShift] = useState(0);
+function IdentityName({ text, reduced }: { text: string; reduced: boolean }) {
+  const [runId, setRunId] = useState(0);
+  const [running, setRunning] = useState(false);
+  const runTimer = useRef<number | null>(null);
 
-  useEffect(() => {
-    if (phase === "cycle") {
-      const iv = window.setInterval(() => setShift((s) => s + 1), 180);
-      const to = window.setTimeout(() => setPhase("rogue"), 1800);
-      return () => { clearInterval(iv); clearTimeout(to); };
-    }
-    if (phase === "rogue") {
-      const to = window.setTimeout(() => setPhase("return"), 1000);
-      return () => clearTimeout(to);
-    }
-    if (phase === "return") {
-      const to = window.setTimeout(() => setPhase("idle"), 520);
-      return () => clearTimeout(to);
-    }
-  }, [phase]);
+  useEffect(() => () => { if (runTimer.current) clearTimeout(runTimer.current); }, []);
 
-  const onEnter = () => { if (reduced) return; if (phase === "idle") { setShift(0); setPhase("cycle"); } };
-  const onLeave = () => { if (reduced) return; if (phase === "cycle" || phase === "rogue") setPhase("return"); };
-
-  const fontFor = (gi: number) => {
-    if (phase === "idle" || phase === "return") return "f-gondens";
-    if (phase === "rogue") return "f-rogue";
-    if ((gi + shift) % 5 === 0) return "f-hpunk"; /* shatter slots */
-    return NAME_FONTS[(gi + shift) % NAME_FONTS.length];
+  const onEnter = () => {
+    if (reduced || running) return;
+    setRunning(true);
+    setRunId((id) => id + 1);
+    runTimer.current = window.setTimeout(() => setRunning(false), NAME_TOTAL_MS + 40);
   };
 
-  const colorFor = (gi: number, isKrishnan: boolean) => {
-    if (phase === "rogue") return gi % 2 === 0 ? "var(--crimson)" : "var(--ink)";
-    return isKrishnan ? "var(--hero-crimson)" : "var(--hero-blue)";
-  };
+  /* split into "C. BALA" (navy/white) + "KRISHNAN" (crimson) by the last space */
+  const splitAt = text.lastIndexOf(" ");
+  const head = text.slice(0, splitAt);
+  const tail = text.slice(splitAt + 1);
 
-  const transformFor = (gi: number) => {
-    if (phase === "idle") return "none";
-    const ox = ((gi * 7) % 5) - 2;
-    const rot = ((gi * 11) % 7) - 3;
-    if (phase === "cycle" && (gi + shift) % 5 === 0)
-      return `translate(${ox}px, ${-ox}px) rotate(${rot}deg) scale(${1 + (((gi * 3) % 3) - 1) * 0.06})`;
-    if (phase === "cycle") return `rotate(${rot * 0.4}deg) scale(${1 + (((gi * 3) % 3) - 1) * 0.03})`;
-    if (phase === "rogue") return "scale(1.04)";
-    return "none";
-  };
-
-  const renderLine = (text: string, startIdx: number, isKrishnan: boolean) => {
-    let gi = startIdx;
-    return (
-      <span className="block">
-        {text.split("").map((ch, k) => {
-          if (ch === " ") return <span key={k} className="inline-block" style={{ width: "0.32em" }} aria-hidden />;
-          const idx = gi; gi++;
-          return (
-            <span key={k} className={`inline-block ${fontFor(idx)}`}
-              style={{
-                color: colorFor(idx, isKrishnan),
-                transform: transformFor(idx),
-                transition: "transform 180ms cubic-bezier(.3,.8,.3,1), color 220ms ease",
-              }}>
-              {ch}
-            </span>
-          );
-        })}
-      </span>
-    );
-  };
+  let letterIndex = 0;
+  const renderWord = (word: string, colorVar: string) =>
+    word.split("").map((ch, k) => {
+      const li = letterIndex++;
+      return (
+        <span key={`${word}-${k}`} className="nl inline-block will-change-transform"
+          style={{ "--lc": `var(${colorVar})`, "--li": li } as React.CSSProperties}>
+          {ch}
+        </span>
+      );
+    });
 
   return (
-    <div className="select-none" onMouseEnter={onEnter} onMouseLeave={onLeave} aria-label={`${line1} ${line2}`}>
-      {renderLine(line1, 0, false)}
-      {renderLine(line2, line1.replace(/ /g, "").length, true)}
+    <div
+      className={`f-druk select-none whitespace-nowrap leading-[1.02] ${running ? "name-run" : ""}`}
+      onMouseEnter={onEnter}
+      aria-label={text}
+    >
+      <span key={`run-${runId}`} className="inline-block">
+        {renderWord(head, "--hero-blue")}
+        <span className="inline-block" style={{ width: "0.34em" }} aria-hidden />
+        {renderWord(tail, "--hero-crimson")}
+      </span>
     </div>
   );
 }
@@ -166,19 +136,22 @@ export default function Hero() {
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8 grid lg:grid-cols-[1.06fr_0.94fr] gap-12 lg:gap-10 items-start relative">
         <div className="min-w-0">
-          {/* hero statement — MADE TOMMY, subheading-scale, tight (-15) tracking */}
-          <h1 className="f-tommy leading-[1.08] select-none text-[clamp(1.25rem,2.7vw,2.2rem)]" style={{ color: "var(--ink)", letterSpacing: "-0.02em" }}>
+          {/* hero statement — NURA SEMI BOLD, subheading-scale, tight tracking, two lines */}
+          <h1 className="f-nura leading-[1.12] select-none text-[clamp(1.05rem,2.1vw,1.7rem)]" style={{ color: "var(--ink)", letterSpacing: "-0.04em" }}>
             Ideas into worlds.<br />
             Images into sequences.
           </h1>
 
-          {/* identity — static I'M label above the animated C. BALA KRISHNAN name */}
+          {/* identity — static hollow I'M label above the single-line C. BALA KRISHNAN name */}
           <div className="mt-7">
-            <span className="block f-tech font-bold tracking-[0.35em] text-[clamp(0.85rem,1.4vw,1.05rem)]" style={{ color: "var(--ink2)" }}>
+            <span
+              className="hollow-outline block f-druk leading-none text-[clamp(1.05rem,1.7vw,1.35rem)]"
+              style={{ "--lc": "var(--ink)", letterSpacing: "0.12em" } as React.CSSProperties}
+            >
               I&rsquo;M
             </span>
-            <h2 className="mt-2 leading-[1.04] text-[clamp(2rem,4vw,3.2rem)]">
-              <IdentityName line1="C. BALA" line2="KRISHNAN" reduced={reduced} />
+            <h2 className="mt-2.5 text-[clamp(2.3rem,5.2vw,4.2rem)]">
+              <IdentityName text="C. BALA KRISHNAN" reduced={reduced} />
             </h2>
           </div>
 
