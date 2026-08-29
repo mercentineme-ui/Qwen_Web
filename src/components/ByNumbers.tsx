@@ -2,6 +2,49 @@ import React, { useEffect, useRef, useState } from "react";
 import { useReducedMotion, useStore } from "../lib/store";
 import { SectionHead } from "./ui";
 
+/* Abstract 3D industrial prop (black / white / glass). Pure CSS 3D — no WebGL. */
+function Box3D({ w, h, d, kind, className = "", style }: {
+  w: number; h: number; d: number; kind: "black" | "white" | "glass"; className?: string; style?: React.CSSProperties;
+}) {
+  return (
+    <div className={`prop box3d prop-${kind} ${className}`}
+      style={{ width: w, height: h, "--w": `${w}px`, "--h": `${h}px`, "--d": `${d}px`, ...style } as React.CSSProperties}>
+      <div className="prop-face f-front" />
+      <div className="prop-face f-back" />
+      <div className="prop-face f-right" />
+      <div className="prop-face f-left" />
+      <div className="prop-face f-top" />
+      <div className="prop-face f-bottom" />
+    </div>
+  );
+}
+
+/* Decorative atmosphere layer — abstract black/white/glass objects behind the metrics. */
+function Props3D({ reduced }: { reduced: boolean }) {
+  const anim = (name: string, dur: number, delay: number, rx: number, ry: number): React.CSSProperties =>
+    reduced ? { transform: `rotateX(${rx}deg) rotateY(${ry}deg)` } : {
+      animation: `${name} ${dur}s ease-in-out ${delay}s infinite`,
+      "--rx": `${rx}deg`, "--ry": `${ry}deg`,
+    } as React.CSSProperties;
+
+  return (
+    <div className="props-stage" aria-hidden>
+      {/* black beveled cube — upper left, behind the AI ARTIST slab */}
+      <Box3D w={92} h={92} d={92} kind="black" className="left-[4%] top-[10%] opacity-70" style={anim("propFloatA", 14, 0, 26, -30)} />
+      {/* translucent glass slab — right, tall */}
+      <Box3D w={120} h={170} d={26} kind="glass" className="right-[6%] top-[16%] opacity-80" style={anim("propFloatB", 17, 1.2, -16, 34)} />
+      {/* white block — lower left */}
+      <Box3D w={70} h={48} d={70} kind="white" className="left-[16%] bottom-[14%] opacity-75" style={anim("propFloatB", 15, 2, -20, 28)} />
+      {/* translucent sphere — centre-right gap */}
+      <div className="prop prop-sphere left-[56%] top-[58%] opacity-70" style={{ width: 74, height: 74, ...anim("propFloatA", 16, 0.6, 0, 0) }} />
+      {/* thin glass cylinder (tall narrow slab) — far right */}
+      <Box3D w={26} h={150} d={26} kind="glass" className="right-[16%] bottom-[20%] opacity-70" style={anim("propSpin", 26, 0, 18, 0)} />
+      {/* floating architectural plate — behind the stats, upper centre */}
+      <Box3D w={150} h={18} d={110} kind="white" className="left-[38%] top-[6%] opacity-50" style={anim("propFloatA", 18, 1.8, 58, -14)} />
+    </div>
+  );
+}
+
 function useCountUp(target: number, start: boolean, reduced: boolean) {
   const [v, setV] = useState(reduced ? target : 0);
   useEffect(() => {
@@ -27,10 +70,8 @@ function Stat({ num, value, suffix, label, start, delay, reduced }: {
 }) {
   const v = useCountUp(value, start, reduced);
   return (
-    <div className="group relative p-5 sm:p-6 mat-texture transition-transform duration-300 hover:-translate-y-1"
+    <div className="group glass-card relative p-5 sm:p-6 transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_26px_52px_-24px_rgba(27,28,32,0.5)]"
       style={{
-        background: "color-mix(in srgb, var(--ink) 4%, transparent)",
-        boxShadow: "inset 0 0 0 1.5px var(--line)",
         clipPath: "polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px)",
       }}>
       <span className="absolute top-2 right-2 w-2.5 h-2.5 border-t border-r" style={{ borderColor: "var(--ink2)" }} aria-hidden />
@@ -89,9 +130,13 @@ export default function ByNumbers() {
           meta="AI ARTIST · PRODUCTION STATISTICS"
         />
 
-        <div className="mt-10 grid lg:grid-cols-[0.85fr_1.15fr] gap-8 lg:gap-12 items-stretch">
-          {/* LEFT — AI ARTIST feature plate */}
-          <div className="relative mat-outer mat-texture p-6 sm:p-8 flex flex-col justify-between overflow-hidden"
+        <div className="relative mt-10">
+          {/* abstract 3D glass/industrial atmosphere — behind all information */}
+          <Props3D reduced={reduced} />
+
+          <div className="relative z-10 grid lg:grid-cols-[0.85fr_1.15fr] gap-8 lg:gap-12 items-stretch">
+          {/* LEFT — AI ARTIST feature plate (dark glass slab) */}
+          <div className="glass-slab relative p-6 sm:p-8 flex flex-col justify-between overflow-hidden"
             style={{ clipPath: "polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)" }}>
             <span className="absolute inset-[8px] pointer-events-none opacity-35" style={{ border: "1px solid var(--m-line)" }} aria-hidden />
             <span className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2" style={{ borderColor: "var(--crim-panel)" }} aria-hidden />
@@ -134,6 +179,7 @@ export default function ByNumbers() {
             {bn.stats.map((s, i) => (
               <Stat key={s.num} {...s} start={inView} delay={i * 110} reduced={reduced} />
             ))}
+          </div>
           </div>
         </div>
       </div>

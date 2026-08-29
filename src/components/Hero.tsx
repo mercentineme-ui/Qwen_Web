@@ -136,10 +136,10 @@ export default function Hero() {
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8 grid lg:grid-cols-[1.06fr_0.94fr] gap-12 lg:gap-10 items-start relative">
         <div className="min-w-0">
-          {/* hero statement — NURA SEMI BOLD, subheading-scale, tight tracking, two lines */}
-          <h1 className="f-nura leading-[1.12] select-none text-[clamp(1.05rem,2.1vw,1.7rem)]" style={{ color: "var(--ink)", letterSpacing: "-0.04em" }}>
-            Ideas into worlds.<br />
-            Images into sequences.
+          {/* hero statement — NURA SEMI BOLD, major hero scale, exactly two lines, tight tracking */}
+          <h1 className="f-nura leading-[1.06] select-none text-[clamp(2rem,4.4vw,3.6rem)]" style={{ color: "var(--ink)", letterSpacing: "-0.045em" }}>
+            <span className="block whitespace-nowrap">Ideas into worlds.</span>
+            <span className="block whitespace-nowrap">Images into sequences.</span>
           </h1>
 
           {/* identity — static hollow I'M label above the single-line C. BALA KRISHNAN name */}
