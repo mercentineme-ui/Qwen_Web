@@ -202,6 +202,12 @@ body {
 
 /* slim condensed display for the numeric clock (Slim Fit substitute) */
 .f-slim { font-family: "Oswald", "Archivo Narrow", sans-serif; }
+/* MADE TOMMY — hero display identity (falls back to the loaded geometric display face) */
+.f-tommy { font-family: "MADE Tommy", "Oxanium", "Chakra Petch", sans-serif; font-weight: 800; }
+
+/* hero role ticker — seamless left → right loop */
+.ticker-lr { animation: tickerLR 26s linear infinite; }
+@keyframes tickerLR { from { transform: translateX(-50%); } to { transform: translateX(0); } }
 /* Alice Blue light-material surface — applied ONLY to the GHOST.EXE card and
    the ARC Character Dossier (Change 1). Dark theme keeps its existing material. */
 .mat-alice { background-color: #f0f8ff; }
