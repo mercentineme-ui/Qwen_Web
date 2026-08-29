@@ -246,43 +246,156 @@ body {
 .mat-inner { background-color: var(--sup1); color: var(--ink); }
 .mat-page-card { background-color: var(--sup1); color: var(--ink); }
 
-/* ---------- matte graphite industrial panel (Impact Metrics) ----------
-   Dark manufactured surface in BOTH themes: matte graphite with extremely
-   subtle technical grain, restrained inner depth, printed-ink red accents. */
+/* ---------- glass / architectural panel (Impact Metrics) ----------
+   Light theme: light translucent white / cool-white glass + dark readable type.
+   Dark theme: dark translucent graphite / black glass + light readable type.
+   Physical depth via translucency, backdrop blur, edge highlights, soft shadows,
+   a faint diagonal micro-texture and a restrained internal reflection. */
 .metric-card {
-  --p-ink: #ecece7;
-  --p-sub: rgba(232, 232, 227, 0.66);
-  --p-line: rgba(232, 232, 227, 0.14);
-  --p-tick: rgba(232, 232, 227, 0.42);
+  --p-ink: #26282d;                    /* light theme text */
+  --p-sub: rgba(38, 40, 45, 0.62);
+  --p-line: rgba(38, 40, 45, 0.14);
+  --p-tick: rgba(38, 40, 45, 0.4);
   position: relative;
   color: var(--p-ink);
-  border: 1px solid rgba(236, 236, 231, 0.08);
+  background: color-mix(in srgb, #ffffff 58%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  -webkit-backdrop-filter: blur(8px) saturate(1.15);
+  backdrop-filter: blur(8px) saturate(1.15);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    inset 0 -18px 36px -24px rgba(0, 0, 0, 0.62),
-    0 12px 28px -22px rgba(15, 15, 18, 0.5);
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -14px 30px -24px rgba(38, 40, 45, 0.18),
+    0 14px 34px -26px rgba(38, 40, 45, 0.35);
 }
 .metric-card::before {
   content: "";
   position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
   background-image:
-    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.024) 0 1px, transparent 1px 4px),
-    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.05) 0 1px, transparent 1px 5px);
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(45deg, rgba(38, 40, 45, 0.028) 0 1px, transparent 1px 6px);
 }
 .metric-card::after {
   content: "";
   position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
   background:
-    radial-gradient(120% 80% at 16% 0%, rgba(255, 255, 255, 0.045), transparent 42%),
-    radial-gradient(130% 100% at 88% 104%, rgba(0, 0, 0, 0.22), transparent 55%);
+    radial-gradient(120% 80% at 14% 0%, rgba(255, 255, 255, 0.34), transparent 42%),
+    radial-gradient(130% 100% at 88% 104%, rgba(38, 40, 45, 0.08), transparent 55%);
+}
+.dark .metric-card {
+  --p-ink: #ecece7;                    /* dark theme text */
+  --p-sub: rgba(232, 232, 227, 0.64);
+  --p-line: rgba(232, 232, 227, 0.14);
+  --p-tick: rgba(232, 232, 227, 0.42);
+  background: color-mix(in srgb, #222328 55%, transparent);
+  border: 1px solid rgba(236, 236, 231, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -16px 34px -26px rgba(0, 0, 0, 0.6),
+    0 16px 38px -28px rgba(0, 0, 0, 0.65);
+}
+.dark .metric-card::before {
+  background-image:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.05) 0 1px, transparent 1px 6px);
+}
+.dark .metric-card::after {
+  background:
+    radial-gradient(120% 80% at 14% 0%, rgba(255, 255, 255, 0.08), transparent 42%),
+    radial-gradient(130% 100% at 88% 104%, rgba(0, 0, 0, 0.3), transparent 55%);
+}
+
+/* larger architectural glass slab for the AI ARTIST feature panel */
+.metric-panel {
+  background: color-mix(in srgb, #ffffff 40%, rgba(38, 40, 45, 0.55));
+  --p-ink: #ecece7;
+  --p-sub: rgba(232, 232, 227, 0.66);
+  --p-line: rgba(232, 232, 227, 0.16);
+  --p-tick: rgba(232, 232, 227, 0.42);
+  color: var(--p-ink);
+}
+.dark .metric-panel {
+  background: color-mix(in srgb, #222328 72%, transparent);
+}
+
+/* ---------- abstract 3D / material decorative objects (Impact Metrics) ----------
+   Pure CSS 3D — black / white / translucent-glass industrial forms.
+   Always decorative: aria-hidden, pointer-events none, never over the text layer. */
+.im-stage {
+  position: absolute; inset: 0; overflow: hidden;
+  perspective: 1000px;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(130% 130% at 50% 40%, #000 55%, transparent 94%);
+  mask-image: radial-gradient(130% 130% at 50% 40%, #000 55%, transparent 94%);
+}
+.im-prop { position: absolute; transform-style: preserve-3d; will-change: transform; }
+.im-prop .face { position: absolute; inset: 0; }
+
+/* box faces (cube / slab / plate / cylinder) driven by --w/--h/--d */
+.im-box { transform-style: preserve-3d; position: relative; }
+.im-box .f-front  { transform: translateZ(calc(var(--d) / 2)); }
+.im-box .f-back   { transform: rotateY(180deg) translateZ(calc(var(--d) / 2)); }
+.im-box .f-right  { transform: rotateY(90deg)  translateZ(calc(var(--w) / 2)); width: var(--d); left: calc(50% - var(--d) / 2); }
+.im-box .f-left   { transform: rotateY(-90deg) translateZ(calc(var(--w) / 2)); width: var(--d); left: calc(50% - var(--d) / 2); }
+.im-box .f-top    { transform: rotateX(90deg)  translateZ(calc(var(--h) / 2)); height: var(--d); top: calc(50% - var(--d) / 2); }
+.im-box .f-bottom { transform: rotateX(-90deg) translateZ(calc(var(--h) / 2)); height: var(--d); top: calc(50% - var(--d) / 2); }
+
+/* material tints */
+.im-black .face  { background: #222328; border: 1px solid rgba(255, 255, 255, 0.07); }
+.im-black .f-top { background: #2e2f35; }
+.im-white .face  { background: #f4f4ef; border: 1px solid rgba(38, 40, 45, 0.1); }
+.im-white .f-top { background: #ffffff; }
+.dark .im-white .face { background: #e7e6e1; border-color: rgba(255,255,255,0.12); }
+.dark .im-white .f-top { background: #f4f4ef; }
+.im-glass .face {
+  background: color-mix(in srgb, #ffffff 26%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+.dark .im-glass .face { background: color-mix(in srgb, #ffffff 10%, transparent); border-color: rgba(255, 255, 255, 0.22); }
+.im-sphere {
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.1) 42%, rgba(255, 255, 255, 0.02) 62%),
+    color-mix(in srgb, #ffffff 20%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  box-shadow: inset -8px -10px 22px rgba(38, 40, 45, 0.24);
+}
+.dark .im-sphere {
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.05) 45%, transparent 62%),
+    color-mix(in srgb, #ffffff 8%, transparent);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* slow ambient motion — slow / smooth / subtle */
+@keyframes imFloatA {
+  0%, 100% { transform: translate3d(0, 0, 0) rotateX(var(--rx, 24deg)) rotateY(var(--ry, -28deg)); }
+  50%      { transform: translate3d(0, -12px, 10px) rotateX(calc(var(--rx, 24deg) + 5deg)) rotateY(calc(var(--ry, -28deg) + 8deg)); }
+}
+@keyframes imFloatB {
+  0%, 100% { transform: translate3d(0, 0, 0) rotateX(var(--rx, -18deg)) rotateY(var(--ry, 30deg)); }
+  50%      { transform: translate3d(0, 10px, -8px) rotateX(calc(var(--rx, -18deg) - 5deg)) rotateY(calc(var(--ry, 30deg) - 7deg)); }
+}
+@keyframes imSpin {
+  from { transform: translate3d(0,0,0) rotateX(var(--rx,20deg)) rotateY(0deg); }
+  to   { transform: translate3d(0,0,0) rotateX(var(--rx,20deg)) rotateY(360deg); }
+}
+
+/* reduce presence on small screens; disable motion for reduced-motion users */
+@media (max-width: 768px) {
+  .im-stage { opacity: 0.4; }
+  .im-prop { transform: scale(0.6) !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .im-prop { animation: none !important; }
 }
 
 /* WORLD dossier — follows the active page theme (light = ghost white, dark = dark surface) */
 .mat-inner.mat-dossier-theme { background-color: #f8f8ff; }
 .dark .mat-inner.mat-dossier-theme { background-color: var(--sup1); }
-
-/* (Impact Metrics glassmorphism + abstract 3D props removed — the section uses
-   the matte-graphite industrial .metric-card material defined above.) */
 
 /* AI LAB "RECENT PROJECT" mini block — inverts with the page theme.
    Light page (white card) → matte black + white text.
