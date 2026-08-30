@@ -172,25 +172,22 @@ body {
 /* Identity / name face — DRUKCOND-SUPER (heavy condensed; Anton as loaded stand-in) */
 .f-druk { font-family: "DrukCond-Super", "Anton", sans-serif; font-weight: 400; }
 
-/* ---- name quick-glitch → hollow → restore (per-letter, ~0.7s) --------------
-   Driven per-letter via --lc (the letter's own theme color) so the hollow
-   outline follows each letterform. Registration uses small red/cyan offsets.
-   Letters never reorder — only displacement / hollow / registration change. -- */
-.name-run .nl {
-  animation: letterGlitchHollow 620ms cubic-bezier(.3,.7,.3,1) both;
-  animation-delay: calc(var(--li, 0) * 14ms);
+/* ---- C. BALA KRISHNAN — fragmented dimensional fracture (per-letter) -------
+   Each character is a fixed-size unit holding a base glyph plus several
+   clipped fragment copies of the SAME glyph. On hover the glyph fractures
+   into those pieces (tiny displacement / rotation / scale), some fragments
+   receive matte-crimson / cyan / violet registration, then everything
+   converges back to the clean glyph. Fragments never leave the glyph box,
+   never reorder, and never affect document flow. --------------------------- */
+.fr-ch { position: relative; display: inline-block; }
+.fr-size { visibility: hidden; }
+.fr-base, .fr-frag {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  line-height: 1;
 }
-@keyframes letterGlitchHollow {
-  0%   { transform: none; color: var(--lc); -webkit-text-stroke: 0 transparent; text-shadow: none; }
-  10%  { transform: translate(3px,-2px) rotate(3deg);  text-shadow: 2px 0 rgba(227,34,64,.55), -2px 0 rgba(0,195,225,.45); }
-  20%  { transform: translate(-3px,2px) rotate(-2deg); text-shadow: -2px 0 rgba(227,34,64,.55), 2px 0 rgba(0,195,225,.45); }
-  30%  { transform: translate(2px,1px); color: transparent; -webkit-text-stroke: 1.6px var(--lc); text-shadow: 2px 0 rgba(227,34,64,.4), -2px 0 rgba(0,195,225,.35); }
-  42%  { transform: translate(-1px,-1px) rotate(1deg); color: transparent; -webkit-text-stroke: 1.6px var(--lc); text-shadow: 1.5px 0 rgba(227,34,64,.35), -1.5px 0 rgba(0,195,225,.3); }
-  52%  { transform: translate(1px,0); color: transparent; -webkit-text-stroke: 1.5px var(--lc); text-shadow: 1px 0 rgba(227,34,64,.3), -1px 0 rgba(0,195,225,.25); }
-  64%  { transform: translate(-0.5px,0); color: transparent; -webkit-text-stroke: 1.2px var(--lc); text-shadow: .5px 0 rgba(227,34,64,.2), -.5px 0 rgba(0,195,225,.2); }
-  78%  { transform: translate(.5px,0); color: var(--lc); -webkit-text-stroke: .8px transparent; text-shadow: none; }
-  100% { transform: none; color: var(--lc); -webkit-text-stroke: 0 transparent; text-shadow: none; }
-}
+.fr-frag { opacity: 0; will-change: transform, opacity; }
+
 /* hollow/outlined static treatment (used for the static "I'M" label) */
 .hollow-outline { color: transparent; -webkit-text-stroke: 1.6px var(--lc, currentColor); }
 
