@@ -1,0 +1,135 @@
+/* ============================================================
+   CORE-RADIAL — CORE-SPECIFIC CSS
+   Verbatim extraction from the production file src/index.css
+   (Qwen_Web). Line references point at src/index.css at the time
+   of archiving (CORE-RADIAL-V1-APPROVED).
+
+   The production Core resolves these rules from src/index.css.
+   This file exists so the archive is self-contained: if
+   src/index.css is ever lost, restore these blocks into it (or
+   import this file) to recover every style the Core depends on.
+   ============================================================ */
+
+/* ---------- design tokens the Core reads (src/index.css :root) ---------- */
+:root {
+  /* page + ink tokens the Core's inline styles reference */
+  --page: #e9e7e2;
+  --sup1: #dfddd7;
+  --sup2: #d3d1ca;
+  --ink: #222328;
+  --ink2: #59595b;
+  --line: rgba(34, 35, 40, 0.16);
+  --line-soft: rgba(34, 35, 40, 0.07);
+
+  --crimson: #e72241;        /* primary active crimson */
+  --crimson-strong: #e72241;
+  --crimson-rough: #9e2237;  /* dark rough crimson — on light page surfaces */
+  --crimson-shadow: #59232f;
+
+  /* matte panel system — LIGHT: matte black embedded components (node chips) */
+  --outer-bg: #222328;
+  --outer-ink: #ddddd8;
+  --m-line: rgba(221, 221, 216, 0.16);
+  --m-sub: rgba(221, 221, 216, 0.62);
+
+  --crim-panel: #e72241;     /* detail-card status accents (light) */
+
+  /* creative core machine — LIGHT: dark machine on light page */
+  --core-plate: #222328;
+  --core-deep: #3c3d42;
+  --core-line: #59595b;
+  --core-mid: #a6a6a4;
+  --core-inv: #ddddd8;
+  --core-ring: #59595b;
+  --core-gear: #222328;
+  --core-crimson: #e72241;
+}
+
+/* ---------- dark-theme token set (src/index.css .dark) ---------- */
+.dark {
+  --page: #222328;
+  --sup1: #2a2b30;
+  --sup2: #323338;
+  --ink: #ddddd8;
+  --ink2: #a6a6a4;
+  --line: rgba(221, 221, 216, 0.15);
+  --line-soft: rgba(221, 221, 216, 0.06);
+
+  --crimson: #e72241;
+  --crimson-strong: #e72241;
+  --crimson-rough: #e72241;
+  --crimson-shadow: #59232f;
+
+  /* matte panel system — DARK: matte off-white embedded components */
+  --outer-bg: #ddddd8;
+  --outer-ink: #222328;
+  --m-line: rgba(34, 35, 40, 0.2);
+  --m-sub: rgba(34, 35, 40, 0.62);
+
+  --crim-panel: #9e2237;     /* detail-card status accents (dark) */
+
+  /* creative core machine — DARK: light precision machine on dark page.
+     tonal hierarchy: white highlights → off-white plate → grey → graphite → dark */
+  --core-plate: #d3d4ce;
+  --core-deep: #3c3d42;
+  --core-line: #4a4b50;
+  --core-mid: #59595b;
+  --core-inv: #f2f2ee;
+  --core-ring: #c8c9c3;
+  --core-gear: #cdcec8;
+  --core-crimson: #e72241;
+}
+
+/* ---------- typography classes used by the Core (src/index.css) ---------- */
+.f-display { font-family: "Anton", "Archivo", sans-serif; font-weight: 400; }
+.f-tech { font-family: "Chakra Petch", sans-serif; }
+.f-mono { font-family: "IBM Plex Mono", monospace; }
+
+/* ---------- scroll reveal used by Reveal (src/index.css) ---------- */
+.rv { opacity: 0; transform: translateY(26px); transition: opacity 0.9s cubic-bezier(0.25,0.8,0.3,1), transform 0.9s cubic-bezier(0.25,0.8,0.3,1); }
+.rv.is-in { opacity: 1; transform: none; }
+
+/* ---------- status blink used by the detail card (src/index.css) ---------- */
+.live-blink { animation: liveBlink 1.6s steps(2, jump-none) infinite; }
+@keyframes liveBlink { 50% { opacity: 0.25; } }
+
+/* ---------- creative core CSS block (src/index.css) ---------- */
+.core-spin-cw { animation: coreSpinCW 40s linear infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes coreSpinCW { to { transform: rotate(360deg); } }
+.core-spin-ccw { animation: coreSpinCCW 26s linear infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes coreSpinCCW { to { transform: rotate(-360deg); } }
+/* gear assembly enters → aligns → meshes → locks when a card becomes active */
+.gear-mesh-in { animation: gearMesh 0.6s cubic-bezier(0.34, 0.9, 0.3, 1) both; }
+@keyframes gearMesh {
+  0% { opacity: 0; transform: translateY(8px) scale(0.6) rotate(-14deg); }
+  55% { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+.core-spin-slow { animation: coreSpinCW 70s linear infinite; transform-box: fill-box; transform-origin: center; }
+.core-beat { animation: coreBeat 2.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes coreBeat { 0%,100% { transform: scale(1); } 12% { transform: scale(1.08); } 24% { transform: scale(1); } 36% { transform: scale(1.05); } }
+  .idx-ring-spin { animation: coreSpinCW 60s linear infinite; transform-box: fill-box; transform-origin: center; }
+.esc-rock { animation: escRock 1.6s cubic-bezier(0.45,0.05,0.55,0.95) infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes escRock { 0%,100% { transform: rotate(-14deg); } 50% { transform: rotate(14deg); } }
+.coupling-spin { animation: coreSpinCW 1.1s linear infinite; transform-box: fill-box; transform-origin: center; }
+.scan-pass { animation: scanPass 2.6s cubic-bezier(0.4,0.4,0.4,1) infinite; }
+@keyframes scanPass { 0%,100% { transform: scaleX(0.55); transform-origin: left; opacity: .7; } 50% { transform: scaleX(1); transform-origin: left; opacity: 1; } }
+
+/* ---------- card content transition used by the detail card (src/index.css) ---------- */
+.career-wipe-in { animation: careerWipeIn 0.42s cubic-bezier(0.3,0.8,0.3,1) both; }
+@keyframes careerWipeIn {
+  0% { opacity: 0; transform: translateX(16px); clip-path: inset(0 0 0 10%); filter: blur(2px); }
+  100% { opacity: 1; transform: none; clip-path: inset(0 0 0 0); filter: none; }
+}
+
+/* ============================================================
+   NOTES
+   · The component sets --core-* / --outer-* / --line inline on its
+     container during the theme-switch disassembly (CORE_PALETTES in
+     CreativeCore.tsx) — those inline values mirror the token blocks
+     above and are part of the animation system, not this stylesheet.
+   · Tailwind utility classes used by the component are supplied by the
+     project's Tailwind build (shared dependency — see MANIFEST).
+   · Fonts (Anton / Chakra Petch / IBM Plex Mono) are loaded by
+     index.html's Google Fonts <link> (shared dependency).
+   ============================================================ */
